@@ -1,0 +1,50 @@
+name: imcsml 
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+###### use requirements without version fixed specifier where possible ######
+  - python==3.8
+  - cython
+  - numpy>=1.16.2
+  - scipy>=1.2.1
+#  - scikit-learn
+#  - pandas
+# for documentation
+#  - sphinx
+#  - nbsphinx
+#  - jupyter
+# making fancy plots
+  - matplotlib
+  - seaborn
+  - plotly
+# testing framework
+  - pytest>=3.0.0
+  - pytest-codestyle
+  - pytest-cov
+  - pytest-mock
+# for running tests in parallel
+  - pytest-xdist
+# linting, check code  -style (PEP8)
+  - astroid>2.3.3
+  - pylint
+# code formatter
+#  - black
+# a smart progress meter for loops
+#  - tqdm
+# visualization toolkit that can manage mesh data
+#  - vtk
+# enforce package compliance of parso package
+  - parso>=0.8.0
+# wrapper around numpy for automated differentiation
+#  - autograd
+# it's recommended to list pip explicitly
+  - pip
+  - pip:
+# Utility to handle pylint exit codes scripting friendly
+    - pylint-exit
+# needed for cubit    
+    - execnet
+# needed for parallel run
+  - numba
+

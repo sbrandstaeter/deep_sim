@@ -1,0 +1,80 @@
+{
+    "experiment_name" : "Rough Surface Contact Automatized Simulation",
+    "method": {
+      "method_name": "rs",
+      "method_options" :{
+        "num_simulations":2,
+        "result_description" : {
+            "write_results" : true
+            }
+      }
+    },
+    "driver" :{
+        "driver_type"           : "rough_contact_surface",
+        "driver_params"         :{
+          "path_to_executable"    : "{bem}",
+          "driver_options" : ["--delta=[50]", "--input='dummy.dat'"]
+        }
+    },  
+    "parameters" : {
+      "material_parameters" : {
+        "E" : {
+          "type" : "FLOAT",
+          "size" : 1
+        },
+        "nu" : {
+          "type" : "FLOAT",
+          "size" : 1
+        }
+      },
+      "geometrical_parameters" : {
+        "flagwarm" : {
+            "type" : "INTEGER",
+            "size" : 1
+        },
+        "csteps" : {
+            "type" : "INTEGER",
+            "size" : 1
+        }, 
+        "lato" : {
+            "type" : "INT",
+            "size" : 1
+        },
+        "zref" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "distribution_parameter" : 25
+        },
+        "ampface" : {
+            "type" : "INT",
+            "size" : 1
+        },
+        "H" : {
+            "type"  : "FLOAT",
+            "size"  : 100,
+            "distribution_parameter" : [0.5,0.8] 
+        },
+        "k_el" : {
+            "type" : "INT",
+            "size" : 1
+        },
+        "n" : {
+            "type" : "INT",
+            "size" : 1,
+            "distribution_parameter" : 6
+        },
+        "alpha" : {
+            "type" : "INT",
+            "size" : 1
+        },
+        "errf" : {
+            "type" : "INT",
+            "size" : 1
+        },
+        "tol" : {
+            "type" : "INT",
+            "size" : 1
+        }
+      }
+    }
+  }
