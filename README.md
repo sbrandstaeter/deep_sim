@@ -57,7 +57,7 @@ ln -s /home/a11btasa/git_repos/bem/bem /home/a11btasa/git_repos/imcsml/config/be
 ```
 
 # Running tests
-Unittests for cubitpy and integration tests for pimcsml are created. To run the tests:
+TO check if the package/libraries are installed correctly tests are defined. Unittests for cubitpy and integration tests for pimcsml are created. To run the tests:
 
 ```bash
 pytest
