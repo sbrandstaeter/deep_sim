@@ -46,7 +46,7 @@ export PYTHONPATH=/home/a11btasa/git_repos/cubitpy:$PYTHONPATH
 
 # Running the BEM code
 
-To run BEM implementation as the solver, make a link in config folder
+To run BEM implementation as the solver, make a syymbolic link in executables folder.
 
 ```bash
 ln -s <your/path/to/BEM> <imcsml_dir>/config/baci-release
@@ -56,4 +56,9 @@ ln -s <your/path/to/BEM> <imcsml_dir>/config/baci-release
 ln -s /home/a11btasa/git_repos/bem/bem /home/a11btasa/git_repos/imcsml/config/bem
 ```
 
+# Running tests
+Unittests for cubitpy and integration tests for pimcsml are created. To run the tests:
 
+```bash
+pytest
+```
