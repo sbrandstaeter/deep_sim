@@ -5,7 +5,7 @@ import sys
 from pimcsml.main import main
 
 
-def test_rs_iterator(inputdir,tmpdir):
+def test_rsc_fem_model_generator(inputdir,tmpdir):
     print(inputdir)
     arguments = [
         '--input=' + os.path.join(inputdir, 'input_rsc_fem_model_generator.json'),

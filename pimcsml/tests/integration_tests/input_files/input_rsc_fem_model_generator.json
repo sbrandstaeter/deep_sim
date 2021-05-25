@@ -1,9 +1,9 @@
 {
     "experiment_name" : "Rough Surface Contact Automatized Simulation",
     "method": {
-      "method_name": "rsc_bem",
+      "method_name": "rsc_fem_model",
       "method_options" :{
-        "num_simulations":2,
+        "num_simulations":1,
         "result_description" : {
             "write_results" : true
             }
@@ -61,7 +61,7 @@
         "n" : {
             "type" : "int",
             "size" : 1,
-            "distribution_parameter" : 6
+            "distribution_parameter" : 2
         },
         "delta" :{
             "type" : "float",
