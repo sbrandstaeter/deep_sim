@@ -19,11 +19,12 @@ class Iterator (metaclass=abc.ABCMeta):
 
         """
         
-        from .rs_bem_iterator import RoughSurfaceBemIterator
-
+        from .rsc_bem_iterator import RoughSurfaceBemIterator
+        from .rsc_fem_model_generator import RoughSurfaceFemModelGenerator
 
         method_dict = {
             'rsc_bem': RoughSurfaceBemIterator,
+            'rsc_fem_model': RoughSurfaceFemModelGenerator
         }
 
         if iterator_name is None:

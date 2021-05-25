@@ -9,10 +9,10 @@ from .iterator import Iterator
 from cubitpy import CubitPy, cupy, get_surface_center
 from cubitpy.mesh_creation_functions import create_brick
 
-class RoughSurfaceBemIterator(Iterator): 
+class RoughSurfaceFemModelGenerator(Iterator): 
     
     def __init__(self, num_simulations, result_description, driver, parameters, global_settings):
-        super(RoughSurfaceBemIterator, self).__init__(None, global_settings)
+        super(RoughSurfaceFemModelGenerator, self).__init__(None, global_settings)
         self.num_simulations = num_simulations
         self.result_description = result_description
         self.driver = driver
@@ -22,7 +22,6 @@ class RoughSurfaceBemIterator(Iterator):
     def from_config_create_iterator(cls, config, iterator_name=None):
 
         print(config.get("experiment_name"))
-
 
         method_options = config["method"]["method_options"]
         num_simulations = method_options.get("num_simulations", None)
@@ -35,6 +34,13 @@ class RoughSurfaceBemIterator(Iterator):
         return cls(num_simulations, result_description, driver, parameters, global_settings)
 
     def run_simulation(self):
+        # what should be done here?
+        # - read the parameters from the input file
+        # - make a loop for each simulation (generation of models)
+        #    - create the rough surface using RMD (middle point approach) 
+        #    - generate blocks
+        #    - define BCs and header file
+        #    - store the result
         
         n_global = self.parameters["geometrical_parameters"]["n"]
         H_global = self.parameters["geometrical_parameters"]["H"]
@@ -52,7 +58,7 @@ class RoughSurfaceBemIterator(Iterator):
             H = H_iterator[i]
 #            breakpoint()
             surface_path = self.generate_2D_surface(n, H, i)
-            self.call_executable(surface_path)
+            #self.call_executable(surface_path)
             print(surface_path)
 
     def generate_2D_surface(self,n,H,iter):

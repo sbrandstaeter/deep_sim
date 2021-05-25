@@ -8,7 +8,7 @@ from pimcsml.main import main
 def test_rs_iterator(inputdir,tmpdir):
     print(inputdir)
     arguments = [
-        '--input=' + os.path.join(inputdir, 'rough_surface_contact_bem.json'),
+        '--input=' + os.path.join(inputdir, 'input_rsc_bem.json'),
         '--output=' + str(tmpdir),
     ]
 #    breakpoint()
