@@ -28,7 +28,7 @@ class RoughSurfaceFemModelGenerator(Iterator):
         num_simulations = method_options.get("num_simulations", None)
         result_description = method_options.get("result_description", None)
         
-        driver = config["driver"]
+        driver = config.get("driver", None)
         parameters = config["parameters"]
         global_settings = config.get("global_settings", None)
 
@@ -39,7 +39,7 @@ class RoughSurfaceFemModelGenerator(Iterator):
         # what should be done here?
         # - read the parameters from the input file
         # - make a loop for each simulation (generation of models)
-        #     - create the rough surface using RMD (middle point approach) 
+        #     - create the rough surface using RMP (random mid point approach) 
         #     - generate blocks
         #     - define BCs and header file
         #     - store the result
@@ -51,22 +51,22 @@ class RoughSurfaceFemModelGenerator(Iterator):
 
         start = H_global["distribution_parameter"][0]
         end = H_global["distribution_parameter"][1]
-        seeds = H_global["size"]
+        # seeds = H_global["size"] # since we will use only h as our interest set seeds as the number of simulations
+        seeds = self.num_simulations
 
         H_iterator = np.linspace(start, end, seeds)
 
         for i in range(self.num_simulations):
             
             H = H_iterator[i]
-            # generate rough surface using RMD
-            surface_path = self.generate_2D_surface(n, H, i)
+            # generate rough surface using RMP
+            input_path = self.generate_2D_surface(n, H, i)
             # generate blocks
-            self.generate_blocks(surface_path, n) 
-            print(surface_path)
+            self.generate_blocks(input_path, n, i) 
 
     def generate_2D_surface(self,n,H,iter):
         '''
-        creates the 2D surfaces
+        generates rough surfaces using RMP (random mid point) approach
         '''
         N = 2**n     
         z = np.zeros([N+1,N+1])
@@ -215,8 +215,9 @@ class RoughSurfaceFemModelGenerator(Iterator):
             }
 
 
-    def generate_blocks(self,surface_path, n):
+    def generate_blocks(self,surface_path, n, iter):
         """
+        generates FEM input for the rough and flat blocks
         """
         # initialize cubit
         cubit = CubitPy()
@@ -272,7 +273,7 @@ class RoughSurfaceFemModelGenerator(Iterator):
         output_dir = self.global_settings["output_dir"]
         
         # create dat, exo and cub files
-        file_name = 'rsc_fem_model'
+        file_name = 'rsc_fem_model' + str(iter)
         final_path_names = os.path.join(output_dir, file_name)
         
         cubit.export_cub(final_path_names + '.cub')
