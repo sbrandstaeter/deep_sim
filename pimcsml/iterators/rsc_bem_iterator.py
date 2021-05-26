@@ -23,8 +23,8 @@ class RoughSurfaceBemIterator(Iterator):
         num_simulations = method_options.get("num_simulations", None)
         result_description = method_options.get("result_description", None)
         
-        driver = config["driver"]
-        parameters = config["parameters"]
+        driver = config.get("driver", None)
+        parameters = config.get("parameters", None)
         global_settings = config.get("global_settings", None)
 
         return cls(num_simulations, result_description, driver, parameters, global_settings)

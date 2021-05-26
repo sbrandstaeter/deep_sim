@@ -29,7 +29,7 @@ class RoughSurfaceFemModelGenerator(Iterator):
         result_description = method_options.get("result_description", None)
         
         driver = config.get("driver", None)
-        parameters = config["parameters"]
+        parameters = config.get("parameters", None)
         global_settings = config.get("global_settings", None)
 
         return cls(num_simulations, result_description, driver, parameters, global_settings)
