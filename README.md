@@ -24,12 +24,6 @@ update the libraries
 conda env update
 ```
 
-Add the cubitpy path to `PYTHONPATH`
-
-```bash
-export PYTHONPATH=path_to_cubitpy:$PYTHONPATH
-```
-
 Additionally paths to cubit and `pre_exodus` have to be set.
 
 ```bash
@@ -41,19 +35,26 @@ As an example;
 ```bash
 export CUBIT=/imcs/public/compsim/opt/cubit-13.2
 export BACI_PRE_EXODUS=/home/a11btasa/git_repos/baci/baci_build/pre_exodus
-export PYTHONPATH=/home/a11btasa/git_repos/cubitpy:$PYTHONPATH
+```
+
+# Running the BACI code
+
+To run Baci examples, a symbolic link shoulöd be done in executables folder.
+
+```bash
+ln -s <your/path/to/baci-release> <imcsml_dir>/executables/baci-release
+```
+
+```bash
+ln -s <your/path/to/post_drt_ensight> <imcsml_dir>/executables/post_drt_ensight
 ```
 
 # Running the BEM code
 
-To run BEM implementation as the solver, make a syymbolic link in executables folder.
+To run BEM implementation as the solver, make a symbolic link in executables folder.
 
 ```bash
-ln -s <your/path/to/BEM> <imcsml_dir>/config/baci-release
-```
-
-```bash
-ln -s /home/a11btasa/git_repos/bem/bem /home/a11btasa/git_repos/imcsml/config/bem
+ln -s <your/path/to/BEM> <imcsml_dir>/executables/bem
 ```
 
 # Running tests

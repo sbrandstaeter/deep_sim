@@ -21,10 +21,12 @@ class Iterator (metaclass=abc.ABCMeta):
         
         from .rsc_bem_iterator import RoughSurfaceBemIterator
         from .rsc_fem_model_generator import RoughSurfaceFemModelGenerator
+        from .baci_fem_iterator import BaciFemIterator
 
         method_dict = {
             'rsc_bem': RoughSurfaceBemIterator,
-            'rsc_fem_model': RoughSurfaceFemModelGenerator
+            'rsc_fem_model': RoughSurfaceFemModelGenerator,
+            'baci_fem': BaciFemIterator
         }
 
         if iterator_name is None:
