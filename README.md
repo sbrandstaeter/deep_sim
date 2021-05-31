@@ -39,11 +39,15 @@ export BACI_PRE_EXODUS=/home/a11btasa/git_repos/baci/baci_build/pre_exodus
 
 # Running the BACI code
 
-To run Baci examples, a symbolic link shoulöd be done in executables folder.
+To run Baci examples, a symbolic link should be done in executables folder.
+
+- linking the `baci-release` --> which is the solver
 
 ```bash
 ln -s <your/path/to/baci-release> <imcsml_dir>/executables/baci-release
 ```
+
+- linking the `post_drt_ensight` --> which translates the baci output to to the paraview readable format
 
 ```bash
 ln -s <your/path/to/post_drt_ensight> <imcsml_dir>/executables/post_drt_ensight
