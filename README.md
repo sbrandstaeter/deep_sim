@@ -58,7 +58,7 @@ ln -s <your/path/to/post_drt_ensight> <imcsml_dir>/executables/post_drt_ensight
 To run BEM implementation as the solver, make a symbolic link in executables folder.
 
 ```bash
-ln -s <your/path/to/BEM> <imcsml_dir>/executables/bem
+ln -s <your/path/to/BEM-executable> <imcsml_dir>/executables/bem
 ```
 
 # Running tests
@@ -67,3 +67,4 @@ TO check if the package/libraries are installed correctly tests are defined. Uni
 ```bash
 pytest
 ```
+If one does not want to change all test scripts, then one can change the `testpaths` directory in the `setup.cfg` file.
