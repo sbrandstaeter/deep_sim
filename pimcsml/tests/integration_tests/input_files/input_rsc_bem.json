@@ -13,72 +13,67 @@
         "driver_type"           : "rsc_bem_driver",
         "driver_params"         :{
           "executable_name"    : "bem",
-          "driver_options" : ["--delta=[50]", "--input='dummy.dat'"]
+          "driver_options" : ["--input=dummy.json"]
         }
     },  
     "parameters" : {
       "material_parameters" : {
-        "E" : {
+        "E1" : {
           "type" : "float",
-          "size" : 1
+          "size" : 1,
+          "distribution_parameter" : 1
         },
-        "nu" : {
+        "nu1" : {
           "type" : "float",
-          "size" : 1
+          "size" : 1,
+          "distribution_parameter" : 0.3
+        },
+        "E2" : {
+          "type" : "float",
+          "size" : 1,
+          "distribution_parameter" : 1
+        },
+        "nu2" : {
+          "type" : "float",
+          "size" : 1,
+          "distribution_parameter" : 0.3
         }
       },
       "geometrical_parameters" : {
-        "flagwarm" : {
-            "type" : "int",
-            "size" : 1
-        },
-        "csteps" : {
-            "type" : "int",
-            "size" : 1
-        }, 
         "lato" : {
-            "type" : "int",
-            "size" : 1
+            "type" : "float",
+            "size" : 1,
+            "distribution_parameter" : 1000
         },
         "zref" : {
             "type" : "float",
             "size" : 1,
             "distribution_parameter" : 25
         },
-        "ampface" : {
-            "type" : "int",
-            "size" : 1
-        },
         "H" : {
             "type"  : "float",
-            "size"  : 100,
-            "distribution_parameter" : [0.5,0.8] 
-        },
-        "k_el" : {
-            "type" : "int",
-            "size" : 1
+            "size"  : 1,
+            "distribution_parameter" : 0.5 
         },
         "n" : {
             "type" : "int",
             "size" : 1,
-            "distribution_parameter" : 6
+            "distribution_parameter" : 2
         },
-        "delta" :{
+        "Delta" :{
             "type" : "float",
             "size" : 1,
-            "distribution_parameter" : 40
-        },
-        "alpha" : {
-            "type" : "int",
-            "size" : 1
+            "distribution_parameter" : 20
         },
         "errf" : {
-            "type" : "int",
-            "size" : 1
+            "type" : "float",
+            "size" : 1,
+            "distribution_parameter" : 100000000
         },
         "tol" : {
-            "type" : "int",
-            "size" : 1
+            "type" : "float",
+            "size" : 1,
+            "distribution_parameter" : 0.01
         }
       }
     }

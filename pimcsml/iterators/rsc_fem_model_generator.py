@@ -283,7 +283,7 @@ class RoughSurfaceFemModelGenerator(Iterator):
 
         cubit.create_dat(final_path_names + '.dat')
 
-        # cubit.display_in_cubit()
+        cubit.display_in_cubit()
 
 
     def get_contact_header(self):
