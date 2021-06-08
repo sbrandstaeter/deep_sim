@@ -1,9 +1,11 @@
 import numpy as np
 from numpy.random import seed
-from numpy import random as rnd
+from numpy import dtype, random as rnd
 import subprocess
 import os
 import json
+import pandas as pd
+import matplotlib.pyplot as plt
 
 from .iterator import Iterator
 
@@ -36,13 +38,16 @@ class RoughSurfaceBemIterator(Iterator):
         n_global = self.parameters["geometrical_parameters"]["n"].get("distribution_parameter")
         H_global = self.parameters["geometrical_parameters"]["H"].get("distribution_parameter")
         zref_global = self.parameters["geometrical_parameters"]["zref"].get("distribution_parameter")
+        H_range = np.linspace(H_global[0],H_global[1],self.num_simulations)
 
         for i in range(self.num_simulations):
-            
-            surface_path = self.generate_2D_surface(n_global, H_global, zref_global, i)
+            surface_path = self.generate_2D_surface(n_global, H_range[i], zref_global, i)
             bem_inp_file = self.generate_json(surface_path, i)
             self.call_executable(bem_inp_file)
+            contact_area = self.calculate_area(i, n_global)
+            final_results = self.write_final_result(H_range[i],contact_area)
 
+        self.save_plot(final_results) 
 
     def generate_2D_surface(self, n, H, zref, iter):
         '''
@@ -132,3 +137,47 @@ class RoughSurfaceBemIterator(Iterator):
         args = [my_exec,bem_inp_file]
 
         subprocess.call(args)
+
+    def calculate_area(self, iter, n):
+
+        # fomula -> area = nf * delta**2 / lato**2 *100
+        file_name = self.global_settings["output_dir"] + '/result_force_surface_' + str(iter) + '.dat'
+        
+        file1 = open(file_name, 'r')
+        Lines = file1.readlines()
+        
+        uncontact_points = 0 # the number of uncontacted points
+        # Strips the newline character 
+        for line in Lines:
+            for i in line.split(';'):
+                print(i)
+                if i == "0":
+                    uncontact_points += 1
+        file1.close()
+
+        contact_points = (2**n + 1)**2 - uncontact_points
+
+        eff_area = contact_points * (1/(2**n + 1))**2 * 100
+        
+        return eff_area
+
+    def write_final_result(self, H, area):
+        file_name = self.global_settings["output_dir"] + '/contact_area' + '.dat'
+        
+        def format(value):
+            return "%.3f" % value
+
+        with open(file_name, "a") as myfile:
+            myfile.write(str(format(H))+ "," + str(format(area)) + "\n")
+        myfile.close()
+        return file_name
+    
+    def save_plot(self, final_results):
+
+        df = pd.read_csv(final_results, header=None)
+
+        plt.scatter(df[0],df[1])
+        plt.xlabel("Hurst exponent")
+        plt.ylabel("Effective contact area in %")
+        figure_name = self.global_settings["output_dir"] + '/area_vs_hurst.png'
+        plt.savefig(figure_name)
