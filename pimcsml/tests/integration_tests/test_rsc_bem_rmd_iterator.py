@@ -5,10 +5,10 @@ import sys
 from pimcsml.main import main
 
 
-def test_rs_iterator(inputdir,tmpdir):
+def test_rsc_bem_rmd_iterator(inputdir,tmpdir):
     print(inputdir)
     arguments = [
-        '--input=' + os.path.join(inputdir, 'input_rsc_bem.json'),
+        '--input=' + os.path.join(inputdir, 'input_rsc_bem_rmd.json'),
         '--output=' + str(tmpdir),
     ]
 #    breakpoint()

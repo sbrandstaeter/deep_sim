@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 
 from .iterator import Iterator
 
-class RoughSurfaceBemIterator(Iterator): 
+class RoughSurfaceBemRMDIterator(Iterator): 
     
     def __init__(self, num_simulations, result_description, driver, parameters, global_settings):
-        super(RoughSurfaceBemIterator, self).__init__(None, global_settings)
+        super(RoughSurfaceBemRMDIterator, self).__init__(None, global_settings)
         self.num_simulations = num_simulations
         self.result_description = result_description
         self.driver = driver
@@ -37,11 +37,11 @@ class RoughSurfaceBemIterator(Iterator):
         
         n_global = self.parameters["geometrical_parameters"]["n"].get("distribution_parameter")
         H_global = self.parameters["geometrical_parameters"]["H"].get("distribution_parameter")
-        zref_global = self.parameters["geometrical_parameters"]["zref"].get("distribution_parameter")
+        g0_global = self.parameters["geometrical_parameters"]["g0"].get("distribution_parameter")
         H_range = np.linspace(H_global[0],H_global[1],self.num_simulations)
 
         for i in range(self.num_simulations):
-            surface_path = self.generate_2D_surface(n_global, H_range[i], zref_global, i)
+            surface_path = self.generate_2D_surface(n_global, H_range[i], g0_global, i)
             bem_inp_file = self.generate_json(surface_path, i)
             self.call_executable(bem_inp_file)
             contact_area = self.calculate_area(i, n_global)
@@ -49,7 +49,7 @@ class RoughSurfaceBemIterator(Iterator):
 
         self.save_plot(final_results) 
 
-    def generate_2D_surface(self, n, H, zref, iter):
+    def generate_2D_surface(self, n, H, g0, iter):
         '''
         creates the 2D surfaces using RMD (Random Midpoint Distribution)
         '''
@@ -88,9 +88,11 @@ class RoughSurfaceBemIterator(Iterator):
             D = D//2
             d = d//2 
 
-        scalefactor = zref/(np.max(z)-np.mean(z))
-        z = z*scalefactor
-        z = z-(np.min(z))
+        # scalefactor = g0/(np.max(z)-np.mean(z))
+        # z = z*scalefactor
+        # z = z-(np.min(z))
+        z = g0*(z-np.min(z))/(np.max(z)-np.min(z)); # (scaling between 0 and g0)
+
 
         path_out = self.global_settings["output_dir"]
         full_path = path_out + "/surface_" + str(iter) + ".dat"

@@ -3,7 +3,7 @@
     "method": {
       "method_name": "rsc_fem_model",
       "method_options" :{
-        "num_simulations":3,
+        "num_simulations":1,
         "result_description" : {
             "write_results" : true
             }
@@ -33,7 +33,7 @@
             "type" : "int",
             "size" : 1
         },
-        "zref" : {
+        "g0" : {
             "type" : "float",
             "size" : 1,
             "distribution_parameter" : 25
@@ -59,7 +59,7 @@
         "delta" :{
             "type" : "float",
             "size" : 1,
-            "distribution_parameter" : 40
+            "distribution_parameter" : 10
         },
         "alpha" : {
             "type" : "int",

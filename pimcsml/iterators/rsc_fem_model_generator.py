@@ -46,7 +46,7 @@ class RoughSurfaceFemModelGenerator(Iterator):
         
         n_global = self.parameters["geometrical_parameters"]["n"]
         H_global = self.parameters["geometrical_parameters"]["H"]
-
+        g0_global = self.parameters["geometrical_parameters"]["g0"].get("distribution_parameter")
         n = n_global["distribution_parameter"]
 
         start = H_global["distribution_parameter"][0]
@@ -60,11 +60,11 @@ class RoughSurfaceFemModelGenerator(Iterator):
             
             H = H_iterator[i]
             # generate rough surface using RMP
-            input_path = self.generate_2D_surface(n, H, i)
+            input_path = self.generate_2D_surface(n, H, g0_global, i)
             # generate blocks
             self.generate_blocks(input_path, n, i) 
 
-    def generate_2D_surface(self,n,H,iter):
+    def generate_2D_surface(self,n,H, g0, iter):
         '''
         generates rough surfaces using RMP (random mid point) approach
         '''
@@ -103,10 +103,11 @@ class RoughSurfaceFemModelGenerator(Iterator):
             D = D//2
             d = d//2 
 
-        zref = self.parameters["geometrical_parameters"]["zref"].get("distribution_parameter")
-        scalefactor = zref/(np.max(z)-np.mean(z))
-        z = z*scalefactor
-        z = z-(np.min(z))
+        # zref = self.parameters["geometrical_parameters"]["zref"].get("distribution_parameter")
+        # scalefactor = zref/(np.max(z)-np.mean(z))
+        # z = z*scalefactor
+        # z = z-(np.min(z))
+        z = g0*(z-np.min(z))/(np.max(z)-np.min(z)); # (scaling between 0 and g0)
 
         path_out = self.global_settings["output_dir"]
         full_path = path_out + "/rough_surface_" + str(iter) + ".dat"

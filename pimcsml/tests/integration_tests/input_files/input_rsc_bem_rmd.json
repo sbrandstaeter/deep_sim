@@ -1,9 +1,9 @@
 {
     "experiment_name" : "Rough Surface Contact Automatized Simulation",
     "method": {
-      "method_name": "rsc_bem",
+      "method_name": "rsc_bem_rmd",
       "method_options" :{
-        "num_simulations":50,
+        "num_simulations":1,
         "result_description" : {
             "write_results" : true
             }
@@ -45,25 +45,25 @@
             "size" : 1,
             "distribution_parameter" : 1000
         },
-        "zref" : {
+        "g0" : {
             "type" : "float",
             "size" : 1,
-            "distribution_parameter" : 25
+            "distribution_parameter" : 50
         },
         "H" : {
             "type"  : "float",
-            "size"  : 1,
-            "distribution_parameter" : [0.5, 0.8] 
+            "size"  : 50,
+            "distribution_parameter" : [0.3, 0.3] 
         },
         "n" : {
             "type" : "int",
             "size" : 1,
-            "distribution_parameter" : 6
+            "distribution_parameter" : 3
         },
         "Delta" :{
             "type" : "float",
             "size" : 1,
-            "distribution_parameter" : 20
+            "distribution_parameter" : 10
         },
         "errf" : {
             "type" : "float",
