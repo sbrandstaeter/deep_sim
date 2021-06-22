@@ -35,6 +35,17 @@ class RoughSurfaceBemRMDIterator(Iterator):
 
     def run_simulation(self):
         
+        if(self.result_description.get("write_results")):
+            simulation_file = self.global_settings["output_dir"] + '/simulation_output' + '.dat'
+            print("Simulation inputs/ouputs are stored in simulation_output.dat folder")
+            
+            with open(simulation_file, "a") as myfile:
+                myfile.write("H" + "\t" + 
+                             "mean" + "\t" +
+                            "std" + "\t" +
+                            "area"  + "\n")
+
+
         n_global = self.parameters["geometrical_parameters"]["n"].get("distribution_parameter")
         H_global = self.parameters["geometrical_parameters"]["H"].get("distribution_parameter")
         g0_global = self.parameters["geometrical_parameters"]["g0"].get("distribution_parameter")
@@ -45,7 +56,7 @@ class RoughSurfaceBemRMDIterator(Iterator):
             bem_inp_file = self.generate_json(surface_path, i)
             self.call_executable(bem_inp_file)
             contact_area = self.calculate_area(i, n_global)
-            final_results = self.write_final_result(H_range[i],contact_area)
+            final_results = self.write_final_result(H_range[i],contact_area, n_global , surface_path, simulation_file)
 
         self.save_plot(final_results) 
 
@@ -163,23 +174,50 @@ class RoughSurfaceBemRMDIterator(Iterator):
         
         return eff_area
 
-    def write_final_result(self, H, area):
-        file_name = self.global_settings["output_dir"] + '/contact_area' + '.dat'
+    def write_final_result(self, H, area, n, surface_path, simulation_file):
+        # file_name = self.global_settings["output_dir"] + '/contact_area' + '.dat'
+
+        n_elem_rough = 2**n + 1  # this gives the number of element on the rough surface
+
+        # load the rough surface topography
+        z_surf = np.loadtxt(fname=surface_path,delimiter=";",usecols=range(n_elem_rough)) 
+        #z_surf = z_surf.reshape((n_elem_rough+1)*(n_elem_rough+1),1)/500.0
+
         
         def format(value):
             return "%.3f" % value
 
-        with open(file_name, "a") as myfile:
-            myfile.write(str(format(H))+ "," + str(format(area)) + "\n")
+        with open(simulation_file, "a") as myfile:
+            myfile.write(str(format(H))+ "\t" + 
+                         str(format(z_surf.mean())) + "\t" +
+                         str(format(z_surf.std(ddof=1))) + "\t" +
+                         str(format(area))  + "\n")
+        
         myfile.close()
-        return file_name
+        
+        return simulation_file
     
     def save_plot(self, final_results):
 
-        df = pd.read_csv(final_results, header=None)
+        df = pd.read_csv(final_results, sep="\t")
 
-        plt.scatter(df[0],df[1])
+        plt.clf()
+        plt.scatter(df["H"],df["area"])
         plt.xlabel("Hurst exponent")
         plt.ylabel("Effective contact area in %")
         figure_name = self.global_settings["output_dir"] + '/area_vs_hurst.png'
+        plt.savefig(figure_name)
+
+        plt.clf()
+        plt.scatter(df["mean"],df["area"])
+        plt.xlabel("the mean value of z")
+        plt.ylabel("Effective contact area in %")
+        figure_name = self.global_settings["output_dir"] + '/area_vs_mean.png'
+        plt.savefig(figure_name)
+
+        plt.clf()
+        plt.scatter(df["std"],df["area"])
+        plt.xlabel("the std of z")
+        plt.ylabel("Effective contact area in %")
+        figure_name = self.global_settings["output_dir"] + '/area_vs_std.png'
         plt.savefig(figure_name)
