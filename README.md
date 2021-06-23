@@ -1,15 +1,44 @@
-# Setup
+# ImcsML
 
-The required libraries are defined in environment.yml file and the following command creates the environment and installs them automatically.
+ImcsML is a package to automatize the simulations (FEM and BEM) and to predict the quantities using Machine Learning and Deep Learning techniques.   
 
+## Contents
+1. [Prerequisites](#prerequisites)
+1. [Installation](#installation)
+
+## Prerequisites
+
+
+ImcsML is developed with `python3.8`.
+It is recommended to use virtual environments with `python`. Thus, the
+`python3-venv` package can be installed using the following command (On Debian systems):
 ```bash
-conda env create
-``` 
+sudo apt-get install python3-venv python3-dev
+```
 
-Next to activate the environment
+## Installation
 
+Create a new virtual environment using `venv` (for example in the home directory)
 ```bash
-conda activate imcsml
+cd ~
+mkdir opt
+cd opt
+python3 -m venv imcsml-env
+```
+
+Activate the virtual environment:
+```bash
+source ~/opt/imcsml-env/bin/activate
+```
+
+Go to the repository directory where you cloned to install the packages:
+```bash
+cd <imcsml-repo-directory>
+```
+
+Run the following command to install the default required packages. These packages are defined in the `requirements.txt` folder.
+```bash
+pip install -r requirements.txt
 ```
 
 Finally setup the framework using python develop, which will install `pimcsml` and `cubitpy` packages.  
@@ -18,15 +47,7 @@ Finally setup the framework using python develop, which will install `pimcsml` a
 python setup.py develop
 ```
 
-update the libraries 
-
-```bash
-conda env update
-```
-
-Additionally paths to cubit and `pre_exodus` have to be set (copy the following lines - indeed, with the correct paths - into your `.bashrc` file).
-
-**Note:** Linking for the cubit requires the cubit directory and linking for baci_pre_exodus requires the executable itsel
+**Note:** Linking for the cubit requires the cubit directory and linking for baci_pre_exodus requires the executable itself
 
 ```bash
 export BACI_PRE_EXODUS=path_to_pre-exodus

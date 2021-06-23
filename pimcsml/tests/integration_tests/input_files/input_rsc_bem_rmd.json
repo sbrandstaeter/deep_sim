@@ -3,7 +3,7 @@
     "method": {
       "method_name": "rsc_bem_rmd",
       "method_options" :{
-        "num_simulations":100,
+        "num_simulations":1,
         "result_description" : {
             "write_results" : true
             }
@@ -58,7 +58,7 @@
         "n" : {
             "type" : "int",
             "size" : 1,
-            "distribution_parameter" : 8
+            "distribution_parameter" : 5
         },
         "Delta" :{
             "type" : "float",
