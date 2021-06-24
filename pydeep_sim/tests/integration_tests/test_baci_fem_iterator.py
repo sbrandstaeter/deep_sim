@@ -2,7 +2,7 @@ import os
 import pytest
 import json
 
-from pimcsml.main import main
+from pydeep_sim.main import main
 
 
 def test_baci_fem_iterator(generate_json,tmpdir):

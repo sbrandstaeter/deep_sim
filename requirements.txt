@@ -19,7 +19,7 @@ pytest-mock
 # for running tests in parallel
 pytest-xdist
 # linting, check code  -style (PEP8)
-astroid>2.5.6
+astroid
 pylint
 # code formatter
 #  - black

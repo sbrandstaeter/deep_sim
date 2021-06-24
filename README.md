@@ -1,6 +1,6 @@
-# ImcsML
+# Deep_Sim
 
-ImcsML is a package to automatize the simulations (FEM and BEM) and to predict the quantities using Machine Learning and Deep Learning techniques.   
+Deep_Sim is a package to automatize the simulations (FEM and BEM) and to predict the quantities using Machine Learning and Deep Learning techniques.   
 
 ## Contents
 1. [Prerequisites](#prerequisites)
@@ -9,7 +9,7 @@ ImcsML is a package to automatize the simulations (FEM and BEM) and to predict t
 ## Prerequisites
 
 
-ImcsML is developed with `python3.8`.
+Deep_Sim is developed with `python3.8`.
 It is recommended to use virtual environments with `python`. Thus, the
 `python3-venv` package can be installed using the following command (On Debian systems):
 ```bash
@@ -23,17 +23,17 @@ Create a new virtual environment using `venv` (for example in the home directory
 cd ~
 mkdir opt
 cd opt
-python3 -m venv imcsml-env
+python3 -m venv deep_sim_env
 ```
 
 Activate the virtual environment:
 ```bash
-source ~/opt/imcsml-env/bin/activate
+source ~/opt/deep_sim_env/bin/activate
 ```
 
 Go to the repository directory where you cloned to install the packages:
 ```bash
-cd <imcsml-repo-directory>
+cd <deep_sim-repo-directory>
 ```
 
 Run the following command to install the default required packages. These packages are defined in the `requirements.txt` folder.
@@ -41,7 +41,7 @@ Run the following command to install the default required packages. These packag
 pip install -r requirements.txt
 ```
 
-Finally setup the framework using python develop, which will install `pimcsml` and `cubitpy` packages.  
+Finally setup the framework using python develop, which will install `pydeep_sim` and `cubitpy` packages.  
 
 ```bash
 python setup.py develop
@@ -67,19 +67,19 @@ To run Baci examples, a symbolic link should be done in executables folder.
 - linking the `baci-release` executable--> which is the solver
 
 ```bash
-ln -s <your/path/to/baci-release> <imcsml_dir>/executables/baci-release
+ln -s <your/path/to/baci-release> <deep_sim_dir>/executables/baci-release
 ```
 
 - linking the `post_drt_ensight` executable --> which translates the baci output to to the paraview readable format
 
 ```bash
-ln -s <your/path/to/post_drt_ensight> <imcsml_dir>/executables/post_drt_ensight
+ln -s <your/path/to/post_drt_ensight> <deep_sim_dir>/executables/post_drt_ensight
 ```
 
 - linking the `post_processor` executable --> needed for `post_drt_ensight`
 
 ```bash
-ln -s <your/path/to/post_processor> <imcsml_dir>/executables/post_processor
+ln -s <your/path/to/post_processor> <deep_sim_dir>/executables/post_processor
 ```
 
 
@@ -97,7 +97,7 @@ ln -s <your/path/to/BEM-executable> <imcsml_dir>/executables/bem
 # Running tests
 To check if the program works without any problem, tests are generated. At this point `Python` offers the `pytest` interface. 
 
-In `cubitpy`, `Unittesting` is offered while the `Integrationtesting` is generated for `pimcsml`. To run the tests:
+In `cubitpy`, `Unittesting` is offered while the `Integrationtesting` is generated for `pydeep_sim`. To run the tests:
 
 ```bash
 pytest

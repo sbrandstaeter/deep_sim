@@ -2,13 +2,13 @@ import os
 import pytest
 import sys
 
-from pimcsml.main import main
+from pydeep_sim.main import main
 
 
-def test_rsc_bem_rmd_iterator(inputdir,tmpdir):
+def test_rsc_fem_model_generator(inputdir,tmpdir):
     print(inputdir)
     arguments = [
-        '--input=' + os.path.join(inputdir, 'input_rsc_bem_rmd.json'),
+        '--input=' + os.path.join(inputdir, 'input_rsc_fem_model_generator.json'),
         '--output=' + str(tmpdir),
     ]
 #    breakpoint()

@@ -6,7 +6,7 @@
             "result_description": {
                 "write_results": true
             },
-            "input_dir": "/home/a11btasa/git_repos/imcsml/pimcsml/tests/integration_tests/input_files/baci_inputs"
+            "input_dir": "/home/a11btasa/git_repos/imcsml/pydeep_sim/tests/integration_tests/input_files/baci_inputs"
         }
     },
     "driver": {
@@ -16,7 +16,7 @@
                 "solver": {
                     "exec_name": "baci_release",
                     "exec_options": [
-                        "/home/a11btasa/git_repos/imcsml/pimcsml/tests/integration_tests/input_files/baci_inputs",
+                        "/home/a11btasa/git_repos/imcsml/pydeep_sim/tests/integration_tests/input_files/baci_inputs",
                         "/tmp/pytest-of-a11btasa/pytest-35/test_rsc_iterator0",
                         "outputprefix"
                     ]

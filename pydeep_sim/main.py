@@ -6,7 +6,7 @@ import pathlib
 import json
 from collections import OrderedDict
 
-from pimcsml.iterators.iterator import Iterator
+from pydeep_sim.iterators.iterator import Iterator
 
 def main(args):
     """

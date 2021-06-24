@@ -17,7 +17,7 @@ setup(
     description=("Machine Learning Automatization Tool"),
     keywords="ML, DL",
     packages=[
-        'pimcsml',
+        'pydeep_sim',
         'cubitpy',
     ],
 
