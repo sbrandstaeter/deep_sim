@@ -58,7 +58,7 @@
         "n" : {
             "type" : "int",
             "size" : 1,
-            "distribution_parameter" : 5
+            "distribution_parameter" : 2
         },
         "Delta" :{
             "type" : "float",

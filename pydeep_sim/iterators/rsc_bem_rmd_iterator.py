@@ -43,7 +43,8 @@ class RoughSurfaceBemRMDIterator(Iterator):
                 myfile.write("H" + "\t" + 
                              "mean" + "\t" +
                             "std" + "\t" +
-                            "area"  + "\n")
+                            "total_force" + "\t" +
+                            "total_area"  + "\n")
 
 
         n_global = self.parameters["geometrical_parameters"]["n"].get("distribution_parameter")
@@ -55,8 +56,8 @@ class RoughSurfaceBemRMDIterator(Iterator):
             surface_path = self.generate_2D_surface(n_global, H_range[i], g0_global, i)
             bem_inp_file = self.generate_json(surface_path, i)
             self.call_executable(bem_inp_file)
-            contact_area = self.calculate_area(i, n_global)
-            final_results = self.write_final_result(H_range[i],contact_area, n_global , surface_path, simulation_file)
+            total_contact_area, total_force = self.calculate_area(i, n_global)
+            final_results = self.write_final_result(H_range[i],total_contact_area, total_force, n_global , surface_path, simulation_file)
 
         self.save_plot(final_results) 
 
@@ -159,22 +160,22 @@ class RoughSurfaceBemRMDIterator(Iterator):
         file1 = open(file_name, 'r')
         Lines = file1.readlines()
         
-        uncontact_points = 0 # the number of uncontacted points
-        # Strips the newline character 
-        for line in Lines:
-            for i in line.split(';'):
-                print(i)
-                if i == "0":
-                    uncontact_points += 1
+        n_contact = 0 # the number of uncontacted points
+        # Strips the newline character
+        total_force = 0 
+        i = 0
+        while not Lines[0].split(';')[i] == "":
+            n_contact += 1
+            total_force += float(Lines[0].split(';')[i])
+            i += 1 
+
         file1.close()
 
-        contact_points = (2**n + 1)**2 - uncontact_points
-
-        eff_area = contact_points * (1/(2**n + 1))**2 * 100
+        eff_area = n_contact * (1/(2**n + 1))**2 * 100
         
-        return eff_area
+        return eff_area, total_force
 
-    def write_final_result(self, H, area, n, surface_path, simulation_file):
+    def write_final_result(self, H, area, total_force, n, surface_path, simulation_file):
         # file_name = self.global_settings["output_dir"] + '/contact_area' + '.dat'
 
         n_elem_rough = 2**n + 1  # this gives the number of element on the rough surface
@@ -191,6 +192,7 @@ class RoughSurfaceBemRMDIterator(Iterator):
             myfile.write(str(format(H))+ "\t" + 
                          str(format(z_surf.mean())) + "\t" +
                          str(format(z_surf.std(ddof=1))) + "\t" +
+                         str(format(total_force)) + "\t" +
                          str(format(area))  + "\n")
         
         myfile.close()
@@ -202,22 +204,22 @@ class RoughSurfaceBemRMDIterator(Iterator):
         df = pd.read_csv(final_results, sep="\t")
 
         plt.clf()
-        plt.scatter(df["H"],df["area"])
+        plt.scatter(df["H"],df["total_area"])
         plt.xlabel("Hurst exponent")
-        plt.ylabel("Effective contact area in %")
+        plt.ylabel("Totol effective contact area in %")
         figure_name = self.global_settings["output_dir"] + '/area_vs_hurst.png'
         plt.savefig(figure_name)
 
         plt.clf()
-        plt.scatter(df["mean"],df["area"])
+        plt.scatter(df["mean"],df["total_area"])
         plt.xlabel("the mean value of z")
-        plt.ylabel("Effective contact area in %")
+        plt.ylabel("Total effective contact area in %")
         figure_name = self.global_settings["output_dir"] + '/area_vs_mean.png'
         plt.savefig(figure_name)
 
         plt.clf()
-        plt.scatter(df["std"],df["area"])
+        plt.scatter(df["std"],df["total_area"])
         plt.xlabel("the std of z")
-        plt.ylabel("Effective contact area in %")
+        plt.ylabel("Total effective contact area in %")
         figure_name = self.global_settings["output_dir"] + '/area_vs_std.png'
         plt.savefig(figure_name)
