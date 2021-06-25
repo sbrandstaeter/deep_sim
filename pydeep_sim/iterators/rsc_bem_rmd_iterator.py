@@ -57,7 +57,9 @@ class RoughSurfaceBemRMDIterator(Iterator):
             bem_inp_file = self.generate_json(surface_path, i)
             self.call_executable(bem_inp_file)
             total_contact_area, total_force = self.calculate_area(i, n_global)
-            final_results = self.write_final_result(H_range[i],total_contact_area, total_force, n_global , surface_path, simulation_file)
+            
+            if(self.result_description.get("write_results")):
+                final_results = self.write_final_result(H_range[i],total_contact_area, total_force, n_global , surface_path, simulation_file)
 
         self.save_plot(final_results) 
 
