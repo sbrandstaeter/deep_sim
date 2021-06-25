@@ -3,7 +3,7 @@
     "method": {
       "method_name": "rsc_bem_rmd",
       "method_options" :{
-        "num_simulations":1,
+        "num_simulations":10,
         "result_description" : {
             "write_results" : true
             }

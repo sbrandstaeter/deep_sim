@@ -5,6 +5,7 @@ import os
 import subprocess
 
 from .iterator import Iterator
+from ..rough_surface.rough_surface import RoughSurface
 
 # Import cubitpy module.
 from cubitpy import CubitPy, cupy, get_surface_center
@@ -42,78 +43,20 @@ class RoughSurfaceFemModelGenerator(Iterator):
         #     - create the rough surface using RMP (random mid point approach) 
         #     - generate blocks
         #     - define BCs and header file
-        #     - store the result
-        
-        n_global = self.parameters["geometrical_parameters"]["n"]
-        H_global = self.parameters["geometrical_parameters"]["H"]
+        #     - store the result       
+
+
+        n_global = self.parameters["geometrical_parameters"]["n"].get("distribution_parameter")
+        H_global = self.parameters["geometrical_parameters"]["H"].get("distribution_parameter")
         g0_global = self.parameters["geometrical_parameters"]["g0"].get("distribution_parameter")
-        n = n_global["distribution_parameter"]
+        H_range = np.linspace(H_global[0],H_global[1],self.num_simulations)
 
-        start = H_global["distribution_parameter"][0]
-        end = H_global["distribution_parameter"][1]
-        # seeds = H_global["size"] # since we will use only h as our interest set seeds as the number of simulations
-        seeds = self.num_simulations
-
-        H_iterator = np.linspace(start, end, seeds)
+        rough_surf = RoughSurface() # create an instance of the rough surface distribution
 
         for i in range(self.num_simulations):
-            
-            H = H_iterator[i]
-            # generate rough surface using RMP
-            input_path = self.generate_2D_surface(n, H, g0_global, i)
-            # generate blocks
-            self.generate_blocks(input_path, n, i) 
 
-    def generate_2D_surface(self,n,H, g0, iter):
-        '''
-        generates rough surfaces using RMP (random mid point) approach
-        '''
-        N = 2**n     
-        z = np.zeros([N+1,N+1])
-
-        alpha = 1 / np.sqrt(0.09)
-
-        D = N
-        d = N//2
-
-        for _ in range(n):
-            alpha=alpha/np.sqrt(2)**H
-            
-            for j in range(d,N-d+1,D):
-                for k in range(d,N-d+1,D):
-                    z[j,k] =  (z[j+d,k+d]+z[j+d,k-d]+z[j-d,k+d]+z[j-d,k-d])/4+alpha*rnd.randn()
-            
-            alpha=alpha/np.sqrt(2)**H
-            
-            for j in range(d,N-d+1,D):
-                z[j,0]=(z[j+d,0]+z[j-d,0]+z[j,d])/3+alpha*rnd.randn()
-                z[j,N]=(z[j+d,N]+z[j-d,N]+z[j,N-d])/3+alpha*rnd.randn()
-                z[0,j]=(z[0,j+d]+z[0,j-d]+z[d,j])/3+alpha*rnd.randn()
-                z[N,j]=(z[N,j+d]+z[N,j-d]+z[N-d,j])/3+alpha*rnd.randn()
-    
-            for j in range(d,N-d+1,D):
-                for k in range(D,N-d+1,D):
-                    z[j,k]=(z[j,k+d]+z[j,k-d]+z[j+d,k]+z[j-d,k])/4+alpha*rnd.randn()
-            
-            for j in range(D,N-d+1,D):
-                for k in range(d,N-d+1,D):
-                    z[j,k]=(z[j,k+d]+z[j,k-d]+z[j+d,k]+z[j-d,k])/4+alpha*rnd.randn()
-
-
-            D = D//2
-            d = d//2 
-
-        # zref = self.parameters["geometrical_parameters"]["zref"].get("distribution_parameter")
-        # scalefactor = zref/(np.max(z)-np.mean(z))
-        # z = z*scalefactor
-        # z = z-(np.min(z))
-        z = g0*(z-np.min(z))/(np.max(z)-np.min(z)); # (scaling between 0 and g0)
-
-        path_out = self.global_settings["output_dir"]
-        full_path = path_out + "/rough_surface_" + str(iter) + ".dat"
-        np.savetxt(full_path, z, delimiter=';')
-        
-        return full_path 
+            input_path = rough_surf.generate_surface_RMD(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i)
+            self.generate_blocks(input_path, n_global, i)
 
     def rough_block(self, cubit, z_surf, nx, ny, nz):
         """
