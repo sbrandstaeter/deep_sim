@@ -54,11 +54,13 @@ class RoughSurfaceBemRMDIterator(Iterator):
         g0_global = self.parameters["geometrical_parameters"]["g0"].get("distribution_parameter")
         H_range = np.linspace(H_global[0],H_global[1],self.num_simulations)
 
-        rough_surf = RoughSurface()
+        
 
         for i in range(self.num_simulations):
 
-            surface_path = rough_surf.generate_surface_RMD(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i)
+            rough_surf = RoughSurface(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i) # create the instance for the rough surface
+            surface_path = rough_surf.generate_surface_RMD()
+
             bem_inp_file = self.generate_json(surface_path, i)
             self.call_executable(bem_inp_file)
             total_contact_area, total_force = self.calculate_area(i, n_global)
@@ -68,7 +70,7 @@ class RoughSurfaceBemRMDIterator(Iterator):
 
         self.save_plot(final_results) 
 
-    def generate_json(self,surface_path,iter):
+    def generate_json(self,surface_path,n_iter):
 
         data = {
                     "z_file_path" : surface_path,
@@ -93,7 +95,7 @@ class RoughSurfaceBemRMDIterator(Iterator):
                 }
 
         path_out = self.global_settings["output_dir"] 
-        bem_inp_file = path_out + '/input_bem_' + str(iter) + ".json"
+        bem_inp_file = path_out + '/input_bem_' + str(n_iter) + ".json"
     
         with open(bem_inp_file, 'w') as out_file:
             json.dump(data, out_file, indent=4)
@@ -108,10 +110,10 @@ class RoughSurfaceBemRMDIterator(Iterator):
 
         subprocess.call(args)
 
-    def calculate_area(self, iter, n):
+    def calculate_area(self, n_iter, n):
 
         # fomula -> area = nf * delta**2 / lato**2 *100
-        file_name = self.global_settings["output_dir"] + '/result_force_surface_' + str(iter) + '.dat'
+        file_name = self.global_settings["output_dir"] + '/result_force_surface_' + str(n_iter) + '.dat'
         
         file1 = open(file_name, 'r')
         Lines = file1.readlines()

@@ -39,23 +39,23 @@ class BaciFemIterator(Iterator):
         if solver_name == None:
             raise Exception("solver is not defined") 
 
-        iter = 0
+        n_iter = 0
         for inp_file in os.listdir(self.input_dir):
 
-            output_prefix = output_prefix + "_" + str(iter)
+            output_prefix = output_prefix + "_" + str(n_iter)
 
             # call solver      
-            exec_options = self.get_solv_options(inp_file, output_prefix, iter)
+            exec_options = self.get_solv_options(inp_file, output_prefix, n_iter)
             self.call_executable(solver_name, exec_options)
 
             # call post_processing
             exec_options = self.get_post_options(output_prefix)
             self.call_executable(post_processing_name, exec_options)
             # call post_processing if it does exist
-            iter += 1
+            n_iter += 1
             
 
-    def get_solv_options(self, inp_file, output_prefix, iter):
+    def get_solv_options(self, inp_file, output_prefix, n_iter):
         '''
         args for baci-release -> input_dir/datfile ouput_dir/output_prefix
         '''

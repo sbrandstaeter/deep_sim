@@ -51,11 +51,11 @@ class RoughSurfaceFemModelGenerator(Iterator):
         g0_global = self.parameters["geometrical_parameters"]["g0"].get("distribution_parameter")
         H_range = np.linspace(H_global[0],H_global[1],self.num_simulations)
 
-        rough_surf = RoughSurface() # create an instance of the rough surface distribution
-
         for i in range(self.num_simulations):
 
-            input_path = rough_surf.generate_surface_RMD(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i)
+            rough_surf = RoughSurface(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i) # create the instance for the rough surface
+            input_path = rough_surf.generate_surface_RMD()
+
             self.generate_blocks(input_path, n_global, i)
 
     def rough_block(self, cubit, z_surf, nx, ny, nz):
@@ -159,7 +159,7 @@ class RoughSurfaceFemModelGenerator(Iterator):
             }
 
 
-    def generate_blocks(self,surface_path, n, iter):
+    def generate_blocks(self,surface_path, n, n_iter):
         """
         generates FEM input for the rough and flat blocks
         """
@@ -217,7 +217,7 @@ class RoughSurfaceFemModelGenerator(Iterator):
         output_dir = self.global_settings["output_dir"]
         
         # create dat, exo and cub files
-        file_name = 'rsc_fem_model' + str(iter)
+        file_name = 'rsc_fem_model' + str(n_iter)
         final_path_names = os.path.join(output_dir, file_name)
         
         cubit.export_cub(final_path_names + '.cub')
