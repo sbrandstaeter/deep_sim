@@ -49,7 +49,7 @@ def generate_json():
                 }
             }
     
-    file_name = os.path.join(json_input_file, 'input_rsc_fem_iterator.json')
+    file_name = os.path.join(json_input_file, 'input_baci_fem_iterator_from_test.json')
     
     with open(file_name, 'w') as out_file:
         json.dump(data, out_file, indent=4)
