@@ -10,7 +10,7 @@ def read(fname):
 
 
 setup(
-    name="imcsml",
+    name="deep_sim",
     version="0.1",
     author="Tarik Sahin",
     author_email="tarik.sahin@unibw.de",

@@ -1,6 +1,6 @@
 __pycache__/
 
-imcsml.egg-info/
+deep_sim.egg-info/
 # ignore egg package files
 .eggs/
 

@@ -10,7 +10,7 @@ from pydeep_sim.iterators.iterator import Iterator
 
 def main(args):
     """
-    Main function of imcsML
+    Main function of Deep_Sim
 
     controls and runs the analysis.
 
@@ -55,7 +55,7 @@ def get_options(args):
         dict: parsed options in a dictionary
     """
 
-    parser = argparse.ArgumentParser(description="IMCSML")
+    parser = argparse.ArgumentParser(description="deep_sim")
     parser.add_argument(
         '--input', type=str, default='input.json', help='Input file in .json format.'
     )

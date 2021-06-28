@@ -6,7 +6,7 @@ pandas
 # for documentation
 #  - sphinx
 #  - nbsphinx
-#  - jupyter
+jupyter
 # making fancy plots
 matplotlib
 seaborn

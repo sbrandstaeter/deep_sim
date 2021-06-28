@@ -47,6 +47,12 @@ Finally setup the framework using python develop, which will install `pydeep_sim
 python setup.py develop
 ```
 
+List the installed packages
+
+```bash
+pip list --local
+```
+
 **Note:** Linking for the cubit requires the cubit directory and linking for baci_pre_exodus requires the executable itself
 
 ```bash
