@@ -2,11 +2,11 @@
 
 clc
 clf
-clear all
+clear
 format long
 
 nsupt=1;     %number of surfaces to be analysed at the same time
-nnodi=5;   %number of heights per side
+nnodi=33;   %number of heights per side
 
 nprof=nnodi;   %number of profiles
 
@@ -18,33 +18,28 @@ nprof=nnodi;   %number of profiles
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 for g=1:nsupt
-  xxx=sprintf('sup2_dat.dat');	
-	fp=fopen(['',xxx],'r');
-	v=(fscanf(fp,'%f',[3,inf]));
-	v=v';
+    z = load("sup5.dat");
 
-delta=v(2,1); % sampling interval
+delta=1/(nnodi)*1000
 
-lun=length(v(:,1));
-for k=1:lun
+for k=1:(nnodi*nnodi)
 	i=ceil(k/nnodi); %row index
 	j=k-nnodi*(i-1); %column index
 	x(i,j)=delta*i;
 	y(i,j)=delta*j;
-	z(i,j)=v(k,3);
 end
 
 %z=z-min(min(z));
 
-% figure(5*(g-1)+g)   % surface picture
-% axes('FontSize',24);
-% view([-37.5 30]);
-% grid('on');
-% hold('all');
-% mesh(x,y,z)
-% xlabel('x (\mum)','FontSize',30);
-% ylabel('y (\mum)','FontSize',30);
-% zlabel('z (\mum)','FontSize',30);
+figure(5*(g-1)+g)   % surface picture
+axes('FontSize',24);
+view([-37.5 30]);
+grid('on');
+hold('all');
+mesh(x,y,z)
+xlabel('x (\mum)','FontSize',30);
+ylabel('y (\mum)','FontSize',30);
+zlabel('z (\mum)','FontSize',30);
 
 m0(g)=std2(z);
 
@@ -133,9 +128,9 @@ R=[];
 for i=2:nprof-1
    for j=2:nnodi-1
        if (z(i,j)>z(i,j-1) & z(i,j)>z(i,j+1))
-       Curvy(i,j)=-2*(-delta*z(i,j-1)+2*delta*z(i,j)-delta*z(i,j+1))/(-delta*y(i,j-1)^2+2*delta*y(i,j)^2-delta*y(i,j+1)^2);
+       Curvy(i-1,j-1)=-2*(-delta*z(i,j-1)+2*delta*z(i,j)-delta*z(i,j+1))/(-delta*y(i,j-1)^2+2*delta*y(i,j)^2-delta*y(i,j+1)^2);
        else
-       Curvy(i,j)=0;
+       Curvy(i-1,j-1)=0;
        end
    end
 end
@@ -143,9 +138,9 @@ end
 for j=2:nnodi-1
    for i=2:nprof-1
        if (z(i,j)>z(i-1,j) & z(i,j)>z(i+1,j))
-       Curvx(i,j)=-2*(-delta*z(i-1,j)+2*delta*z(i,j)-delta*z(i+1,j))/(-delta*x(i-1,j)^2+2*delta*x(i,j)^2-delta*x(i+1,j)^2);
+       Curvx(i-1,j-1)=-2*(-delta*z(i-1,j)+2*delta*z(i,j)-delta*z(i+1,j))/(-delta*x(i-1,j)^2+2*delta*x(i,j)^2-delta*x(i+1,j)^2);
        else
-       Curvx(i,j)=0;
+       Curvx(i-1,j-1)=0;
        end
    end
 end
@@ -158,14 +153,14 @@ curv=[];
 
 for i=2:nprof-1
    for j=2:nnodi-1
-       if (Curvx(i,j)*Curvy(i,j)~=0)
-       R(i,j)=1/sqrt(Curvx(i,j)*Curvy(i,j));
+       if (Curvx(i-1,j-1)*Curvy(i-1,j-1)~=0)
+       R(i-1,j-1)=1/sqrt(Curvx(i-1,j-1)*Curvy(i-1,j-1));
        ns=ns+1;
        H(ns)=z(i,j);
-       ro(ns)=R(i,j);
-       curv(ns)=1/R(i,j);
+       ro(ns)=R(i-1,j-1);
+       curv(ns)=1/R(i-1,j-1);
        else
-       R(i,j)=0;
+       R(i-1,j-1)=0;
        end
    end
 end

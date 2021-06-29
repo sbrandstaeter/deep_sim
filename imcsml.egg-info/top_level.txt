@@ -1,2 +1,0 @@
-cubitpy
-pydeep_sim
