@@ -12,7 +12,10 @@ import collections
 from .iterator import Iterator
 from ..rough_surface.rough_surface import RoughSurface
 
-class RoughSurfaceBemRMDIterator(Iterator): 
+class RoughSurfaceBemRMDIterator(Iterator):
+    '''
+    This module generates rough surfaces and runs BEM simulations
+    ''' 
     
     def __init__(self, num_simulations, result_description, driver, parameters, global_settings):
         super(RoughSurfaceBemRMDIterator, self).__init__(None, global_settings)
@@ -36,35 +39,58 @@ class RoughSurfaceBemRMDIterator(Iterator):
 
         return cls(num_simulations, result_description, driver, parameters, global_settings)
 
-    def run_simulation(self):       
+    def run_simulation(self):
+        '''
+        Run the BEM simulation 
+        '''       
 
+        # obtain the parameters to run the simulation
         n_global = self.parameters["geometrical_parameters"]["n"].get("distribution_parameter")
         H_global = self.parameters["geometrical_parameters"]["H"].get("distribution_parameter")
         g0_global = self.parameters["geometrical_parameters"]["g0"].get("distribution_parameter")
         H_range = np.linspace(H_global[0],H_global[1],self.num_simulations)
         lato = self.parameters["geometrical_parameters"]["lato"]["distribution_parameter"]
 
+        # initialize the targets and the statistical parameters 
         targets = collections.defaultdict(list)
         statistical_properties = collections.defaultdict(list)
 
+        # repeat the simulations
         for i in range(self.num_simulations):
-
-            rough_surf = RoughSurface(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i, lato) # create the instance for the rough surface
+            # create the instance for the rough surface
+            rough_surf = RoughSurface(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i, lato)
+            # generate the rough surface  
             surface_path = rough_surf.generate_surface_RMD()
 
+            # generate the input file for the BEM executable
             bem_inp_file = self.generate_json(surface_path, i)
+            # run the BEM executable
             self.call_executable(bem_inp_file)
 
             if(self.result_description.get("write_results")):
-                targets = self.calculate_area(i, n_global, targets)
+                # calculate the effective contact area and traction after BEM simulation is run
+                targets = self.post_process_bem(i, n_global, targets)
+                # calculate the Statistical properties
                 statistical_properties = rough_surf.random_postprocess(statistical_properties)
                 statistical_properties["H"].append(H_range[i])
 
-        if(self.result_description.get("write_results")):        
-            final_results = self.write_final_result(targets, statistical_properties)
+        if(self.result_description.get("write_results")):
+            # output the final combined results into a file
+            final_results = self.write_final_results(targets, statistical_properties)
+            # plot fancy results
             self.save_plot(final_results) 
 
     def generate_json(self,surface_path,n_iter):
+        '''
+        Generates the json input file for the BEM executable
+
+        Args
+        ---
+        surface_path : str
+            shows BEM executable where to find the rough surface z file
+        n_iter : int
+            the corresponding simulation number to distiguish the BEM output files 
+        '''
 
         data = {
                     "z_file_path" : surface_path,
@@ -97,31 +123,50 @@ class RoughSurfaceBemRMDIterator(Iterator):
         return bem_inp_file
 
     def call_executable(self,bem_inp_file):
+        '''
+        Calls the BEM executable
+
+        Args
+        ---
+        bem_inp_file : str
+            the BEM input file in json format 
+        '''
         
         my_driver = self.driver
         my_exec = self.global_settings["executable_path"] + "/"  + my_driver["driver_params"].get("executable_name")
         args = [my_exec,bem_inp_file]
 
+        simulation_start = '''
+        -----------------------------------------------------------------------------------------
+        **************************** BEM Simulation started *************************************
+        -----------------------------------------------------------------------------------------
+        '''
+        print(simulation_start)
+
         subprocess.call(args)
 
-    def calculate_area(self, n_iter, n, targets):
+    def post_process_bem(self, n_iter, n, targets):
+        '''
+        Calculates the effective contact area and corresponding traction force (targets) after the BEM simulation is run
 
-        # fomula -> area = nf * delta**2 / lato**2 *100
+        Args
+        ---
+        n_iter: int
+            the corresponding simulation number to distiguish the BEM output files
+        n: int
+            the parameter dimension of the problem (comes from json input file)
+        targets: dict
+            the value-key pairs containing the total effective contact area and corresponding traction force 
+        '''
+
         file_name = self.global_settings["output_dir"] + '/result_force_surface_' + str(n_iter) + '.dat'
-        
-        file1 = open(file_name, 'r')
-        Lines = file1.readlines()
-        
-        n_contact = 0 # the number of uncontacted points
-        total_force = 0 
-        i = 0
-        while not Lines[0].split(';')[i] == "":
-            n_contact += 1
-            total_force += float(Lines[0].split(';')[i])
-            i += 1 
 
-        file1.close()
+        # the number of points in contact
+        n_contact = np.genfromtxt(file_name,delimiter=";")[:-1].size
+        # total contact force
+        total_force = np.genfromtxt(file_name,delimiter=";")[:-1].sum()
 
+        # effective contact area in percent %
         eff_area = n_contact * (1/(2**n + 1))**2 * 100
 
         targets["total_force"].append(total_force)
@@ -129,7 +174,17 @@ class RoughSurfaceBemRMDIterator(Iterator):
         
         return targets
 
-    def write_final_result(self, targets , statistical_properties):
+    def write_final_results(self, targets , statistical_properties):
+        '''
+        Writes the final results as a DataFrame (targets and statistical features) into a file called simulation_output.dat
+
+        Args
+        ---
+        targets: dict
+            the key-value pair containing the total effective contact area and corresponding traction force
+        statistical_properties: dict
+            the key-value pair containing the statistical properties of the rough surface  
+        '''
 
         simulation_file = self.global_settings["output_dir"] + '/simulation_output' + '.dat'
         print("Simulation inputs/ouputs are stored in simulation_output.dat folder")
@@ -146,6 +201,14 @@ class RoughSurfaceBemRMDIterator(Iterator):
         return simulation_file
     
     def save_plot(self, final_results):
+        '''
+        Plots of the final results and stores them
+
+        Args
+        ---
+        final_results: str
+            the file contains the final results
+        '''
 
         df = pd.read_csv(final_results, sep="\t")
 
@@ -157,27 +220,5 @@ class RoughSurfaceBemRMDIterator(Iterator):
                 ax_obj.set(ylabel=df.iloc[:,i//2].name, xlabel=df.iloc[:,(i % 2)*11+j+2].name)
 
         plt.tight_layout()
-        figure_name = self.global_settings["output_dir"] + '/res.png'
+        figure_name = self.global_settings["output_dir"] + '/simulation_results.png'
         fig.savefig(figure_name)
-        '''
-        plt.clf()
-        plt.scatter(df["H"],df["total_area"])
-        plt.xlabel("Hurst exponent")
-        plt.ylabel("Totol effective contact area in %")
-        figure_name = self.global_settings["output_dir"] + '/area_vs_hurst.png'
-        plt.savefig(figure_name)
-
-        plt.clf()
-        plt.scatter(df["mean"],df["total_area"])
-        plt.xlabel("the mean value of z")
-        plt.ylabel("Total effective contact area in %")
-        figure_name = self.global_settings["output_dir"] + '/area_vs_mean.png'
-        plt.savefig(figure_name)
-
-        plt.clf()
-        plt.scatter(df["std"],df["total_area"])
-        plt.xlabel("the std of z")
-        plt.ylabel("Total effective contact area in %")
-        figure_name = self.global_settings["output_dir"] + '/area_vs_std.png'
-        plt.savefig(figure_name)
-        '''
