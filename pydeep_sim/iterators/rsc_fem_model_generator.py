@@ -50,10 +50,11 @@ class RoughSurfaceFemModelGenerator(Iterator):
         H_global = self.parameters["geometrical_parameters"]["H"].get("distribution_parameter")
         g0_global = self.parameters["geometrical_parameters"]["g0"].get("distribution_parameter")
         H_range = np.linspace(H_global[0],H_global[1],self.num_simulations)
+        lato = self.parameters["geometrical_parameters"]["lato"]["distribution_parameter"]
 
         for i in range(self.num_simulations):
 
-            rough_surf = RoughSurface(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i) # create the instance for the rough surface
+            rough_surf = RoughSurface(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i, lato) # create the instance for the rough surface
             input_path = rough_surf.generate_surface_RMD()
 
             self.generate_blocks(input_path, n_global, i)
