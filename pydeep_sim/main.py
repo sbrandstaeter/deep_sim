@@ -17,8 +17,23 @@ def main(args):
     Args:
         args (list): list of arguments to be parsed
     """
-    print("hello world")
     
+    deep_sim_intro = '''
+    --------------------------------------------------------------------------------------
+    
+                *****    ******* *******  *****       *******  ** ***     ***
+                **  ***  **      **       **  **      **       ** ****   ****
+                **   *** *****   *****    *****       *******  ** ** ** ** **
+                **  ***  **      **       **               **  ** **  ***  **
+                *****    ******* *******  **          *******  ** **   *   **
+    --------------------------------------------------------------------------------------
+                         A Multipurpose Python automatization tool
+                         to run BEM and FEM simulations and apply
+                           Machine and Deep Learning techniques 
+    -------------------------------------------------------------------------------------
+    '''
+    print(deep_sim_intro)
+
     # read input
     options = get_options(args)
 
@@ -26,7 +41,6 @@ def main(args):
     # breakpoint()
     my_iterator = Iterator.from_config_create_iterator(options)
     
-
     start_time_calc = time.time()
 
     print("")
@@ -38,7 +52,7 @@ def main(args):
 
     end_time_calc = time.time()
     print("")
-    print(f"Time for CALCULATION: {end_time_calc - start_time_calc} s")
+    print(f"Time for CALCULATION: {end_time_calc - start_time_calc} seconds")
     print("")
 
 
