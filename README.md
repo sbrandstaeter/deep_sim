@@ -12,7 +12,7 @@ Deep_Sim is a package to automatize the simulations (FEM and BEM) and to predict
 --------------------------------------------------------------------------------------
                                         A Multipurpose Python automatization tool
                                         to run BEM and FEM simulations and apply
-                                        Machine and Deep Learning techniques 
+                                          Machine and Deep Learning techniques 
 -------------------------------------------------------------------------------------
 
 ## Contents
