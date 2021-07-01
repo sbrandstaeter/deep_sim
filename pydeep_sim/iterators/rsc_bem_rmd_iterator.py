@@ -27,7 +27,7 @@ class RoughSurfaceBemRMDIterator(Iterator):
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None):
 
-        print(config.get("experiment_name"))
+        print(config.get("global_settings", None)["experiment_name"])
 
         method_options = config["method"]["method_options"]
         num_simulations = method_options.get("num_simulations", None)
@@ -65,7 +65,7 @@ class RoughSurfaceBemRMDIterator(Iterator):
             # generate the input file for the BEM executable
             bem_inp_file = self.generate_json(surface_path, i)
             # run the BEM executable
-            self.call_executable(bem_inp_file)
+            self.call_executable(bem_inp_file, i)
 
             if(self.result_description.get("write_results")):
                 # calculate the effective contact area and traction after BEM simulation is run
@@ -122,7 +122,7 @@ class RoughSurfaceBemRMDIterator(Iterator):
         
         return bem_inp_file
 
-    def call_executable(self,bem_inp_file):
+    def call_executable(self, bem_inp_file, i):
         '''
         Calls the BEM executable
 
@@ -136,10 +136,12 @@ class RoughSurfaceBemRMDIterator(Iterator):
         my_exec = self.global_settings["executable_path"] + "/"  + my_driver["driver_params"].get("executable_name")
         args = [my_exec,bem_inp_file]
 
-        simulation_start = '''
-        -----------------------------------------------------------------------------------------
-        **************************** BEM Simulation started *************************************
-        -----------------------------------------------------------------------------------------
+        simulation_start = f'''
+-----------------------------------------------------------------------------------------
+**************************** BEM Simulation started *************************************
+-----------------------------------------------------------------------------------------
+Simulation number: -{i}-
+-----------------------------------------------------------------------------------------
         '''
         print(simulation_start)
 
@@ -187,7 +189,12 @@ class RoughSurfaceBemRMDIterator(Iterator):
         '''
 
         simulation_file = self.global_settings["output_dir"] + '/simulation_output' + '.dat'
-        print("Simulation inputs/ouputs are stored in simulation_output.dat folder")
+
+        print(f'''
+-------------------------------------------------------------------------
+Simulation inputs/ouputs are stored in {simulation_file}
+-------------------------------------------------------------------------
+        ''')
         
         # copy statistical_properties into targets (merge two dicts)
         targets.update(statistical_properties)

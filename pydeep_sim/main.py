@@ -51,9 +51,13 @@ def main(args):
     my_iterator.run()
 
     end_time_calc = time.time()
-    print("")
-    print(f"Time for CALCULATION: {end_time_calc - start_time_calc} seconds")
-    print("")
+
+    final_time = f'''
+---------------------------------------------------------------------------------------
+Total Simulation Time: {(end_time_calc - start_time_calc):.3f} seconds
+---------------------------------------------------------------------------------------
+    '''
+    print(final_time)
 
 
 
