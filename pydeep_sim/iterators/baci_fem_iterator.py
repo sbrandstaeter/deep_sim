@@ -37,7 +37,22 @@ class BaciFemIterator(Iterator):
         output_prefix = my_driver["driver_params"]["output_prefix"]
 
         if solver_name == None:
-            raise Exception("solver is not defined") 
+            raise Exception("solver is not defined")
+#------------------------------------------------
+        current_driver = self.driver
+        solver_name = current_driver["driver_params"]["executable_type"].get("solver", None)
+        post_processing_name = current_driver["driver_params"]["executable_type"].get("post_processing", None)
+
+        try:
+            current_solver = self.global_settings["exe_paths"].get(solver_name)
+        except:
+            raise FileNotFoundError(f"Executable {solver_name} does not exist!") 
+        
+        try:
+            current_post_proces = self.global_settings["exe_paths"].get(post_processing_name)
+        except:
+            raise FileNotFoundError(f"Executable {post_processing_name} does not exist!") 
+        
 
         n_iter = 0
         for inp_file in os.listdir(self.input_dir):
@@ -46,12 +61,12 @@ class BaciFemIterator(Iterator):
 
             # call solver      
             exec_options = self.get_solv_options(inp_file, output_prefix, n_iter)
-            self.call_executable(solver_name, exec_options)
+            self.call_executable(current_solver, exec_options)
 
             # call post_processing
             exec_options = self.get_post_options(output_prefix)
-            self.call_executable(post_processing_name, exec_options)
-            # call post_processing if it does exist
+            self.call_executable(current_post_proces, exec_options)
+ 
             n_iter += 1
             
 
@@ -74,11 +89,10 @@ class BaciFemIterator(Iterator):
         return args
 
 
-    def call_executable(self, exec_name, args):
+    def call_executable(self, exec_type, args):
         
-        my_exec = self.global_settings["executable_path"] + "/"  + exec_name
 
-        args.insert(0, my_exec)
+        args.insert(0, exec_type)
 
         # subprocess.call(args)
         process = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE)

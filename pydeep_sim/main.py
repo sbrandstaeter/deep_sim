@@ -5,6 +5,7 @@ import time
 import pathlib
 import json
 from collections import OrderedDict
+import warnings
 
 from pydeep_sim.iterators.iterator import Iterator
 
@@ -104,18 +105,45 @@ def get_options(args):
     global_settings["experiment_name"] = options["experiment_name"]
     
     if "driver" in options:
-        try:
-            executable_path = str(pathlib.Path(__file__).parents[1].joinpath("executables"))
-            global_settings["executable_path"] = executable_path
-        except:
-            raise Exception("Executables folder does not exist!")
-
+        global_settings = get_paths(global_settings)
+    
     # remove experiment_name field from options dict
     options["global_settings"] = global_settings
     # remove experiment_name field from options dict make copy first
     final_options = dict(options)
     del final_options["experiment_name"]
     return final_options
+
+def get_paths(global_settings):
+    '''
+    Gets the path for the following executables:
+     - baci-release
+     - post_drt_ensight
+     - bem 
+    '''
+    exe_path = {}
+
+    if os.path.isfile(os.environ['BACI_RELEASE']):
+        exe_path["baci-release"] = os.environ["BACI_RELEASE"]
+    else:
+        warnings.warn(("Path to baci-release not found! If you will run baci simulations,"
+                        " you will face with errors"))
+
+    if os.path.isfile(os.environ['BACI_POST_DRT_ENSIGHT']):
+        exe_path["post_drt_ensight"] = os.environ["BACI_POST_DRT_ENSIGHT"]
+    else:
+        warnings.warn(("Path to post_drt_ensight not found! If you will post process the BACI Simulations,"
+                       " you will face with errors"))
+
+    if os.path.isfile(os.environ['BEM']):
+        exe_path["bem"] = os.environ["BEM"]
+    else:
+        warnings.warn(("Path to bem not found! If you will run BEM simulations,"
+                       " you will face with errors"))
+    
+    global_settings["exe_paths"] = exe_path
+    
+    return global_settings
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

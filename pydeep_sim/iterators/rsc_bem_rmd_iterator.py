@@ -55,6 +55,15 @@ class RoughSurfaceBemRMDIterator(Iterator):
         targets = collections.defaultdict(list)
         statistical_properties = collections.defaultdict(list)
 
+        #
+        current_driver = self.driver
+        driver_name = current_driver["driver_params"].get("executable_name")
+
+        try:
+            current_exec = self.global_settings["exe_paths"].get(driver_name)
+        except:
+            raise FileNotFoundError(f"Executable {driver_name} does not exist!")
+
         # repeat the simulations
         for i in range(self.num_simulations):
             # create the instance for the rough surface
@@ -65,7 +74,16 @@ class RoughSurfaceBemRMDIterator(Iterator):
             # generate the input file for the BEM executable
             bem_inp_file = self.generate_json(surface_path, i)
             # run the BEM executable
-            self.call_executable(bem_inp_file, i)
+            self.call_executable(bem_inp_file, current_exec, i)
+
+            if not os.path.exists((self.global_settings["output_dir"] + '/result_force_surface_' + str(i) + '.dat')):
+                sim_fail = f'''
+**************************************************************
+---- Simulation {i} failed, jump to the next simulation ------
+**************************************************************
+                '''
+                print(sim_fail)
+                continue
 
             if(self.result_description.get("write_results")):
                 # calculate the effective contact area and traction after BEM simulation is run
@@ -122,7 +140,7 @@ class RoughSurfaceBemRMDIterator(Iterator):
         
         return bem_inp_file
 
-    def call_executable(self, bem_inp_file, i):
+    def call_executable(self, bem_inp_file, current_exec, i):
         '''
         Calls the BEM executable
 
@@ -130,11 +148,9 @@ class RoughSurfaceBemRMDIterator(Iterator):
         ---
         bem_inp_file : str
             the BEM input file in json format 
-        '''
-        
-        my_driver = self.driver
-        my_exec = self.global_settings["executable_path"] + "/"  + my_driver["driver_params"].get("executable_name")
-        args = [my_exec,bem_inp_file]
+        '''   
+
+        args = [current_exec,bem_inp_file]
 
         simulation_start = f'''
 -----------------------------------------------------------------------------------------

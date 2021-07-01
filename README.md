@@ -66,51 +66,40 @@ List the installed packages
 pip list --local
 ```
 
-**Note:** Linking for the cubit requires the cubit directory and linking for baci_pre_exodus requires the executable itself
+# Working with Cubitpy
+
+To generate FEM models for Baci simulations, Cubitpy interface is used and Cubitpy requires `pre_exodus` executable and the `cubit` folder. 
+To integrate cubitpy, the following paths are exported.
 
 ```bash
 export BACI_PRE_EXODUS=path_to_pre-exodus
 export CUBIT=path_to_cubit_directory
 ```
 
-As an example; 
-```bash
-export CUBIT=/imcs/public/compsim/opt/cubit-13.2
-export BACI_PRE_EXODUS=/home/a11btasa/git_repos/baci/baci_build/pre_exodus
-```
-
 # Running the BACI code
 
-To run Baci examples, a symbolic link should be done in executables folder.
-
-- linking the `baci-release` executable--> which is the solver
+To generate FEM models for Baci simulations, `pre_exodus` executable has to be accessible. Thus, `pre_exodus` should be exported as an environment variable.
 
 ```bash
-ln -s <your/path/to/baci-release> <deep_sim_dir>/executables/baci-release
+export BACI_PRE_EXODUS=<path_to_pre_exodus>
 ```
 
-- linking the `post_drt_ensight` executable --> which translates the baci output to to the paraview readable format
+To run Baci simulations, `baci-release` and `post_drt_ensight` executables should be exported as environment variables.
 
 ```bash
-ln -s <your/path/to/post_drt_ensight> <deep_sim_dir>/executables/post_drt_ensight
+export BACI_RELEASE=<path_to_baci-release>
 ```
-
-- linking the `post_processor` executable --> needed for `post_drt_ensight`
 
 ```bash
-ln -s <your/path/to/post_processor> <deep_sim_dir>/executables/post_processor
+export BACI_POST_DRT_ENSIGHT=<path_to_post_drt_ensight>
 ```
-
-
 
 # Running the BEM code
 
-To run BEM implementation as the solver, make a symbolic link in executables folder.
-
-- linking the `bem` executable
+To run BEM implementation as the solver, in the same manner `bem` exectuable should be exported as an environment variable.
 
 ```bash
-ln -s <your/path/to/BEM-executable> <imcsml_dir>/executables/bem
+export BACI_POST_DRT_ENSIGHT=<path_to_bem>
 ```
 
 # Running tests
