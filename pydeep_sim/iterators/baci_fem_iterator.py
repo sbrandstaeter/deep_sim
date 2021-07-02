@@ -31,25 +31,18 @@ class BaciFemIterator(Iterator):
 
     def run_simulation(self):
 
-        my_driver = self.driver       
-        solver_name = my_driver["driver_params"]["executable_type"].get("solver", None)
-        post_processing_name = my_driver["driver_params"]["executable_type"].get("post_processing", None)
-        output_prefix = my_driver["driver_params"]["output_prefix"]
-
-        if solver_name == None:
-            raise Exception("solver is not defined")
-#------------------------------------------------
         current_driver = self.driver
         solver_name = current_driver["driver_params"]["executable_type"].get("solver", None)
         post_processing_name = current_driver["driver_params"]["executable_type"].get("post_processing", None)
+        output_prefix = current_driver["driver_params"]["output_prefix"]
 
         try:
-            current_solver = self.global_settings["exe_paths"]["solver_name"]
+            current_solver = self.global_settings["exe_paths"][solver_name]
         except:
             raise FileNotFoundError(f"Executable {solver_name} does not exist!") 
         
         try:
-            current_post_proces = self.global_settings["exe_paths"]["post_processing_name"]
+            current_post_proces = self.global_settings["exe_paths"][post_processing_name]
         except:
             raise FileNotFoundError(f"Executable {post_processing_name} does not exist!") 
         
