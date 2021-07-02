@@ -125,7 +125,7 @@ def get_paths(global_settings):
 
 
     try:
-        os.path.isfile(os.environ['BACI_RELEASE2'])
+        os.path.isfile(os.environ['BACI_RELEASE'])
         exe_path["baci-release"] = os.environ["BACI_RELEASE"]
     except:
         warnings.warn(("Path to baci-release not found! If you will run baci simulations,"
@@ -134,7 +134,7 @@ def get_paths(global_settings):
                         "Be sure that you export BACI_RELEASE env variable and the executable baci-release does exist!\n"))
         
     try:  
-        os.path.isfile(os.environ['BACI_POST_DRT_ENSIGHT2'])
+        os.path.isfile(os.environ['BACI_POST_DRT_ENSIGHT'])
         exe_path["post_drt_ensight"] = os.environ["BACI_POST_DRT_ENSIGHT"]
     except:
         warnings.warn(("Path to post_drt_ensight not found! If you will post process the BACI Simulations,"
@@ -143,7 +143,7 @@ def get_paths(global_settings):
                         "Be sure that you export BACI_POST_DRT_ENSIGHT env variable and the executable post_drt_ensight does exist!\n"))
 
     try: 
-        os.path.isfile(os.environ['BEM2'])
+        os.path.isfile(os.environ['BEM'])
         exe_path["bem"] = os.environ["BEM"]
     except:
         warnings.warn(("Path to bem not found! If you will run BEM simulations,"
