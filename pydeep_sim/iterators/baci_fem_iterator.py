@@ -44,12 +44,12 @@ class BaciFemIterator(Iterator):
         post_processing_name = current_driver["driver_params"]["executable_type"].get("post_processing", None)
 
         try:
-            current_solver = self.global_settings["exe_paths"].get(solver_name)
+            current_solver = self.global_settings["exe_paths"]["solver_name"]
         except:
             raise FileNotFoundError(f"Executable {solver_name} does not exist!") 
         
         try:
-            current_post_proces = self.global_settings["exe_paths"].get(post_processing_name)
+            current_post_proces = self.global_settings["exe_paths"]["post_processing_name"]
         except:
             raise FileNotFoundError(f"Executable {post_processing_name} does not exist!") 
         
@@ -60,7 +60,7 @@ class BaciFemIterator(Iterator):
             output_prefix = output_prefix + "_" + str(n_iter)
 
             # call solver      
-            exec_options = self.get_solv_options(inp_file, output_prefix, n_iter)
+            exec_options = self.get_solv_options(inp_file, output_prefix)
             self.call_executable(current_solver, exec_options)
 
             # call post_processing
@@ -70,7 +70,7 @@ class BaciFemIterator(Iterator):
             n_iter += 1
             
 
-    def get_solv_options(self, inp_file, output_prefix, n_iter):
+    def get_solv_options(self, inp_file, output_prefix):
         '''
         args for baci-release -> input_dir/datfile ouput_dir/output_prefix
         '''

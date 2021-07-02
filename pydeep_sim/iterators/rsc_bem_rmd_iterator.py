@@ -60,7 +60,7 @@ class RoughSurfaceBemRMDIterator(Iterator):
         driver_name = current_driver["driver_params"].get("executable_name")
 
         try:
-            current_exec = self.global_settings["exe_paths"].get(driver_name)
+            current_exec = self.global_settings["exe_paths"]["driver_name"]
         except:
             raise FileNotFoundError(f"Executable {driver_name} does not exist!")
 

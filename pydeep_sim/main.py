@@ -123,23 +123,33 @@ def get_paths(global_settings):
     '''
     exe_path = {}
 
-    if os.path.isfile(os.environ['BACI_RELEASE']):
+
+    try:
+        os.path.isfile(os.environ['BACI_RELEASE2'])
         exe_path["baci-release"] = os.environ["BACI_RELEASE"]
-    else:
+    except:
         warnings.warn(("Path to baci-release not found! If you will run baci simulations,"
-                        " you will face with errors"))
-
-    if os.path.isfile(os.environ['BACI_POST_DRT_ENSIGHT']):
+                        " you will face with errors."
+                        "\n"
+                        "Be sure that you export BACI_RELEASE env variable and the executable baci-release does exist!\n"))
+        
+    try:  
+        os.path.isfile(os.environ['BACI_POST_DRT_ENSIGHT2'])
         exe_path["post_drt_ensight"] = os.environ["BACI_POST_DRT_ENSIGHT"]
-    else:
+    except:
         warnings.warn(("Path to post_drt_ensight not found! If you will post process the BACI Simulations,"
-                       " you will face with errors"))
+                        " you will face with errors."
+                        "\n"
+                        "Be sure that you export BACI_POST_DRT_ENSIGHT env variable and the executable post_drt_ensight does exist!\n"))
 
-    if os.path.isfile(os.environ['BEM']):
+    try: 
+        os.path.isfile(os.environ['BEM2'])
         exe_path["bem"] = os.environ["BEM"]
-    else:
+    except:
         warnings.warn(("Path to bem not found! If you will run BEM simulations,"
-                       " you will face with errors"))
+                        " you will face with errors."
+                        "\n"
+                        "Be sure that you export BEM env variable and the executable bem does exist!\n"))
     
     global_settings["exe_paths"] = exe_path
     
