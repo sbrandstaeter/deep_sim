@@ -15,7 +15,7 @@ Deep_Sim is a package to automatize the simulations (FEM and BEM) and to predict
                                           Machine and Deep Learning techniques 
 -------------------------------------------------------------------------------------
 
-## Contents
+# Contents
 1. [Prerequisites](#prerequisites)
 1. [Installation](#installation)
 
@@ -66,7 +66,7 @@ List the installed packages
 pip list --local
 ```
 
-# Working with Cubitpy
+# Working with CubitPy
 
 To generate FEM models for Baci simulations, `CubitPy` interface is used. Since CubitPy is another Git repo and it should be added as a submodule for `deep_sim`:
 
