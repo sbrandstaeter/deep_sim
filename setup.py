@@ -18,7 +18,8 @@ setup(
     keywords="ML, DL",
     packages=[
         'pydeep_sim',
-        'cubitpy',
+        'pydeep_sim.iterators',
+        'pydeep_sim.rough_surface'
     ],
 
     long_description=read('README.md'),

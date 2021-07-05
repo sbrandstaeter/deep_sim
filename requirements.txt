@@ -35,8 +35,6 @@ parso>=0.8.0
 pip
 # Utility to handle pylint exit codes scripting friendly
 pylint-exit
-# needed for cubit    
-execnet
 # needed for parallel run
 numba
 
