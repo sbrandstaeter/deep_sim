@@ -18,3 +18,8 @@ dummy_files/
 
 **/__pycache__/
 
+# ignore cubitpy
+cubitpy
+
+# ignore the env file
+debug.env

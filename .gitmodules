@@ -1,0 +1,3 @@
+[submodule "cubitpy"]
+	path = cubitpy
+	url = git@gitlab.com:compsim/codes/cubitpy.git
