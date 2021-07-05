@@ -102,7 +102,11 @@ def get_options(args):
     # iterators facilitating input output stuff
     global_settings = {}
     global_settings["output_dir"] = output_dir
-    global_settings["experiment_name"] = options["experiment_name"]
+    
+    try:
+        global_settings["experiment_name"] = options["experiment_name"]
+    except:
+        raise NameError("Experiment name is not defined!")
     
     if "driver" in options:
         global_settings = get_paths(global_settings)

@@ -203,8 +203,8 @@ Simulation number: -{i}-
         statistical_properties: dict
             the key-value pair containing the statistical properties of the rough surface  
         '''
-
-        simulation_file = self.global_settings["output_dir"] + '/simulation_output' + '.dat'
+        simulation_file_name = "_".join(self.global_settings["experiment_name"].split())
+        simulation_file = self.global_settings["output_dir"] + '/simulation_output_' + simulation_file_name + '.dat'
 
         print(f'''
 -------------------------------------------------------------------------
