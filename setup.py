@@ -19,7 +19,8 @@ setup(
     packages=[
         'pydeep_sim',
         'pydeep_sim.iterators',
-        'pydeep_sim.rough_surface'
+        'pydeep_sim.rough_surface',
+        'pydeep_sim.sampling'
     ],
 
     long_description=read('README.md'),

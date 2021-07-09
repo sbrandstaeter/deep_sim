@@ -15,6 +15,14 @@
           "executable_name"    : "bem",
           "driver_options" : ["--input=dummy.json"]
         }
+    },
+    "sampling":{
+      "sampling_name": "lhs",
+      "sampling_options": {
+          "lhs_type" : "classic",
+          "criterion": "ratio",
+          "iterations": 1000 
+      }
     },  
     "parameters" : {
       "material_parameters" : {
@@ -52,13 +60,13 @@
         },
         "H" : {
             "type"  : "float",
-            "size"  : 50,
-            "distribution_parameter" : [0.5, 0.5] 
+            "size"  : 5,
+            "distribution_parameter" : [0.5, 0.8] 
         },
         "n" : {
             "type" : "int",
-            "size" : 1,
-            "distribution_parameter" : 5
+            "size" : 3,
+            "distribution_parameter" : [3, 5]
         },
         "Delta" :{
             "type" : "float",
