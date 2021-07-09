@@ -11,18 +11,20 @@ import collections
 
 from .iterator import Iterator
 from ..rough_surface.rough_surface import RoughSurface
+from ..sampling.sampling import Sampling
 
 class RoughSurfaceBemRMDIterator(Iterator):
     '''
     This module generates rough surfaces and runs BEM simulations
     ''' 
     
-    def __init__(self, num_simulations, result_description, driver, parameters, global_settings):
+    def __init__(self, num_simulations, result_description, driver, parameters, sampling, global_settings):
         super(RoughSurfaceBemRMDIterator, self).__init__(None, global_settings)
         self.num_simulations = num_simulations
         self.result_description = result_description
         self.driver = driver
         self.parameters = parameters
+        self.sampling = sampling
     
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None):
@@ -35,27 +37,43 @@ class RoughSurfaceBemRMDIterator(Iterator):
         
         driver = config.get("driver", None)
         parameters = config.get("parameters", None)
+        sampling = config.get("sampling", None)
         global_settings = config.get("global_settings", None)
 
-        return cls(num_simulations, result_description, driver, parameters, global_settings)
+        return cls(num_simulations, result_description, driver, parameters, sampling, global_settings)
 
     def run_simulation(self):
         '''
         Run the BEM simulation 
         '''       
+        # sampling methods require the ranges of the parameters
+        # first get the parameters from the input file
+        domain = self.get_parameters()
 
-        # obtain the parameters to run the simulation
-        n_global = self.parameters["geometrical_parameters"]["n"].get("distribution_parameter")
-        H_global = self.parameters["geometrical_parameters"]["H"].get("distribution_parameter")
-        g0_global = self.parameters["geometrical_parameters"]["g0"].get("distribution_parameter")
-        H_range = np.linspace(H_global[0],H_global[1],self.num_simulations)
-        lato = self.parameters["geometrical_parameters"]["lato"]["distribution_parameter"]
+        # create sampling instance
+        sample_model = Sampling(domain=list(domain.values()), 
+                        n_samples=self.num_simulations, 
+                        sampling_name=self.sampling["sampling_name"], 
+                        sampling_options=self.sampling["sampling_options"])
+
+        # generate the samples
+        sampled_parameters = np.array(sample_model.generate_samples())
+        
+        # match the sampled parameters with the domain, 
+        # so we are sure that correct parameter names are matched the corresponding value
+        j = 0
+        for param_name, _ in domain.items():
+            if self.parameters["material_parameters"].get(param_name):
+                domain[param_name] = sampled_parameters[:,j].astype(self.parameters["material_parameters"][param_name].get("type"))
+            else:
+                domain[param_name] = sampled_parameters[:,j].astype(self.parameters["geometrical_parameters"][param_name].get("type"))
+            j += 1
 
         # initialize the targets and the statistical parameters 
         targets = collections.defaultdict(list)
-        statistical_properties = collections.defaultdict(list)
+        features = collections.defaultdict(list)
 
-        #
+        # get the executable
         current_driver = self.driver
         driver_name = current_driver["driver_params"].get("executable_name")
 
@@ -64,41 +82,70 @@ class RoughSurfaceBemRMDIterator(Iterator):
         except:
             raise FileNotFoundError(f"Executable {driver_name} does not exist!")
 
-        # repeat the simulations
+        # iterate the simulations
         for i in range(self.num_simulations):
             # create the instance for the rough surface
-            rough_surf = RoughSurface(self.global_settings["output_dir"], n_global, H_range[i], g0_global, i, lato)
+            rough_surf = RoughSurface(self.global_settings["output_dir"], domain["n"][i], domain["H"][i], domain["g0"][i], i, domain["lato"][i])
             # generate the rough surface  
             surface_path = rough_surf.generate_surface_RMD()
 
             # generate the input file for the BEM executable
-            bem_inp_file = self.generate_json(surface_path, i)
+            bem_inp_file = self.generate_json(surface_path, i, domain)
             # run the BEM executable
             self.call_executable(bem_inp_file, current_exec, i)
 
             if not os.path.exists((self.global_settings["output_dir"] + '/result_force_surface_' + str(i) + '.dat')):
                 sim_fail = f'''
-**************************************************************
----- Simulation {i} failed, jump to the next simulation ------
-**************************************************************
+***********************************************************************
+-------- Simulation {i} failed, jumping to the next simulation --------
+***********************************************************************
                 '''
                 print(sim_fail)
                 continue
 
             if(self.result_description.get("write_results")):
                 # calculate the effective contact area and traction after BEM simulation is run
-                targets = self.post_process_bem(i, n_global, targets)
+                targets = self.post_process_bem(i, domain["n"][i], targets)
                 # calculate the Statistical properties
-                statistical_properties = rough_surf.random_postprocess(statistical_properties)
-                statistical_properties["H"].append(H_range[i])
+                features = rough_surf.random_postprocess(features)
+
+                for key, _ in domain.items():
+                    features[key].append(domain[key][i])
+                # features["H"].append(domain["H"][i])
 
         if(self.result_description.get("write_results")):
             # output the final combined results into a file
-            final_results = self.write_final_results(targets, statistical_properties)
+            final_results = self.write_final_results(targets, features)
             # plot fancy results
             self.save_plot(final_results) 
 
-    def generate_json(self,surface_path,n_iter):
+    def get_parameters(self):
+        '''
+        Obtains the parameters from the input file and generates the range for each parameter
+        '''
+        
+        mat_params = self.parameters["material_parameters"]
+        geo_params = self.parameters["geometrical_parameters"]
+
+        domain = collections.OrderedDict()
+
+        for param, value in mat_params.items():
+            if value["size"] != 1:
+                domain[param] = np.linspace(value["distribution_parameter"][0],value["distribution_parameter"][1],value["size"]).astype(value["type"])
+            else:
+                domain[param] = [value["distribution_parameter"]]
+        
+        for param, value in geo_params.items():
+            if value["size"] != 1:
+                domain[param] = np.linspace(value["distribution_parameter"][0],value["distribution_parameter"][1],value["size"]).astype(value["type"])
+            else:
+                domain[param] = [value["distribution_parameter"]]
+        
+        return domain
+
+
+
+    def generate_json(self, surface_path, n_iter, domain):
         '''
         Generates the json input file for the BEM executable
 
@@ -116,18 +163,18 @@ class RoughSurfaceBemRMDIterator(Iterator):
                     {
                         "material_parameters" : 
                         {
-                            "E1"  : self.parameters["material_parameters"]["E1"]["distribution_parameter"],
-                            "nu1" : self.parameters["material_parameters"]["nu1"]["distribution_parameter"],
-                            "E2"  : self.parameters["material_parameters"]["E2"]["distribution_parameter"],
-                            "nu2" : self.parameters["material_parameters"]["nu2"]["distribution_parameter"]
+                            "E1"  : float(domain["E1"][n_iter]),
+                            "nu1" : float(domain["nu1"][n_iter]),
+                            "E2"  : float(domain["E2"][n_iter]),
+                            "nu2" : float(domain["nu2"][n_iter])
                         },
                         "geometrical_parameters" : 
                         {
-                            "lato" :  self.parameters["geometrical_parameters"]["lato"]["distribution_parameter"],
-                            "n" :     self.parameters["geometrical_parameters"]["n"]["distribution_parameter"],
-                            "Delta" : self.parameters["geometrical_parameters"]["Delta"]["distribution_parameter"], 
-                            "errf" :  self.parameters["geometrical_parameters"]["errf"]["distribution_parameter"],
-                            "tol" :   self.parameters["geometrical_parameters"]["tol"]["distribution_parameter"]
+                            "lato" :  float(domain["lato"][n_iter]),
+                            "n" :     int(domain["n"][n_iter]),
+                            "Delta" : float(domain["Delta"][n_iter]), 
+                            "errf" :  float(domain["errf"][n_iter]),
+                            "tol" :   float(domain["tol"][n_iter])
                         }
                     }
                 }
@@ -192,7 +239,7 @@ Simulation number: -{i}-
         
         return targets
 
-    def write_final_results(self, targets , statistical_properties):
+    def write_final_results(self, targets , features):
         '''
         Writes the final results as a DataFrame (targets and statistical features) into a file called simulation_output.dat
 
@@ -200,7 +247,7 @@ Simulation number: -{i}-
         ---
         targets: dict
             the key-value pair containing the total effective contact area and corresponding traction force
-        statistical_properties: dict
+        features: dict
             the key-value pair containing the statistical properties of the rough surface  
         '''
         simulation_file_name = "_".join(self.global_settings["experiment_name"].split())
@@ -212,14 +259,14 @@ Simulation inputs/ouputs are stored in {simulation_file}
 -------------------------------------------------------------------------
         ''')
         
-        # copy statistical_properties into targets (merge two dicts)
-        targets.update(statistical_properties)
+        # copy features into targets (merge two dicts)
+        targets.update(features)
 
         # transform targets dict into a dataframe
         df = pd.DataFrame.from_dict(targets)
 
         # store the results
-        df.to_csv(simulation_file, index=False, sep="\t", float_format='%.3f')
+        df.to_csv(simulation_file, index=False, sep="\t", float_format='%.5f')
 
         return simulation_file
     
@@ -235,12 +282,12 @@ Simulation inputs/ouputs are stored in {simulation_file}
 
         df = pd.read_csv(final_results, sep="\t")
 
-        fig, axes = plt.subplots(4,11, figsize=(35,10))
+        fig, axes = plt.subplots(4,16, figsize=(45,10))
 
         for i in range(4):
-            for j in range(11):
-                ax_obj = sns.scatterplot(ax=axes[i,j], y=df.iloc[:,i//2] ,x=df.iloc[:,(i % 2)*11+j+2], data=df)
-                ax_obj.set(ylabel=df.iloc[:,i//2].name, xlabel=df.iloc[:,(i % 2)*11+j+2].name)
+            for j in range(16):
+                ax_obj = sns.scatterplot(ax=axes[i,j], y=df.iloc[:,i//2] ,x=df.iloc[:,(i % 2)*16+j+2], data=df)
+                ax_obj.set(ylabel=df.iloc[:,i//2].name, xlabel=df.iloc[:,(i % 2)*16+j+2].name)
 
         plt.tight_layout()
         figure_name = self.global_settings["output_dir"] + '/simulation_results.png'
