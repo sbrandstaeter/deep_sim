@@ -10,7 +10,7 @@ class Iterator (metaclass=abc.ABCMeta):
         """ Create iterator from problem description
 
         Args:
-            config (dict):       Dictionary with QUEENS problem description
+            config (dict):       Dictionary with Deep_Sim problem description
             iterator_name (str): Name of iterator to identify right section
                                  in options dict (optional)
 
@@ -22,11 +22,13 @@ class Iterator (metaclass=abc.ABCMeta):
         from .rsc_bem_rmd_iterator import RoughSurfaceBemRMDIterator
         from .rsc_fem_model_generator import RoughSurfaceFemModelGenerator
         from .baci_fem_iterator import BaciFemIterator
+        from .ml_iterator import MachineLearningIterator
 
         method_dict = {
             'rsc_bem_rmd': RoughSurfaceBemRMDIterator,
             'rsc_fem_model': RoughSurfaceFemModelGenerator,
-            'baci_fem': BaciFemIterator
+            'baci_fem': BaciFemIterator,
+            'ml_trainer': MachineLearningIterator
         }
 
         if iterator_name is None:
