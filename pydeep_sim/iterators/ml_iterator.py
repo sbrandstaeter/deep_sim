@@ -5,21 +5,25 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import collections
 
+from sklearn import feature_selection
+
 
 from .iterator import Iterator
 from ..machine_learning.preprocessing.preprocessing import MachineLearningPreprocess
+from ..machine_learning.feature_selection.feature_selection import FeatureSelection
 
 class MachineLearningIterator(Iterator):
     '''
     This module generates rough surfaces and runs BEM simulations
     ''' 
     
-    def __init__(self, result_description, model_input_file, model, ml_preprocess, global_settings):
+    def __init__(self, result_description, model_input_file, model, preprocessing, feature_selection,global_settings):
         super(MachineLearningIterator, self).__init__(None, global_settings)
         self.result_description = result_description
         self.model_input_file = model_input_file
         self.model = model
-        self.ml_preprocess = ml_preprocess
+        self.preprocessing = preprocessing
+        self.feature_selection = feature_selection
     
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None):
@@ -40,13 +44,15 @@ class MachineLearningIterator(Iterator):
             raise NameError("The input file is not provided in JSON input!")   
 
         try:
-            ml_preprocess = config["ml_preprocess"]
+            preprocessing = config["preprocessing"]
         except:
             raise NameError("Preprocessing is not defined in JSON input!")
 
+        feature_selection = config.get("feature_selection")
+
         global_settings = config.get("global_settings", None)
 
-        return cls(result_description, model_input_file, model, ml_preprocess, global_settings)
+        return cls(result_description, model_input_file, model, preprocessing, feature_selection, global_settings)
 
     def run_simulation(self):
         '''
@@ -56,9 +62,16 @@ class MachineLearningIterator(Iterator):
         data = self.load_data()
 
         # perform the preprocessing
-        preprocess_block = self.ml_preprocess
-        ml_pre_process = MachineLearningPreprocess(data=data, preprocess_block=preprocess_block)
-        X_train, X_test, y_train, y_test = ml_pre_process.generate_processed_data()
+        preprocess_block = self.preprocessing
+        preprocesser = MachineLearningPreprocess(data=data, preprocess_block=preprocess_block)
+        X_train, X_test, y_train, y_test = preprocesser.generate_processed_data()
+
+        # perform feature selection if available
+        if self.feature_selection:
+            feature_selection_block = self.feature_selection
+            feature_selecter = FeatureSelection(X_train=X_train, X_test= X_test, y_train=y_train, y_test=y_test, feature_selection_block=feature_selection_block)
+            X_train, X_test = feature_selecter.perform_feature_selection()
+            print("s")
 
 
     def load_data(self):
