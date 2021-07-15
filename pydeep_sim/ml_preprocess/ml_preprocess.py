@@ -81,7 +81,8 @@ class MachineLearningPreprocess:
         }
 
         try:
-            ml_scaler = scaler_dict[self.preprocess_block["scaler"]["type"]]
+            scaler_args = self.preprocess_block["scaler"]["options"]
+            ml_scaler = scaler_dict[self.preprocess_block["scaler"]["type"]].set_params(**scaler_args)
         except:
             raise NameError("The chosen scaling method is not available!")
 
