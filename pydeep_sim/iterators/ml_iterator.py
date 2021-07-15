@@ -7,7 +7,7 @@ import collections
 
 
 from .iterator import Iterator
-from ..ml_preprocess.ml_preprocess import MachineLearningPreprocess
+from ..machine_learning.preprocessing.preprocessing import MachineLearningPreprocess
 
 class MachineLearningIterator(Iterator):
     '''
@@ -59,7 +59,7 @@ class MachineLearningIterator(Iterator):
         preprocess_block = self.ml_preprocess
         ml_pre_process = MachineLearningPreprocess(data=data, preprocess_block=preprocess_block)
         X_train, X_test, y_train, y_test = ml_pre_process.generate_processed_data()
-        
+
 
     def load_data(self):
 
