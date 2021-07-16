@@ -105,12 +105,6 @@ class MachineLearningPreprocess:
 
         return self.data
     
-    def polynomial_features(self):
-
-        # build the polynomial features
-        
-        poly_features = PolynomialFeatures().set_params()
-    
     def generate_processed_data(self):
         
         # drop the entities from the data
@@ -213,8 +207,6 @@ class MachineLearningPreprocess:
             # convert transformed array into dataframes
             X_train = pd.DataFrame(X_train_transformed, columns=X_column_names)
             X_test = pd.DataFrame(X_test_transformed, columns=X_column_names)
-
-
 
         return X_train, X_test, y_train, y_test
              

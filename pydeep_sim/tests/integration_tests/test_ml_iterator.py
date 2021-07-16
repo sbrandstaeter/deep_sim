@@ -73,8 +73,17 @@ def generate_json():
                                             "options" : {
                                                         "norm" : "l2"
                                                         }           
-                                            }
+                                            },
                                 },
+
+            "polynomial_features" : {
+                                    "type": "poly_features",
+                                    "options":  {
+                                                "degree" : 2
+                                                },
+                                    "choose" : ["n","alfa_y"] 
+                                    },
+
             "feature_selection" :   {
                                     "filtering" :  {
                                                 "type": "select_k_best",

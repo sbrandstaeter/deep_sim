@@ -22,7 +22,8 @@ setup(
         'pydeep_sim.rough_surface',
         'pydeep_sim.sampling',
         'pydeep_sim.machine_learning',
-        'pydeep_sim.machine_learning.preprocessing'
+        'pydeep_sim.machine_learning.preprocessing',
+        'pydeep_sim.machine_learning.feature_selection'
     ],
 
     long_description=read('README.md'),
