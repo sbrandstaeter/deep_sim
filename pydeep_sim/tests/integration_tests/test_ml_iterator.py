@@ -48,12 +48,12 @@ def generate_json():
                                                     }
                             },
 
-            "ml_preprocess" :   {
+            "preprocessing" :   {
                                 "targets" : ["total_cont_area"],
                                 "dropper" : ["E1", "nu1", "E2", "nu2", "lato", "g0", "Delta", "errf", "tol", "total_force"],
                                 "model_split":  {
                                                 "train_size" : 0.8,
-                                                "random_state" : 10
+                                                "random_state" : 40
                                                 },
                                 "encoder" : {
                                             "type":"label_binarizer",
@@ -76,12 +76,26 @@ def generate_json():
                                             }
                                 },
             "feature_selection" :   {
-                                    "type": "select_k_best",
-                                    "options" : {
-                                                "score_func" : "chi2",
-                                                "k" : 10
+                                    "filtering" :  {
+                                                "type": "select_k_best",
+                                                "options" : {
+                                                            "score_func" : "f_regression",
+                                                            "k" : 20
+                                                            }
+                                                },
+                                    "wrapper" : {
+                                                "type" : "select_from_model",
+                                                "options" : {
+                                                            "max_features" : 20
+                                                            },
+                                                "estimator" :   {
+                                                                "type" : "svm_lin_regression",
+                                                                "options" : {
+                                                                            "C" : 0.5
+                                                                            }
+                                                                }
                                                 }
-                                    },
+                                     },
 
             "model" :   {
                         "model_type" : "regression",
