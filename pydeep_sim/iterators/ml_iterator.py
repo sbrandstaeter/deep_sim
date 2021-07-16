@@ -71,7 +71,8 @@ class MachineLearningIterator(Iterator):
             feature_selection_block = self.feature_selection
             feature_selecter = FeatureSelection(X_train=X_train, X_test= X_test, y_train=y_train, y_test=y_test, feature_selection_block=feature_selection_block)
             X_train, X_test = feature_selecter.perform_feature_selection()
-            print("s")
+        
+        
 
 
     def load_data(self):

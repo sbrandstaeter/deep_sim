@@ -173,7 +173,7 @@ class FeatureSelection:
             current_filter.set_params(**filter_args)
 
             # fit train set
-            current_filter.fit(self.X_train,self.y_train)
+            current_filter.fit(self.X_train,self.y_train.values.ravel())
 
             mask = current_filter.get_support()
 
@@ -190,7 +190,7 @@ class FeatureSelection:
     def generate_wrapper(self):
         wrapper = self.build_wrapper()
 
-        wrapper.fit(self.X_train,self.y_train)
+        wrapper.fit(self.X_train,self.y_train.values.ravel())
 
         mask = wrapper.get_support()
 
