@@ -39,13 +39,13 @@ class MachineLearningPreprocess:
         }
 
         try:
-            if self.preprocess_block["imputer"]["options"]:
-                imp_args = self.preprocess_block["imputer"]["options"]
-                ml_imputer = imputer_dict[self.preprocess_block["imputer"]["type"]].set_params(**imp_args)
-            else:
-                ml_imputer = imputer_dict[self.preprocess_block["imputer"]["type"]]
+            ml_imputer = imputer_dict[self.preprocess_block["imputer"]["type"]]
         except:
             raise NameError("The chosen imputing method is not available!")
+
+        if self.preprocess_block["imputer"].get("options"):
+            imput_params = self.preprocess_block["imputer"]["options"]
+            ml_imputer.set_params(**imput_params)
 
         return ml_imputer
 
@@ -60,13 +60,13 @@ class MachineLearningPreprocess:
         }
 
         try:
-            if self.preprocess_block["encoder"]["options"]:
-                encod_args = self.preprocess_block["encoder"]["options"]
-                ml_encoder = encoder_dict[self.preprocess_block["encoder"]["type"]].set_params(**encod_args)
-            else:
-                ml_encoder = encoder_dict[self.preprocess_block["encoder"]["type"]]
+            ml_encoder = encoder_dict[self.preprocess_block["encoder"]["type"]]
         except:
             raise NameError("The chosen encoding method is not available!")
+
+        if self.preprocess_block["encoder"].get("options"):
+            encod_params = self.preprocess_block["encoder"]["options"]
+            ml_encoder.set_params(**encod_params)
 
         return ml_encoder
 
@@ -80,11 +80,16 @@ class MachineLearningPreprocess:
             "max_abs_scaler" : MaxAbsScaler()
         }
 
+        
         try:
-            scaler_args = self.preprocess_block["scaler"]["options"]
-            ml_scaler = scaler_dict[self.preprocess_block["scaler"]["type"]].set_params(**scaler_args)
+            ml_scaler = scaler_dict[self.preprocess_block["scaler"]["type"]]
         except:
             raise NameError("The chosen scaling method is not available!")
+
+        
+        if self.preprocess_block["scaler"].get("options"):
+            scaler_params = self.preprocess_block["scaler"]["options"]
+            ml_scaler.set_params(**scaler_params)
 
         return ml_scaler
 
@@ -96,17 +101,28 @@ class MachineLearningPreprocess:
         if set(dropped_features).issubset(set(self.data.columns)):
             self.data.drop(dropped_features, axis=1, inplace= True)
         else:
-            raise ValueError("Feautures to drop do not exist in data!")
+            raise NameError("Features to drop do not exist in data!")
 
         return self.data
+    
+    def polynomial_features(self):
+
+        # build the polynomial features
+        
+        poly_features = PolynomialFeatures().set_params()
     
     def generate_processed_data(self):
         
         # drop the entities from the data
-        self.drop_entities()
+        if self.preprocess_block.get("dropper"):
+            self.drop_entities()
 
         # chooose targets and features
-        targets = self.data[self.preprocess_block["targets"]]
+        try:
+            targets = self.data[self.preprocess_block["targets"]]
+        except:
+            raise NameError("Targets are not defined!")
+           
         features = self.data.drop(targets, axis=1)
 
         # split data
@@ -148,9 +164,9 @@ class MachineLearningPreprocess:
     
         if self.preprocess_block.get("imputer"):
 
-            if X_train.isnull().any().any() or y_train.isnull().any().any():
+            imp = self.build_imputing()
 
-                imp = self.build_imputing()
+            if X_train.isnull().any().any() or y_train.isnull().any().any():
                 # ----------------------
                 # imput the X (features)
                 # ----------------------
@@ -197,6 +213,8 @@ class MachineLearningPreprocess:
             # convert transformed array into dataframes
             X_train = pd.DataFrame(X_train_transformed, columns=X_column_names)
             X_test = pd.DataFrame(X_test_transformed, columns=X_column_names)
+
+
 
         return X_train, X_test, y_train, y_test
              
