@@ -112,11 +112,14 @@ class FeatureSelection:
 
         # build the estimator with options if it exists
         try:
-            estimator_type = self.feature_selection_block["wrapper"]["estimator"]["type"]
-            estimator_options = self.feature_selection_block["wrapper"]["estimator"]["options"]
-            estimator = estimator_dict[estimator_type].set_params(**estimator_options)
+            estimator = estimator_dict[self.feature_selection_block["wrapper"]["estimator"]["type"]]
         except:
             raise NameError("The chosen estimator type is not available!")
+
+        if self.feature_selection_block["wrapper"]["estimator"].get("options"):
+            estimator_parameters = self.feature_selection_block["wrapper"]["estimator"]["options"]
+            estimator.set_params(**estimator_parameters)
+
 
         wrapper_dict = {
             "select_from_model" : SelectFromModel(estimator),
@@ -127,11 +130,13 @@ class FeatureSelection:
 
         # build th wrapper with options check if it exists
         try:
-            wrapper_type = self.feature_selection_block["wrapper"]["type"]
-            wrapper_options = self.feature_selection_block["wrapper"]["options"]
-            wrapper = wrapper_dict[wrapper_type].set_params(**wrapper_options)
+            wrapper = wrapper_dict[self.feature_selection_block["wrapper"]["type"]]
         except:
             raise NameError("The chosen wrapper type is not available!")
+
+        if self.feature_selection_block["wrapper"].get("options"):
+            wrapper_parameters = self.feature_selection_block["wrapper"]["options"]
+            wrapper.set_params(**wrapper_parameters)
         
         return wrapper
 
@@ -205,12 +210,12 @@ class FeatureSelection:
 
     def perform_feature_selection(self):
 
-        if self.feature_selection_block["filtering"]:
+        if self.feature_selection_block.get("filtering"):
             selected_features = self.generate_filter()
             self.X_train = self.X_train[selected_features]
             self.X_test = self.X_test[selected_features]
 
-        if self.feature_selection_block["wrapper"]:
+        if self.feature_selection_block.get("wrapper"):
             selected_features = self.generate_wrapper()   
             self.X_train = self.X_train[selected_features]
             self.X_test = self.X_test[selected_features] 
