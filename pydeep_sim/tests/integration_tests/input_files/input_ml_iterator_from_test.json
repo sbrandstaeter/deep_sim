@@ -93,7 +93,7 @@
     "model": {
         "problem_type": "regression",
         "multi_targets": false,
-        "model_type": "random_forest_regression",
+        "model_type": "random_forest",
         "model_options": {},
         "parameter_tuning": {
             "type": "grid_search_cv",
@@ -122,6 +122,10 @@
         "evaluation_metrics": [
             "mean_squared_error",
             "mean_absolute_error"
-        ]
+        ],
+        "save_model": {
+            "name": "decision_tree_base",
+            "extension": ".pkl"
+        }
     }
 }

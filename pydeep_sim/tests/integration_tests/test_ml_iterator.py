@@ -109,7 +109,7 @@ def generate_json():
             "model" :   {
                         "problem_type" : "regression",
                         "multi_targets" : False,
-                        "model_type" : "random_forest_regression",
+                        "model_type" : "random_forest",
                         "model_options":    {
 
                                             },
@@ -124,7 +124,11 @@ def generate_json():
                                                         "n_jobs" : -1
                                                         }
                                             },
-                        "evaluation_metrics" : ["mean_squared_error","mean_absolute_error"]
+                        "evaluation_metrics" : ["mean_squared_error","mean_absolute_error"],
+                        "save_model" :  {
+                                        "name" : "decision_tree_base",
+                                        "extension" : ".pkl"
+                                        }
                         }
             }
     
