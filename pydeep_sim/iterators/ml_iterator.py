@@ -12,6 +12,8 @@ from .iterator import Iterator
 from ..machine_learning.preprocessing.preprocessing import MachineLearningPreprocess
 from ..machine_learning.preprocessing.polynomial_features import DeepPolynomialFeatures
 from ..machine_learning.feature_selection.feature_selection import FeatureSelection
+from ..machine_learning.model.regression_model import RegressionModel
+from ..machine_learning.model.classification_model import ClassificationModel
 
 class MachineLearningIterator(Iterator):
     '''
@@ -26,6 +28,7 @@ class MachineLearningIterator(Iterator):
         self.preprocessing = preprocessing
         self.feature_selection = feature_selection
         self.polynomial_features = polynomial_features
+        self.model = model
     
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None):
@@ -75,12 +78,22 @@ class MachineLearningIterator(Iterator):
             feature_selecter = FeatureSelection(X_train=X_train, X_test= X_test, y_train=y_train, y_test=y_test, feature_selection_block=feature_selection_block)
             X_train, X_test = feature_selecter.perform_feature_selection()
         
-        # perform polynomial features 
+        # perform polynomial features if available
         if self.polynomial_features:
             polynomial_features_block = self.polynomial_features
             polynomial_features_selecter = DeepPolynomialFeatures(X_train=X_train, X_test= X_test, y_train=y_train, polynomial_features_block=polynomial_features_block)
             X_train, X_test = polynomial_features_selecter.perform_poly_features()
 
+        # perform the training, and test the model
+        model_block = self.model
+        if model_block["problem_type"] == "regression":
+            regr_model = RegressionModel(X_train=X_train, X_test= X_test, y_train=y_train, y_test=y_test, model_block=model_block, global_settings=self.global_settings)
+            regr_model.perform_train_test()
+        elif model_block["problem_type"] == "classification":
+            clas_model = ClassificationModel(X_train=X_train, X_test= X_test, y_train=y_train, y_test=y_test, model_block=model_block)
+            clas_model.perform_train_test()
+        else:
+            raise NameError("The given model type is not available!")
 
     def load_data(self):
 

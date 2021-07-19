@@ -76,7 +76,7 @@ def generate_json():
                                             },
                                 },
 
-            "polynomial_features" : {
+            "polynomial_features1" : {
                                     "type": "poly_features",
                                     "options":  {
                                                 "degree" : 2
@@ -89,10 +89,10 @@ def generate_json():
                                                 "type": "select_k_best",
                                                 "options" : {
                                                             "score_func" : "f_regression",
-                                                            "k" : 20
+                                                            "k" : 5
                                                             }
                                                 },
-                                    "wrapper" : {
+                                    "wrapper1" : {
                                                 "type" : "select_from_model",
                                                 "options" : {
                                                             "max_features" : 20
@@ -107,15 +107,24 @@ def generate_json():
                                      },
 
             "model" :   {
-                        "model_type" : "regression",
-                        "model_name" : "linear_regression",
+                        "problem_type" : "regression",
+                        "multi_targets" : False,
+                        "model_type" : "random_forest_regression",
                         "model_options":    {
 
                                             },
-                        "multi_targets" : True,
-                        "model_selection":  {
-
-                                            }
+                        "parameter_tuning": { 
+                                            "type" : "grid_search_cv",
+                                            "options":  {
+                                                        "param_grid" :  {
+                                                                        'max_features': ['auto', 'sqrt'],
+                                                                        'min_samples_leaf': [1, 2],
+                                                                        'min_samples_split': [2, 5],
+                                                                        'n_estimators': [200,2000]},
+                                                        "n_jobs" : -1
+                                                        }
+                                            },
+                        "evaluation_metrics" : ["mean_squared_error","mean_absolute_error"]
                         }
             }
     
