@@ -1,7 +1,8 @@
 import pandas as pd
 import time
+import joblib
 
-from sklearn.base import BaseEstimator
+# from sklearn.base import BaseEstimator
 
 class RegressionModel:
 
@@ -40,18 +41,18 @@ class RegressionModel:
             "lasso_regression" : Lasso(),
             "elastic_net" : ElasticNet(),
             "bayesian_ridge" : BayesianRidge(),
-            "pas_agg_regression" : PassiveAggressiveRegressor(),
-            "svm_lin_regression" : LinearSVR(),
-            "svm_regression" : SVR(),
+            "passive_aggressive" : PassiveAggressiveRegressor(),
+            "linear_svr" : LinearSVR(),
+            "svr" : SVR(),
             "sgd_regression" : SGDRegressor(),
-            "kneigh_regression" : KNeighborsRegressor(),
-            "decision_tree_regression" : DecisionTreeRegressor(),
-            "random_forest_regression" : RandomForestRegressor(),
-            "adaboost_regression" : AdaBoostRegressor(),
-            "grad_boost_regression" : GradientBoostingRegressor(),
+            "k_neighbors" : KNeighborsRegressor(),
+            "decision_tree" : DecisionTreeRegressor(),
+            "random_forest" : RandomForestRegressor(),
+            "adaboost" : AdaBoostRegressor(),
+            "gradboost" : GradientBoostingRegressor(),
             "kernel_ridge" : KernelRidge(),
-            "gaussian_regression":GaussianProcessRegressor,
-            "xgboost_regression" : XGBRegressor()
+            "gaussian_process":GaussianProcessRegressor,
+            "xgboost" : XGBRegressor()
         }
 
         try:
@@ -91,14 +92,14 @@ class RegressionModel:
         trainer = self.set_options()
 
         # build metrics
-        if self.model_block["evaluation_metrics"]:
+        if self.model_block.get("evaluation_metrics"):
             eval_metrics = self.build_evaluation(self.model_block["evaluation_metrics"])
         else:
             eval_metrics = None
 
         # if hyperparameter optimization is desired, then
         # find the model with best parameter (best estimator)
-        if self.model_block["parameter_tuning"]:
+        if self.model_block.get("parameter_tuning"):
             trainer = self.find_best_model(trainer) # this is already a fitted model as long as refit=True
             
         # Fit the model to measure time and if hyperparameter optimization is not done
@@ -109,10 +110,10 @@ class RegressionModel:
         print(f"Fit time: {(end_time_fit - start_time_fit):.3f} seconds. \n")
 
         # evaluate the train and test error
-        start_time_pred = time.time()
         y_pred_train = trainer.predict(self.X_train)
-        end_time_pred = time.time()
+        start_time_pred = time.time()
         y_pred_test = trainer.predict(self.X_test)
+        end_time_pred = time.time()
 
         print(f"Prediction time: {(end_time_pred - start_time_pred):.3f} seconds. \n")
 
@@ -121,10 +122,20 @@ class RegressionModel:
                 print(f"The training error for {key} is : {(value(y_pred_train,self.y_train)):.5f}.")
                 print(f"The test error for {key} is     : {(value(y_pred_test,self.y_test)):.5f}. \n")
 
+        # store the predictions and the ground truth values
+        y_pred_col = self.y_test.columns + "_predict"
+        y_pred_df = pd.DataFrame(y_pred_test, columns=y_pred_col)
+        pred_file = self.global_settings["output_dir"] + "/" + "pred_vs_truth"
+        combined = pd.concat([y_pred_df, self.y_test],axis=1)
+        combined.to_csv(pred_file, sep="\t", float_format='%.5f', index=False)
+
+
+        if self.model_block.get("save_model"):
+            self.save_model(trainer)
 
     def set_options(self):
         # check if hyperparameter optimization is desired
-        if self.model_block["parameter_tuning"]:
+        if self.model_block.get("parameter_tuning"):
             
             # build tuner and model
             tuner = self.build_tuner()  
@@ -211,6 +222,14 @@ Total Hyperparameter optimization time: {(end_time_calc - start_time_calc):.3f} 
 
         return metrics
 
+    def save_model(self, trainer):
+        
+        file_name = self.model_block["save_model"].get("name","default_model_name")
+        extension = self.model_block["save_model"].get("extension",".pkl")
+
+        file_path = self.global_settings["output_dir"] + "/" + file_name + extension
+
+        joblib.dump(trainer, file_path)
 
 
             

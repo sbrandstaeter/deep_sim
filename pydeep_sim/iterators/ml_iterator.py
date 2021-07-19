@@ -84,6 +84,16 @@ class MachineLearningIterator(Iterator):
             polynomial_features_selecter = DeepPolynomialFeatures(X_train=X_train, X_test= X_test, y_train=y_train, polynomial_features_block=polynomial_features_block)
             X_train, X_test = polynomial_features_selecter.perform_poly_features()
 
+        # write the scaled/selected features into a file
+        sc_train_features_file = "scaled_train_features"
+        sc_test_features_file = "scaled_test_features"
+        
+        sc_train_features = self.global_settings["output_dir"] + "/" + sc_train_features_file + ".dat"
+        sc_test_features = self.global_settings["output_dir"] + "/" + sc_test_features_file + ".dat"
+
+        pd.concat([X_train,y_train]).to_csv(sc_train_features, sep="\t", float_format='%.5f', index=False) 
+        pd.concat([X_test,y_test]).to_csv(sc_test_features, sep="\t", float_format='%.5f', index=False)
+
         # perform the training, and test the model
         model_block = self.model
         if model_block["problem_type"] == "regression":
