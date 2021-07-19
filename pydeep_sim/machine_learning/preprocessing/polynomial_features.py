@@ -1,6 +1,7 @@
 # generates the polynomial features
 from sklearn.preprocessing import PolynomialFeatures
 import pandas as pd
+import warnings
 
 class DeepPolynomialFeatures:
 
@@ -36,9 +37,15 @@ class DeepPolynomialFeatures:
 
         if self.polynomial_features_block.get("choose"):
             # apply poly_features only on the chosen columns
-            chosen_cloumns = self.polynomial_features_block["choose"]
-            X_train_chosen = self.X_train[chosen_cloumns]
-            X_test_chosen = self.X_test[chosen_cloumns]
+            chosen_columns = self.polynomial_features_block["choose"]
+            for chosen_column in chosen_columns:
+                if chosen_column not in self.X_train.columns:
+                    chosen_columns.remove(chosen_column)
+                    warnings.warn((f"Either the column {chosen_column} does not exist or it is removed during feature selection. "
+                                          f"Thus, {chosen_column} is removed from the list!"))
+            
+            X_train_chosen = self.X_train[chosen_columns]
+            X_test_chosen = self.X_test[chosen_columns]
             
             # fit the model 
             pf.fit(X_train_chosen)
@@ -47,8 +54,8 @@ class DeepPolynomialFeatures:
             # transform on test
             X_test_chosen = pf.transform(X_test_chosen)
 
-            self.X_train.drop(chosen_cloumns, axis=1, inplace=True)
-            self.X_test.drop(chosen_cloumns, axis=1, inplace=True)
+            self.X_train.drop(chosen_columns, axis=1, inplace=True)
+            self.X_test.drop(chosen_columns, axis=1, inplace=True)
 
             self.X_train = pd.concat([self.X_train, pd.DataFrame(X_train_chosen)], axis=1)
             self.X_test = pd.concat([self.X_test, pd.DataFrame(X_test_chosen)], axis=1)

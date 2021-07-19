@@ -3,6 +3,7 @@ numpy>=1.16.2
 scipy>=1.2.1
 # machine learning tools
 scikit-learn
+xgboost
 # needed for design of experiments
 scikit-optimize==0.8.1
 pandas
