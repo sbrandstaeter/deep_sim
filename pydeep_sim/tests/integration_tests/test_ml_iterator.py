@@ -52,8 +52,7 @@ def generate_json():
                                 "targets" : ["total_cont_area"],
                                 "dropper" : ["E1", "nu1", "E2", "nu2", "lato", "g0", "Delta", "errf", "tol", "total_force"],
                                 "model_split":  {
-                                                "train_size" : 0.8,
-                                                "random_state" : 40
+                                                "train_size" : 0.8
                                                 },
                                 "encoder" : {
                                             "type":"label_binarizer",
@@ -109,7 +108,7 @@ def generate_json():
             "model" :   {
                         "problem_type" : "regression",
                         "multi_targets" : False,
-                        "model_type" : "random_forest",
+                        "model_type" : "decision_tree",
                         "model_options":    {
 
                                             },
@@ -117,10 +116,9 @@ def generate_json():
                                             "type" : "grid_search_cv",
                                             "options":  {
                                                         "param_grid" :  {
-                                                                        'max_features': ['auto', 'sqrt'],
-                                                                        'min_samples_leaf': [1, 2],
-                                                                        'min_samples_split': [2, 5],
-                                                                        'n_estimators': [200,2000]},
+                                                                        'min_samples_leaf': [0.1, 0.3, 0.5],
+                                                                        'min_samples_split': [0.1, 0.3, 0.5, 0.7, 1.0],
+                                                                        'max_depth': [1, 5, 15, 30, None]},
                                                         "n_jobs" : -1
                                                         }
                                             },
