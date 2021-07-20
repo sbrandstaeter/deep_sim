@@ -14,7 +14,7 @@ class RegressionModel:
         self.model_block = model_block
         self.global_settings = global_settings
 
-    def build_model(self):
+    def build_model(self, model_name):
 
         # regresssion models
         from sklearn.linear_model import LinearRegression
@@ -34,6 +34,7 @@ class RegressionModel:
         from sklearn.kernel_ridge import KernelRidge
         from sklearn.gaussian_process import GaussianProcessRegressor
         from xgboost import XGBRegressor
+        from sklearn.neural_network import MLPRegressor
         
         regr_dict = {
             "linear_regression" : LinearRegression(),
@@ -51,12 +52,13 @@ class RegressionModel:
             "adaboost" : AdaBoostRegressor(),
             "gradboost" : GradientBoostingRegressor(),
             "kernel_ridge" : KernelRidge(),
-            "gaussian_process":GaussianProcessRegressor,
-            "xgboost" : XGBRegressor()
+            "gaussian_process":GaussianProcessRegressor(),
+            "xgboost" : XGBRegressor(),
+            "mlp" : MLPRegressor()
         }
 
         try:
-            model = regr_dict[self.model_block["model_type"]]
+            model = regr_dict[model_name]
         except:
             raise NameError("The chosen model type is not available!")
         
@@ -101,7 +103,10 @@ class RegressionModel:
         # find the model with best parameter (best estimator)
         if self.model_block.get("parameter_tuning"):
             trainer = self.find_best_model(trainer) # this is already a fitted model as long as refit=True
-            
+
+        print(f"Estimator: {trainer} \n")
+        print(f"Estimator parameters: {trainer.get_params()}\n")
+
         # Fit the model to measure time and if hyperparameter optimization is not done
         start_time_fit = time.time()
         trainer.fit(self.X_train, self.y_train.values.ravel())
@@ -119,8 +124,8 @@ class RegressionModel:
 
         if eval_metrics:
             for key, value in eval_metrics.items():
-                print(f"The training error for {key} is : {(value(y_pred_train,self.y_train)):.5f}.")
-                print(f"The test error for {key} is     : {(value(y_pred_test,self.y_test)):.5f}. \n")
+                print(f"The training error for {key}: {(value(y_pred_train,self.y_train)):.5f}.")
+                print(f"The test error for {key}    : {(value(y_pred_test,self.y_test)):.5f}. \n")
 
         # store the predictions and the ground truth values
         y_pred_col = self.y_test.columns + "_predict"
@@ -139,7 +144,15 @@ class RegressionModel:
             
             # build tuner and model
             tuner = self.build_tuner()  
-            model = self.build_model()
+            model = self.build_model(model_name=self.model_block["model_type"])
+
+            # if the main model is a metaclass which means needs another regression model
+            if self.model_block.get("model_options"):
+                if self.model_block["model_options"].get("base_estimator"):
+                    model_name=self.model_block["model_options"]["base_estimator"]["type"]
+                    base_estimator = self.build_model(model_name)
+                    model_parameters = {"base_estimator":base_estimator}
+                    model.set_params(**model_parameters)
             
             # set the tuning parameters
             tuner_options = self.model_block["parameter_tuning"]["options"]
@@ -150,11 +163,25 @@ class RegressionModel:
         
         else:
             # build the model
-            model = self.build_model()
-            # set the model parameters if available
+            model = self.build_model(model_name = self.model_block["model_type"])
+
+            # set the model parameters if available  
             if self.model_block.get("model_options"):
-                model_parameters = self.model_block["model_options"]
-                model.set_params(**model_parameters)
+                # if the main model is a metaclass which means needs another regression model
+                model_options = self.model_block.get("model_options")
+                if model_options.get("base_estimator"):
+                    model_name = model_options["base_estimator"]["type"]
+                    base_estimator = self.build_model(model_name)
+                    # if base estimator has also parameters
+                    if model_options["base_estimator"].get("options"):
+                        base_estimator_options = model_options["base_estimator"]["options"]
+                        base_estimator.set_params(**base_estimator_options)
+                    
+                    model_parameters = {"base_estimator":base_estimator}
+                    model.set_params(**model_parameters)
+                    del model_options["base_estimator"]
+                
+                model.set_params(**model_options)
             
             return model
 
@@ -230,6 +257,5 @@ Total Hyperparameter optimization time: {(end_time_calc - start_time_calc):.3f} 
         file_path = self.global_settings["output_dir"] + "/" + file_name + extension
 
         joblib.dump(trainer, file_path)
-
 
             

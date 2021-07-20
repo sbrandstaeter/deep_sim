@@ -1,12 +1,9 @@
 import numpy as np
-import subprocess
+import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import collections
-
-from sklearn import feature_selection
-
 
 from .iterator import Iterator
 from ..machine_learning.preprocessing.preprocessing import MachineLearningPreprocess
