@@ -99,13 +99,12 @@ class RegressionModel:
         else:
             eval_metrics = None
 
+        print(f"Estimator: {trainer} \n")
         # if hyperparameter optimization is desired, then
         # find the model with best parameter (best estimator)
         if self.model_block.get("parameter_tuning"):
             trainer = self.find_best_model(trainer) # this is already a fitted model as long as refit=True
-
-        print(f"Estimator: {trainer} \n")
-        print(f"Estimator parameters: {trainer.get_params()}\n")
+            print(f"Estimator parameters: {trainer.get_params()}\n")
 
         # Fit the model to measure time and if hyperparameter optimization is not done
         start_time_fit = time.time()
@@ -146,13 +145,22 @@ class RegressionModel:
             tuner = self.build_tuner()  
             model = self.build_model(model_name=self.model_block["model_type"])
 
-            # if the main model is a metaclass which means needs another regression model
+            # set the model parameters if available 
             if self.model_block.get("model_options"):
-                if self.model_block["model_options"].get("base_estimator"):
-                    model_name=self.model_block["model_options"]["base_estimator"]["type"]
+                model_options = self.model_block.get("model_options")
+                # if the main model is a metaclass which means needs another regression model
+                if model_options.get("base_estimator"):
+                    model_name = model_options["base_estimator"]["type"]
                     base_estimator = self.build_model(model_name)
+                    # if base estimator has also parameters
+                    if model_options["base_estimator"].get("options"):
+                        base_estimator_options = model_options["base_estimator"]["options"]
+                        base_estimator.set_params(**base_estimator_options)
+
                     model_parameters = {"base_estimator":base_estimator}
                     model.set_params(**model_parameters)
+                    del model_options["base_estimator"]
+                model.set_params(**model_options)
             
             # set the tuning parameters
             tuner_options = self.model_block["parameter_tuning"]["options"]

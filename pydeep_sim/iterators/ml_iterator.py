@@ -88,8 +88,8 @@ class MachineLearningIterator(Iterator):
         sc_train_features = self.global_settings["output_dir"] + "/" + sc_train_features_file + ".dat"
         sc_test_features = self.global_settings["output_dir"] + "/" + sc_test_features_file + ".dat"
 
-        pd.concat([X_train,y_train]).to_csv(sc_train_features, sep="\t", float_format='%.5f', index=False) 
-        pd.concat([X_test,y_test]).to_csv(sc_test_features, sep="\t", float_format='%.5f', index=False)
+        pd.concat([X_train,y_train], axis=1).to_csv(sc_train_features, sep="\t", float_format='%.5f', index=False) 
+        pd.concat([X_test,y_test], axis=1).to_csv(sc_test_features, sep="\t", float_format='%.5f', index=False)
 
         # perform the training, and test the model
         model_block = self.model
