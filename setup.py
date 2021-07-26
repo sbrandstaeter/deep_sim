@@ -23,7 +23,8 @@ setup(
         'pydeep_sim.sampling',
         'pydeep_sim.machine_learning',
         'pydeep_sim.machine_learning.preprocessing',
-        'pydeep_sim.machine_learning.feature_selection'
+        'pydeep_sim.machine_learning.feature_selection',
+        'pydeep_sim.machine_learning.model'
     ],
 
     long_description=read('README.md'),

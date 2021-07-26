@@ -104,9 +104,10 @@ class RegressionModel:
         # find the model with best parameter (best estimator)
         if self.model_block.get("parameter_tuning"):
             trainer = self.find_best_model(trainer) # this is already a fitted model as long as refit=True
-            print(f"Estimator parameters: {trainer.get_params()}\n")
+            
+        print(f"Estimator parameters: {trainer.get_params()}\n")
 
-        # Fit the model to measure time and if hyperparameter optimization is not done
+        # Fit the model to measure the fitting time and if hyperparameter optimization is not done
         start_time_fit = time.time()
         trainer.fit(self.X_train, self.y_train.values.ravel())
         end_time_fit = time.time()
@@ -129,7 +130,7 @@ class RegressionModel:
         # store the predictions and the ground truth values
         y_pred_col = self.y_test.columns + "_predict"
         y_pred_df = pd.DataFrame(y_pred_test, columns=y_pred_col)
-        pred_file = self.global_settings["output_dir"] + "/" + "pred_vs_truth"
+        pred_file = self.global_settings["output_dir"] + "/" + "pred_vs_truth" + "_" + self.model_block["save_model"].get("name","default_model_name")
         combined = pd.concat([y_pred_df, self.y_test],axis=1)
         combined.to_csv(pred_file, sep="\t", float_format='%.5f', index=False)
 
@@ -217,9 +218,8 @@ Total Hyperparameter optimization time: {(end_time_calc - start_time_calc):.3f} 
         print(f"The best model is: {trainer.best_estimator_} \n")
 
         # store all of the models in hyper_parameter_models.dat file
-        file_name = "/hyper_parameter_models"
-        extension = ".dat"
-        hyper_file = self.global_settings["output_dir"] + file_name + extension
+        file_name = "hyper_parameter_models" + "_" + self.model_block["save_model"].get("name","default_model_name")
+        hyper_file = self.global_settings["output_dir"] + "/" + file_name
 
         df_hyper_models = pd.DataFrame(trainer.cv_results_)
         
