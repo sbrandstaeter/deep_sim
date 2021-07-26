@@ -82,11 +82,11 @@ class MachineLearningIterator(Iterator):
             X_train, X_test = polynomial_features_selecter.perform_poly_features()
 
         # write the scaled/selected features into a file
-        sc_train_features_file = "scaled_train_features"
-        sc_test_features_file = "scaled_test_features"
+        sc_train_features_file = "scaled_train_features" + "_" + self.model["save_model"].get("name","default_model_name")
+        sc_test_features_file = "scaled_test_features" + "_" +self.model["save_model"].get("name","default_model_name")
         
-        sc_train_features = self.global_settings["output_dir"] + "/" + sc_train_features_file + ".dat"
-        sc_test_features = self.global_settings["output_dir"] + "/" + sc_test_features_file + ".dat"
+        sc_train_features = self.global_settings["output_dir"] + "/" + sc_train_features_file
+        sc_test_features = self.global_settings["output_dir"] + "/" + sc_test_features_file
 
         pd.concat([X_train,y_train], axis=1).to_csv(sc_train_features, sep="\t", float_format='%.5f', index=False) 
         pd.concat([X_test,y_test], axis=1).to_csv(sc_test_features, sep="\t", float_format='%.5f', index=False)
