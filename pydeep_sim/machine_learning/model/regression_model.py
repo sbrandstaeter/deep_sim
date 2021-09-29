@@ -112,7 +112,7 @@ class RegressionModel:
         trainer.fit(self.X_train, self.y_train.values.ravel())
         end_time_fit = time.time()
 
-        print(f"Fit time: {(end_time_fit - start_time_fit):.3f} seconds. \n")
+        print(f"Fit time: {(end_time_fit - start_time_fit):.3f} seconds\n")
 
         # evaluate the train and test error
         y_pred_train = trainer.predict(self.X_train)
@@ -120,12 +120,12 @@ class RegressionModel:
         y_pred_test = trainer.predict(self.X_test)
         end_time_pred = time.time()
 
-        print(f"Prediction time: {(end_time_pred - start_time_pred):.3f} seconds. \n")
+        print(f"Prediction time: {(end_time_pred - start_time_pred):.3f} seconds\n")
 
         if eval_metrics:
             for key, value in eval_metrics.items():
-                print(f"The training error for {key}: {(value(y_pred_train,self.y_train)):.5f}.")
-                print(f"The test error for {key}    : {(value(y_pred_test,self.y_test)):.5f}. \n")
+                print(f"The training error for {key}: {(value(y_pred_train,self.y_train)):.5f}")
+                print(f"The test error for {key}    : {(value(y_pred_test,self.y_test)):.5f}\n")
 
         # store the predictions and the ground truth values
         y_pred_col = self.y_test.columns + "_predict"
