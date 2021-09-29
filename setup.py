@@ -10,7 +10,7 @@ def read(fname):
 
 
 setup(
-    name="deep_sim",
+    name="deepsim",
     version="0.1",
     author="Tarik Sahin",
     author_email="tarik.sahin@unibw.de",
