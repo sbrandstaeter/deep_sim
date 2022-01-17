@@ -104,6 +104,22 @@ export BACI_RELEASE=<path_to_baci-release>
 ```bash
 export BACI_POST_DRT_ENSIGHT=<path_to_post_drt_ensight>
 ```
+## Exporting results with Paraview
+Since the simulation results of `BACI` have a special format, it is not possible to get the results without 
+using Paraview or a post processing tool. Thus, it is possible to integrate Paraview to DeepSim. To do that
+
+ - export the path to PARAVIEW, 
+```bash
+export PARAVIEWPATH=<path_to_paraview>
+```
+ - add the site packages to PYTHONPATH,
+```bash
+export PYTHONPATH=$PYTHONPATH:$PARAVIEWPATH:/lib/python2.7/site-packages
+```
+ - add the libraries of Paraview to LD_LIBRARY_PATH which looks for dynamic/shared libraries,
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${PARAVIEWPATH}/lib
+```
 
 # Running the BEM code
 
@@ -129,7 +145,9 @@ If you are a VSCode user and you don't want to export `PYTHONPATH` and all env v
 
 ```json
 "terminal.integrated.env.linux": {
-        "PYTHONPATH": "${env:PYTHONPATH}:/home/a11btasa/deep_sim/cubitpy/",
+        "PARAVIEWPATH" : "/imcs/public/compsim/opt/ParaView-5.9.1-MPI-Linux-Python3.8-64bit",
+        "PYTHONPATH": "${env:PYTHONPATH}:/home/a11btasa/deep_sim/cubitpy/:/imcs/public/compsim/opt/ParaView-5.9.1-MPI-Linux-Python3.8-64bit/lib/python3.8/site-packages",
+        "LD_LIBRARY_PATH" : "${env:LD_LIBRARY_PATH}:/imcs/public/compsim/opt/ParaView-5.9.1-MPI-Linux-Python3.8-64bit/lib",
         "BACI_RELEASE" : "/home/a11btasa/git_repos/baci/baci_build/baci-release",
         "BACI_POST_DRT_ENSIGHT" : "/home/a11btasa/git_repos/baci/baci_build/post_drt_ensight",
         "CUBIT": "/imcs/public/compsim/opt/cubit-13.2",
@@ -141,7 +159,9 @@ If you are a VSCode user and you don't want to export `PYTHONPATH` and all env v
 
 - Create the `debug.env` file where you clone the repo and copy the following lines there: (Indeed, again change the paths)
 ```bash
-PYTHONPATH=/home/a11btasa/deep_sim/cubitpy/:${PYTHONPATH}
+PARAVIEWPATH=/imcs/public/compsim/opt/ParaView-5.9.1-MPI-Linux-Python3.8-64bit
+PYTHONPATH=${PYTHONPATH}:/home/a11btasa/deep_sim/cubitpy/:/imcs/public/compsim/opt/ParaView-5.9.1-MPI-Linux-Python3.8-64bit/lib/python3.8/site-packages
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/imcs/public/compsim/opt/ParaView-5.9.1-MPI-Linux-Python3.8-64bit/lib
 BACI_RELEASE=/home/a11btasa/git_repos/baci/baci_build/baci-release
 BACI_POST_DRT_ENSIGHT=/home/a11btasa/git_repos/baci/baci_build/post_drt_ensight
 CUBIT=/imcs/public/compsim/opt/cubit-13.2
