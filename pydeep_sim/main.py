@@ -98,8 +98,7 @@ def get_options(args):
 
     options["input_file"] = input_file
 
-    # move some parameters into a global settings dict to be passed to e.g.
-    # iterators facilitating input output stuff
+    # create the "global_settings" dict and move experiment name and output directory into it
     global_settings = {}
     global_settings["output_dir"] = output_dir
     
@@ -124,6 +123,16 @@ def get_paths(global_settings):
      - baci-release
      - post_drt_ensight
      - bem 
+
+    Parameters
+    ----------
+    global_settings : dict
+        contains output directory and experiment name independent of the given problem
+
+    Returns
+    ------
+    global_settings : dict
+        contains output directory and experiment name independent of the given problem
     '''
     exe_path = {}
 

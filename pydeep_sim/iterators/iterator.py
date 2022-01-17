@@ -7,28 +7,34 @@ class Iterator (metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None):
-        """ Create iterator from problem description
+        '''
+        Creates iterator from problem description
 
-        Args:
-            config (dict):       Dictionary with Deep_Sim problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
+        Parameters
+        ----------
+        config : dict
+            contains the input parameters
+        iterator_name : str , optional
+            iterator to be run to distinguish the correct iterator
 
-        Returns:
-            iterator: Iterator object
-
-        """
+        Returns
+        -------
+        cls(num_simulations, result_description, parameters, sampling, global_settings)
+            a class object of the chosen iterator
+        '''
         
         from .rsc_bem_rmd_iterator import RoughSurfaceBemRMDIterator
         from .rsc_fem_model_generator import RoughSurfaceFemModelGenerator
         from .baci_fem_iterator import BaciFemIterator
         from .ml_iterator import MachineLearningIterator
+        from .beam_fem_model_generator import BeamFemModelGenerator
 
         method_dict = {
             'rsc_bem_rmd': RoughSurfaceBemRMDIterator,
             'rsc_fem_model': RoughSurfaceFemModelGenerator,
             'baci_fem': BaciFemIterator,
-            'ml_trainer': MachineLearningIterator
+            'ml_trainer': MachineLearningIterator,
+            'beam_fem_model': BeamFemModelGenerator
         }
 
         if iterator_name is None:
