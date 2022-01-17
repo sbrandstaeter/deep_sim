@@ -6,7 +6,6 @@ from pydeep_sim.main import main
 
 
 def test_baci_fem_iterator(generate_json,tmpdir):
-    print(generate_json)
     arguments = [
         '--input=' + generate_json,
         '--output=' + str(tmpdir),
@@ -21,18 +20,28 @@ def test_baci_fem_iterator(generate_json,tmpdir):
 
 @pytest.fixture
 def generate_json():
-    """ Return the path to the json input-files of the function test. """
+    ''' 
+    Return the path to the json input-files of the function test
+    '''
     dirpath = os.path.dirname(__file__)
     input_dir = os.path.join(dirpath, 'input_files/baci_inputs')
     json_input_file = os.path.join(dirpath, 'input_files')
 
     data = {
-                "experiment_name" : "Rough Surface Contact Run Automatized Fem Simulation",
+                "experiment_name" : "Automated Beam Simulations using BACI",
                 "method": {
                     "method_name": "baci_fem",
                     "method_options" :{
                         "result_description" : {
-                            "write_results" : True
+                            "write_results" : True,
+                            "quantity" : {
+                                "name" : "max_displacement_2",
+                                "type" : "displacement",
+                                "level" : "min",
+                                "direction" : "2"
+                            },
+                            "file_format" : "csv",
+                            "save_result_in_subfolder" : True 
                         },
                         "input_dir": input_dir
                     }
@@ -44,7 +53,8 @@ def generate_json():
                             "solver" : "baci-release",
                             "post_processing" : "post_drt_ensight"
                         },
-                        "output_prefix" : "baci_test_run_example"
+                        "output_prefix" : "baci_test_run_example",
+                        "post_paraview" : True
                     }
                 }
             }
