@@ -23,20 +23,21 @@ class Iterator (metaclass=abc.ABCMeta):
             a class object of the chosen iterator
         '''
         
-        from .rsc_bem_rmd_iterator import RoughSurfaceBemRMDIterator
-        from .rsc_fem_model_generator import RoughSurfaceFemModelGenerator
-        from .baci_fem_iterator import BaciFemIterator
-        from .ml_iterator import MachineLearningIterator
-        from .beam_fem_model_generator import BeamFemModelGenerator
-
-        method_dict = {
-            'rsc_bem_rmd': RoughSurfaceBemRMDIterator,
-            'rsc_fem_model': RoughSurfaceFemModelGenerator,
-            'baci_fem': BaciFemIterator,
-            'ml_trainer': MachineLearningIterator,
-            'beam_fem_model': BeamFemModelGenerator
-        }
-
+        if config['method']['method_name'] == "rsc_bem_rmd":
+            from .rsc_bem_rmd_iterator import RoughSurfaceBemRMDIterator as main_iter
+        elif config['method']['method_name'] == "rsc_fem_model":
+            from .rsc_fem_model_generator import RoughSurfaceFemModelGenerator as main_iter
+        elif config['method']['method_name'] == "baci_fem":
+            from .baci_fem_iterator import BaciFemIterator as main_iter
+        elif config['method']['method_name'] == "ml_trainer":
+            from .ml_iterator import MachineLearningIterator as main_iter
+        elif config['method']['method_name'] == "beam_fem_model":
+            from .beam_fem_model_generator import BeamFemModelGenerator as main_iter
+        else:
+            raise Exception("Method does not exits!")
+        
+        method_dict = {config['method']['method_name']  : main_iter}
+        
         if iterator_name is None:
             method_name = config['method']['method_name']
             iterator_class = method_dict[method_name]
