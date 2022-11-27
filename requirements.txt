@@ -45,4 +45,8 @@ pip
 pylint-exit
 # needed for parallel run
 numba
+deepxde
+pyevtk
+triangle
+gmsh
 
