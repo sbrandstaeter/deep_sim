@@ -69,10 +69,6 @@ class PinnIterator(Iterator):
                     search_flag = False
                     j += 1
 
-        # initialize the targets and the statistical parameters 
-        targets = collections.defaultdict(list)
-        features = collections.defaultdict(list)
-
         # get the pinn model
         current_driver = self.driver
 
@@ -88,7 +84,7 @@ class PinnIterator(Iterator):
 
             if(self.result_description.get("write_results")):
                 if self.driver["driver_options"].get("model_output"):
-                    pinn_object.model_output(losshistory, train_state, model)
+                    pinn_object.model_output(losshistory, train_state, model, self.result_description, simulation_number)
                 # # calculate the effective contact area and traction after BEM simulation is run
                 # targets = self.post_process_bem(i, domain["n"][i], targets)
                 # # calculate the Statistical properties

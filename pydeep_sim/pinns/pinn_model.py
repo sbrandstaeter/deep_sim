@@ -2,6 +2,8 @@
 import deepxde as dde
 import numpy as np
 import tensorflow as tf
+import collections
+import pandas as pd
 from deepxde.metrics import accuracy, l2_relative_error, nanl2_relative_error, mean_l2_relative_error, _absolute_percentage_error, mean_absolute_percentage_error, max_absolute_percentage_error, absolute_percentage_error_std, mean_squared_error
 
 class PinnModel():
@@ -58,7 +60,7 @@ class PinnModel():
         
         return losshistory, train_state, model
     
-    def model_output(self, losshistory, train_state, model):
+    def model_output(self, losshistory, train_state, model, result_description, simulation_number):
         
         metric_dict = {
             "accuracy": accuracy,
@@ -73,21 +75,25 @@ class PinnModel():
             "APE SD": absolute_percentage_error_std,
         }
         
+        # initialize the targets and the features 
+        targets = collections.OrderedDict()
+        features = collections.OrderedDict()
+        
         model_output = self.driver["driver_options"].get("model_output")
         loss_type = model_output.get("loss_type")
         approach = model_output.get("approach")
         metric_name = model_output.get("metric")
         
-        
         if loss_type == "test":
             final_loss = losshistory.loss_test[-1]
+            if approach == "total":
+                final_loss = final_loss.sum()
+            targets["loss"] = final_loss
         elif loss_type == "train":    
             final_loss = losshistory.loss_test[-1]
-        else:
-            final_loss = None
-        
-        if approach == "total":
-            final_loss = final_loss.sum()
+            if approach == "total":
+                final_loss = final_loss.sum()
+            targets["loss"] = final_loss
         
         if metric_name:
             metric = metric_dict[metric_name]
@@ -96,10 +102,19 @@ class PinnModel():
             uhat = model.predict(xtest)
             
             model_accuracy = metric(utrue, uhat)
+            targets["model_accuracy"] = model_accuracy
+        
+        for feature in result_description["features"]:
+            features[feature] = self.domain[feature][simulation_number]
+        
+        features.update(targets)
+        df = pd.DataFrame.from_dict([features])
+        
+        file_name = self.output_dir + "/" + result_description["file_name"]
+        if self.simulation_number == 0:
+            df.to_csv(file_name, index=False, sep="\t", float_format='%.5f')
         else:
-            model_accuracy = None
-            
-        return final_loss, model_accuracy
+            df.to_csv(file_name, mode="a", index=False, header=False, sep="\t", float_format='%.5f')
         
     def euler_beam(self):
         
@@ -110,6 +125,7 @@ class PinnModel():
         end = self.domain.get("end")[self.simulation_number]
         n_domain = self.domain.get("n_domain")[self.simulation_number]
         n_boundary = self.domain.get("n_boundary")[self.simulation_number]
+        train_distribution = self.domain.get("train_distribution")[self.simulation_number]
         
         geom = dde.geometry.Interval(start, end)
         l_beam = end-start
@@ -186,7 +202,8 @@ class PinnModel():
             num_domain=n_domain,
             num_boundary=n_boundary,
             solution=analytical_solution,
-            num_test=100
+            num_test=100,
+            train_distribution=train_distribution
         )
         
         input_dim = 1
