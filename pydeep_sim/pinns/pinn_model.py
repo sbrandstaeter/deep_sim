@@ -16,13 +16,43 @@ class PinnModel():
         self.analytical_solution = None
 
     def build_data(self):
+        '''
+        Build the data structure.
+
+        Returns
+        -------
+        input_dim : int
+            input dimension of the problem
+        output_dim : int
+            output dimension of the problem
+        data: DeepXDE data structure
+            contains physics of the problem
+        '''
+        
         if self.driver["driver_name"] == "euler_beam":
             input_dim, output_dim, data = self.euler_beam()
         else:
             raise NameError("The chosen driver is not available!")
+        
         return input_dim, output_dim, data
     
     def build_network(self, input_dim, output_dim):
+        '''
+        Build the network architecture.
+        
+        Parameters
+        ----------
+        input_dim : int
+            input dimension of the problem
+        output_dim : int
+            output dimension of the problem
+
+        Returns
+        -------
+        net: DeepXDE mapping
+            the network architecture
+        '''
+        
         n_neurons = self.domain.get("n_neurons")[self.simulation_number]
         n_hiddens = self.domain.get("n_hiddens")[self.simulation_number]
         
@@ -34,7 +64,20 @@ class PinnModel():
         
         return net
     
-    def build_optimizer(self,model):
+    def build_optimizer(self, model):
+        '''
+        Build the optimizer.
+        
+        Parameters
+        ----------
+        model : tf object 
+            not compiled model (without optimizer)
+
+        Returns
+        -------
+        model : tf object 
+            compiled model (with optimizer) 
+        '''
         
         optimizer_name = self.domain.get("optimizer_name")[self.simulation_number]
         learning_rate = self.domain.get("learning_rate")[self.simulation_number]
@@ -44,6 +87,14 @@ class PinnModel():
         return model
     
     def build_model(self):
+        '''
+        Build the model.
+    
+        Returns
+        -------
+        model : tf object 
+            model to be run 
+        '''
         
         input_dim, output_dim, data = self.build_data()
         net = self.build_network(input_dim, output_dim)
@@ -53,7 +104,25 @@ class PinnModel():
         
         return model
     
-    def run(self, model):
+    def train_model(self, model):
+        '''
+        Train the model.
+        
+        Parameters
+        ----------
+        model : tf object 
+            untrained model
+            
+        Returns
+        -------
+        losshistory : DeepXDE object
+            contains the loss history
+        train_state : DeepXDE object
+            contains the state of the training process
+        model : tf object 
+            trained model 
+        '''
+        
         iterations = self.domain.get("iterations")[self.simulation_number]
         
         losshistory, train_state = model.train(iterations=iterations)
@@ -61,6 +130,22 @@ class PinnModel():
         return losshistory, train_state, model
     
     def model_output(self, losshistory, train_state, model, result_description, simulation_number):
+        '''
+        Model post-processing.
+        
+        Parameters
+        ----------
+        losshistory : DeepXDE object
+            contains the loss history
+        train_state : DeepXDE object
+            contains the state of the training process
+        model : tf object 
+            trained model
+        result_description : dict 
+            result description read from input (json) file
+        simulation_number : int 
+            current simulation number
+        '''
         
         metric_dict = {
             "accuracy": accuracy,
@@ -110,13 +195,32 @@ class PinnModel():
         features.update(targets)
         df = pd.DataFrame.from_dict([features])
         
+        for key, _ in targets.items():
+            df[key] = df[key].map(lambda x: '%.4e' % x)
+            
         file_name = self.output_dir + "/" + result_description["file_name"]
+        
         if self.simulation_number == 0:
             df.to_csv(file_name, index=False, sep="\t", float_format='%.5f')
         else:
             df.to_csv(file_name, mode="a", index=False, header=False, sep="\t", float_format='%.5f')
         
+        if result_description["plot_solution"]:
+            dde.saveplot(losshistory, train_state, issave=False, isplot=True)
+        
     def euler_beam(self):
+        '''
+        Generates pyhsics for the Euler beam
+
+        Returns
+        -------
+        input_dim : int
+            input dimension of the problem
+        output_dim : int
+            output dimension of the problem
+        data: DeepXDE data structure
+            contains physics of the problem
+        '''
         
         pressure = self.domain.get("pressure")[self.simulation_number]
         young_modulus = self.domain.get("young_modulus")[self.simulation_number]

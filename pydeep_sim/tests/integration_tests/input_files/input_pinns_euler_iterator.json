@@ -3,11 +3,12 @@
   "method": {
     "method_name": "pinns",
     "method_options" :{
-      "num_simulations":8,
+      "num_simulations":1,
       "result_description" : {
           "write_results" : true,
           "file_name" : "results.dat",
-          "features" : ["optimizer_name","learning_rate","iterations"]
+          "features" : ["optimizer_name","learning_rate","iterations"],
+          "plot_solution" : true
       }
     }
   },
@@ -107,7 +108,7 @@
       "iterations" : {
         "type" : "int",
         "size" : 5,
-        "distribution_parameter" : [10,50]
+        "distribution_parameter" : [10,55]
       }
     }
   }

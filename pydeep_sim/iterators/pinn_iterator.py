@@ -1,12 +1,6 @@
 import numpy as np
-from numpy.random import seed
-from numpy import dtype, random as rnd
-import subprocess
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import collections
+import warnings
 
 from .iterator import Iterator
 from ..pinns.pinn_model import PinnModel
@@ -43,7 +37,7 @@ class PinnIterator(Iterator):
 
     def run_simulation(self):
         '''
-        Run the BEM simulation 
+        Run the Physics-Informed Neural Network
         '''       
         # sampling methods require the ranges of the parameters
         # first get the parameters from the input file
@@ -77,35 +71,26 @@ class PinnIterator(Iterator):
             
             # create the instance for the pinn
             pinn_object = PinnModel(self.global_settings["output_dir"], current_driver, domain, simulation_number)
-            # generate the rough surface  
+            # build the model 
             model = pinn_object.build_model()
             # train the model
-            losshistory, train_state, model = pinn_object.run(model)
-
+            losshistory, train_state, model = pinn_object.train_model(model)
+            # write results
             if(self.result_description.get("write_results")):
                 if self.driver["driver_options"].get("model_output"):
                     pinn_object.model_output(losshistory, train_state, model, self.result_description, simulation_number)
-                # # calculate the effective contact area and traction after BEM simulation is run
-                # targets = self.post_process_bem(i, domain["n"][i], targets)
-                # # calculate the Statistical properties
-                # features = rough_surf.random_postprocess(features)
-
-                # for key, _ in domain.items():
-                #     features[key].append(domain[key][i])
-        
-        # if(self.result_description.get("write_results")):
-        #     # output the final combined results into a file
-        #     final_results = self.write_final_results(targets, features)
-        #     # plot fancy results
-        #     self.save_plot(final_results) 
 
     def get_parameters(self):
         '''
-        Obtain the parameters from the input file and generates the range for each parameter
+        Obtain the parameters from the input file and generates the range for each parameter.
+        
+        Returns
+        -------
+        domain : dict
+            generated domain from input file
         '''
 
         domain = collections.OrderedDict()
-        
         
         def get_domain(param, param_options, domain):
             if param_options["type"] == "str":
@@ -117,7 +102,13 @@ class PinnIterator(Iterator):
                 if param_options["size"] != 1:
                     domain[param] = np.linspace(param_options["distribution_parameter"][0],param_options["distribution_parameter"][1],param_options["size"]).astype(param_options["type"])
                 else:
-                    domain[param] = [param_options["distribution_parameter"]]
+                    if isinstance(param_options["distribution_parameter"], list):
+                        domain[param] = param_options["distribution_parameter"]
+                    else:
+                        domain[param] = [param_options["distribution_parameter"]]
+                    if (param_options["type"] == "int") and (not isinstance(param_options["distribution_parameter"], int)):
+                        warnings.warn(f"Parameter value for {domain[param]} is not int! So it will be set as integer.")
+                        domain[param] = int(domain[param])
             return domain
         
         for param_type, params in self.parameters.items():
@@ -128,57 +119,3 @@ class PinnIterator(Iterator):
                     raise NameError(f"Parameter {param} in {param_type} is already in previous parameters. Change the name.")
         
         return domain
-
-    def write_final_results(self, targets , features):
-        '''
-        Writes the final results as a DataFrame (targets and statistical features) into a file called simulation_output.dat
-
-        Args
-        ---
-        targets: dict
-            the key-value pair containing the total effective contact area and corresponding traction force
-        features: dict
-            the key-value pair containing the statistical properties of the rough surface  
-        '''
-        simulation_file_name = "_".join(self.global_settings["experiment_name"].split())
-        simulation_file = self.global_settings["output_dir"] + '/simulation_output_' + simulation_file_name + '.dat'
-
-        print(f'''
--------------------------------------------------------------------------
-Simulation inputs/ouputs are stored in {simulation_file}
--------------------------------------------------------------------------
-        ''')
-        
-        # copy features into targets (merge two dicts)
-        targets.update(features)
-
-        # transform targets dict into a dataframe
-        df = pd.DataFrame.from_dict(targets)
-
-        # store the results
-        df.to_csv(simulation_file, index=False, sep="\t", float_format='%.5f')
-
-        return simulation_file
-    
-    def save_plot(self, final_results):
-        '''
-        Plots of the final results and stores them
-
-        Args
-        ---
-        final_results: str
-            the file contains the final results
-        '''
-
-        df = pd.read_csv(final_results, sep="\t")
-
-        fig, axes = plt.subplots(4,16, figsize=(45,10))
-
-        for i in range(4):
-            for j in range(16):
-                ax_obj = sns.scatterplot(ax=axes[i,j], y=df.iloc[:,i//2] ,x=df.iloc[:,(i % 2)*16+j+2], data=df)
-                ax_obj.set(ylabel=df.iloc[:,i//2].name, xlabel=df.iloc[:,(i % 2)*16+j+2].name)
-
-        plt.tight_layout()
-        figure_name = self.global_settings["output_dir"] + '/simulation_results.png'
-        fig.savefig(figure_name)
