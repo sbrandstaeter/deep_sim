@@ -33,6 +33,8 @@ class Iterator (metaclass=abc.ABCMeta):
             from .ml_iterator import MachineLearningIterator as main_iter
         elif config['method']['method_name'] == "beam_fem_model":
             from .beam_fem_model_generator import BeamFemModelGenerator as main_iter
+        elif config['method']['method_name'] == "pinns":
+            from .pinn_iterator import PinnIterator as main_iter
         else:
             raise Exception("Method does not exits!")
         

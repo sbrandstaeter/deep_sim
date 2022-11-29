@@ -1,0 +1,115 @@
+{
+  "experiment_name" : "Pyhsics-Informed Neural Networks (PINNs) for Euler Beams",
+  "method": {
+    "method_name": "pinns",
+    "method_options" :{
+      "num_simulations":1,
+      "result_description" : {
+          "write_results" : true,
+          "file_name" : "results.dat",
+          "features" : ["optimizer_name","learning_rate","iterations"],
+          "plot_solution" : true
+      }
+    }
+  },
+  "driver" :{
+      "driver_name"           : "euler_beam",
+      "driver_options"         :{
+        "model_type"    : "fixed",
+        "model_output" : {
+          "loss_type" : "test",
+          "approach" : "total",
+          "metric" : "l2 relative error"  
+        }
+    }
+  },
+  "sampling":{
+    "sampling_name": "lhs",
+    "sampling_options": {
+        "lhs_type" : "classic",
+        "criterion": "ratio",
+        "iterations": 1000 
+    }
+  },  
+  "parameters" : {
+    "material_parameters" : {
+      "young_modulus" : {
+        "type" : "float",
+        "size" : 1,
+        "distribution_parameter" : 1
+      },
+      "inertia" : {
+        "type" : "float",
+        "size" : 1,
+        "distribution_parameter" : 1
+      }
+    },
+    "geometrical_parameters" : {
+      "pressure" : {
+          "type" : "float",
+          "size" : 1,
+          "distribution_parameter" : 1
+      },
+      "start" : {
+          "type" : "float",
+          "size" : 1,
+          "distribution_parameter" : 0
+      },
+      "end" : {
+          "type" : "float",
+          "size" : 1,
+          "distribution_parameter" : 1
+      },
+      "n_domain" : {
+        "type" : "int",
+        "size" : 1,
+        "distribution_parameter" : 20
+      },
+      "n_boundary" : {
+        "type" : "int",
+        "size" : 1,
+        "distribution_parameter" : 2
+      },
+      "train_distribution" : {
+        "type" : "str",
+        "distribution_parameter" : "Sobol"
+      }
+    },
+    "network_parameters" : {
+      "n_hiddens" : {
+          "type" : "int",
+          "size" : 1,
+          "distribution_parameter" : 3
+      },
+      "n_neurons" : {
+          "type" : "int",
+          "size" : 1,
+          "distribution_parameter" : 30
+      },
+      "activation" : {
+          "type" : "str",
+          "distribution_parameter" : "tanh"
+      },
+      "initializer" : {
+          "type" : "str",
+          "distribution_parameter" : "Glorot uniform"
+      }
+    },
+    "optimizer_parameters" : {
+      "optimizer_name" : {
+          "type" : "str",
+          "distribution_parameter" : "adam"
+      },
+      "learning_rate" : {
+          "type" : "float",
+          "size" : 1,
+          "distribution_parameter" : 0.0001
+      },
+      "iterations" : {
+        "type" : "int",
+        "size" : 5,
+        "distribution_parameter" : [10,55]
+      }
+    }
+  }
+}
