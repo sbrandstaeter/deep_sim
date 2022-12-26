@@ -1,52 +1,15 @@
-cython
-numpy~=1.19.2
-scipy>=1.2.1
-# machine learning tools
-scikit-learn
-xgboost
-# needed for design of experiments
-scikit-optimize==0.8.1
-pandas
-# deep learning framework
-tensorflow
-pydot
-graphviz
-# for documentation
-#  - sphinx
-#  - nbsphinx
-jupyter
-# making fancy plots
-matplotlib
-seaborn
-plotly
-# testing framework
-pytest>=3.0.0
-pytest-codestyle
-pytest-cov
-pytest-mock
-# for running tests in parallel
-pytest-xdist
-# linting, check code  -style (PEP8)
-astroid
-pylint
-# code formatter
-#  - black
-# a smart progress meter for loops
-#  - tqdm
-# visualization toolkit that can manage mesh data
-#  - vtk
-# enforce package compliance of parso package
-parso>=0.8.0
-# wrapper around numpy for automated differentiation
-#  - autograd
-# it's recommended to list pip explicitly
-pip
-# Utility to handle pylint exit codes scripting friendly
-pylint-exit
-# needed for parallel run
-numba
-deepxde
-pyevtk
-triangle
-gmsh
-
+DeepXDE==1.6.1
+execnet==1.9.0
+joblib==1.0.1
+matplotlib==3.4.2
+numba==0.53.1
+numpy==1.19.5
+pandas==1.3.1
+pytest==6.2.4
+scikit_learn==1.2.0
+scikit_optimize==0.8.1
+scipy==1.7.0
+seaborn==0.11.1
+setuptools==47.1.0
+tensorflow==2.5.0
+xgboost==1.4.2

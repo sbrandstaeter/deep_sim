@@ -72,6 +72,7 @@ To generate FEM models for Baci simulations, `CubitPy` interface is used. Since 
 
 ```bash
 git submodule add git@gitlab.com:compsim/codes/cubitpy.git
+git submodule update --remote --merge
 ```
 
 Add the cubitpy path to PYTHONPATH

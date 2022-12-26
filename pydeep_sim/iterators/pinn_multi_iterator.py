@@ -1,19 +1,20 @@
 import numpy as np
 import collections
 import warnings
-import tensorflow as tf
+import subprocess
+import sys
 
 from .iterator import Iterator
-from ..pinns.pinn_model import PinnModel
+from ..pinns.pinn_multi_model import PinnMultiModel
 from ..sampling.sampling import Sampling
 
-class PinnIterator(Iterator):
+class PinnMultiIterator(Iterator):
     '''
     This module generates rough surfaces and runs BEM simulations
     ''' 
     
     def __init__(self, num_simulations, result_description, driver, parameters, sampling, global_settings):
-        super(PinnIterator, self).__init__(None, global_settings)
+        super(PinnMultiIterator, self).__init__(None, global_settings)
         self.num_simulations = num_simulations
         self.result_description = result_description
         self.driver = driver
@@ -66,20 +67,24 @@ class PinnIterator(Iterator):
 
         # get the pinn model
         current_driver = self.driver
+        
+        # input file name
+        pinn_model_file_name = self.result_description.get("pinn_model_file_name","default_pinn_model")
 
         # iterate the simulations
         for simulation_number in range(self.num_simulations):
             
+            pinn_model_file_name_ = pinn_model_file_name + f"_{simulation_number}"
             # create the instance for the pinn
-            pinn_object = PinnModel(self.global_settings["output_dir"], current_driver, domain, simulation_number)
-            # build the model 
-            model = pinn_object.build_model()
-            # train the model
-            losshistory, train_state, model = pinn_object.train_model(model)
+            pinn_object = PinnMultiModel(self.global_settings["output_dir"], self.result_description, current_driver, domain, simulation_number, pinn_model_file_name_)
+            # generate the input file
+            pinn_model_input_file = pinn_object.generate_input_file()
+            # run the input file
+            output_file = self.run_input_file(pinn_model_input_file, simulation_number)
             # write results
             if(self.result_description.get("write_results")):
-                if self.driver["driver_options"].get("model_output"):
-                    pinn_object.model_output(losshistory, train_state, model, self.result_description, simulation_number)
+                if self.result_description.get("output_options"):
+                    pinn_object.model_output(output_file)
 
     def get_parameters(self):
         '''
@@ -120,3 +125,13 @@ class PinnIterator(Iterator):
                     raise NameError(f"Parameter {param} in {param_type} is already in previous parameters. Change the name.")
         
         return domain
+    
+    def run_input_file(self, input_file, simulation_number):
+        
+        output_file = self.global_settings["output_dir"] + "/" + self.result_description["pinn_model_file_name"] + "_" + str(simulation_number) + "_results"
+        
+        f = open(output_file, "w")
+        subprocess.run([sys.executable,input_file], stdout=f)
+        f.close()
+        
+        return output_file
