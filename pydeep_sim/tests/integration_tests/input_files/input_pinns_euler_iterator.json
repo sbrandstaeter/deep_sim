@@ -3,24 +3,25 @@
   "method": {
     "method_name": "pinns",
     "method_options" :{
-      "num_simulations":1,
+      "num_simulations":3,
       "result_description" : {
-          "write_results" : true,
-          "file_name" : "results.dat",
-          "features" : ["optimizer_name","learning_rate","iterations"],
-          "plot_solution" : true
+        "pinn_model_file_name" :"Euler_beam",
+        "write_results" : true,
+        "output_file_name" : "results.dat",
+        "output_options" : {
+          "metric": "l2 relative error",
+          "loss_type" : "test",
+          "approach" : "total"
+        },
+        "features" : ["optimizer_name","learning_rate","iterations"],
+        "plot_solution" : false
       }
     }
   },
   "driver" :{
       "driver_name"           : "euler_beam",
       "driver_options"         :{
-        "model_type"    : "fixed",
-        "model_output" : {
-          "loss_type" : "test",
-          "approach" : "total",
-          "metric" : "l2 relative error"  
-        }
+        "model_type"    : "fixed"
     }
   },
   "sampling":{

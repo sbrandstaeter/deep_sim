@@ -35,8 +35,6 @@ class Iterator (metaclass=abc.ABCMeta):
             from .beam_fem_model_generator import BeamFemModelGenerator as main_iter
         elif config['method']['method_name'] == "pinns":
             from .pinn_iterator import PinnIterator as main_iter
-        elif config['method']['method_name'] == "pinns_multi_model":
-            from .pinn_multi_iterator import PinnMultiIterator as main_iter
         else:
             raise Exception("Method does not exits!")
         
