@@ -24,7 +24,9 @@ setup(
         'pydeep_sim.machine_learning',
         'pydeep_sim.machine_learning.preprocessing',
         'pydeep_sim.machine_learning.feature_selection',
-        'pydeep_sim.machine_learning.model'
+        'pydeep_sim.machine_learning.model',
+        'pydeep_sim.pinns',
+        'pydeep_sim.pinns.models',
     ],
 
     long_description=read('README.md'),
