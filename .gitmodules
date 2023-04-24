@@ -1,3 +1,6 @@
 [submodule "cubitpy"]
 	path = cubitpy
 	url = https://gitlab.com/compsim/codes/cubitpy.git
+[submodule "MIRCO"]
+	path = MIRCO
+	url = https://github.com/imcs-compsim/MIRCO.git
