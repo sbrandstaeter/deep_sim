@@ -65,23 +65,27 @@ List the installed packages
 ```bash
 pip list --local
 ```
-
-# Working with CubitPy
-
-To generate FEM models for Baci simulations, `CubitPy` interface is used. Since CubitPy is another Git repo and it should be added as a submodule for `deep_sim`:
+# Working with submodules
+DeepSim requires `Cubitpy` and `Mirco` to run simulations regarding FEM and BEM. To add those packages as
+submodules:
 
 ```bash
 git submodule add git@gitlab.com:compsim/codes/cubitpy.git
-git submodule update --remote --merge
+git submodule add https://github.com/imcs-compsim/MIRCO.git
+git submodule update --init --recursive
 ```
 
-Add the cubitpy path to PYTHONPATH
+## Working with CubitPy
+
+To generate FEM models for Baci simulations, the `CubitPy` interface is used. 
+
+Add the `CubitPy` path to PYTHONPATH:
 
 ```bash
 export PYTHONPATH=<path_to_cubitpy>:$PYTHONPATH
 ```
 
-Cubitpy requires `pre_exodus` executable and the `cubit` folder so set the paths for them:
+Cubitpy requires the `pre_exodus` executable and the `cubit` folder so set the paths for them:
 
 ```bash
 export BACI_PRE_EXODUS=<path_to_pre-exodus>
@@ -92,6 +96,14 @@ Install the packages required for cubit:
 
 ```bash
 pip install -r path_to_cubitpy/requirements.txt
+```
+
+## Working with MIRCO
+First, you have to build MIRCO by following the instructions on https://github.com/imcs-compsim/MIRCO. 
+Then export the executable to bash:
+
+```bash
+export MIRCO=<path_to_mirco_executable>
 ```
 
 # Running the BACI code
@@ -122,16 +134,8 @@ export PYTHONPATH=$PYTHONPATH:$PARAVIEWPATH:/lib/python2.7/site-packages
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${PARAVIEWPATH}/lib
 ```
 
-# Running the BEM code
-
-To run BEM implementation as the solver, in the same manner `bem` exectuable should be exported as an environment variable.
-
-```bash
-export BACI_POST_DRT_ENSIGHT=<path_to_bem>
-```
-
 # Running tests
-To check if the program works without any problem, tests are generated. At this point `Python` offers the `pytest` interface. To run the tests:
+To check if the program works without any problem, tests are generated. At this point, `Python` offers the `pytest` interface. To run the tests:
 
 ```bash
 pytest
@@ -153,7 +157,8 @@ If you are a VSCode user and you don't want to export `PYTHONPATH` and all env v
         "BACI_POST_DRT_ENSIGHT" : "/home/a11btasa/git_repos/baci/baci_build/post_drt_ensight",
         "CUBIT": "/imcs/public/compsim/opt/cubit-13.2",
         "BACI_PRE_EXODUS": "/home/a11btasa/git_repos/baci/baci_build/pre_exodus",
-        "BEM" : "/home/a11btasa/git_repos/bem/bem"
+        "BEM" : "/home/a11btasa/git_repos/bem/bem",
+        "MIRCO": "/home/a11btasa/deep_sim/MIRCO/mirco"
     },
 "python.envFile": "${workspaceFolder}/debug.env",
 ```
@@ -168,6 +173,7 @@ BACI_POST_DRT_ENSIGHT=/home/a11btasa/git_repos/baci/baci_build/post_drt_ensight
 CUBIT=/imcs/public/compsim/opt/cubit-13.2
 BACI_PRE_EXODUS=/home/a11btasa/git_repos/baci/baci_build/pre_exodus
 BEM=/home/a11btasa/git_repos/bem/bem
+MIRCO="/home/a11btasa/deep_sim/MIRCO/mirco"
 ```
 
 The `settings.json` will set the variables for the integrated shell, while `debug.env` will set the variable but for the debugging menu and they must be done seperately. 
