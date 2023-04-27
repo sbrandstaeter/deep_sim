@@ -31,6 +31,11 @@ sudo apt-get install python3-venv python3-dev
 
 ## Installation
 
+Clone the repo using `recursive` to get submodules as well:
+```bash
+git clone --recursive git@gitlab.com:compsim/codes/deep_sim.git
+```
+
 Create a new virtual environment using `venv` (for example in the home directory)
 ```bash
 cd ~
@@ -67,11 +72,9 @@ pip list --local
 ```
 # Working with submodules
 DeepSim requires `Cubitpy` and `Mirco` to run simulations regarding FEM and BEM. To add those packages as
-submodules:
+submodules. If you have used the `recursive` option while cloning the repo, you can skip this part.
 
 ```bash
-git submodule add git@gitlab.com:compsim/codes/cubitpy.git
-git submodule add https://github.com/imcs-compsim/MIRCO.git
 git submodule update --init --recursive
 ```
 
