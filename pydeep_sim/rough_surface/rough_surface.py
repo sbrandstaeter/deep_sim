@@ -6,34 +6,35 @@ from scipy.stats import skew
 
 class RoughSurface():
 
-    def __init__(self, output_dir, n , H, g0, n_iter, lato):
+    def __init__(self, output_dir, file_tail, Resolution, Hurst, InitialTopologyStdDeviation, n_iter, LateralLength):
         self.output_dir = output_dir
-        self.n = n
-        self.H = H
-        self.g0 = g0
+        self.file_tail = file_tail
+        self.Resolution = Resolution
+        self.Hurst = Hurst
+        self.InitialTopologyStdDeviation = InitialTopologyStdDeviation
         self.n_iter = n_iter
-        self.lato = lato
+        self.LateralLength = LateralLength
 
     def generate_surface_RMD(self):
         '''
         creates the 2D surfaces using RMD (Random Midpoint Distribution)
         '''
-        N = 2**self.n     
+        N = 2**self.Resolution     
         z = np.zeros([N+1,N+1])
 
-        alpha = 1 / np.sqrt(0.09)
+        alpha = self.InitialTopologyStdDeviation / np.power(np.sqrt(2),self.Hurst)
 
         D = N
         d = N//2
 
-        for _ in range(self.n):
-            alpha=alpha/np.sqrt(2)**self.H
+        for _ in range(self.Resolution):
+            alpha = alpha / np.power(np.sqrt(2),self.Hurst)
             
             for j in range(d,N-d+1,D):
                 for k in range(d,N-d+1,D):
                     z[j,k] =  (z[j+d,k+d]+z[j+d,k-d]+z[j-d,k+d]+z[j-d,k-d])/4+alpha*rnd.randn()
             
-            alpha=alpha/np.sqrt(2)**self.H
+            alpha=alpha / np.power(np.sqrt(2),self.Hurst)
             
             for j in range(d,N-d+1,D):
                 z[j,0]=(z[j+d,0]+z[j-d,0]+z[j,d])/3+alpha*rnd.randn()
@@ -49,34 +50,30 @@ class RoughSurface():
                 for k in range(d,N-d+1,D):
                     z[j,k]=(z[j,k+d]+z[j,k-d]+z[j+d,k]+z[j-d,k])/4+alpha*rnd.randn()
 
-
             D = D//2
             d = d//2 
 
         # scalefactor = g0/(np.max(z)-np.mean(z))
         # z = z*scalefactor
-        # z = z-(np.min(z))
-        z = self.g0*(z-np.min(z))/(np.max(z)-np.min(z)); # (scaling between 0 and g0)
+        z = z - (np.min(z))
 
+        # z = self.g0*(z-np.min(z))/(np.max(z)-np.min(z)); # (scaling between 0 and g0)
 
-        full_path = self.output_dir + "/surface_" + str(self.n_iter) + ".dat"
+        full_path = self.output_dir + "/topology_" + self.file_tail + ".dat"
         np.savetxt(full_path, z, delimiter=';', fmt="%15.5e")
         
         return full_path
     
-    def random_postprocess(self, statistical_properties):
-        
-        # the rough surface path
-        full_path = self.output_dir + "/surface_" + str(self.n_iter) + ".dat"
+    def random_postprocess(self, surface_path, statistical_properties):
 
         # the number of heights
-        n_heights = 2**self.n + 1
+        n_heights = 2**self.Resolution + 1
 
         # import the rough surface
-        z = np.loadtxt(full_path, delimiter=";",usecols=range(n_heights))
+        z = np.loadtxt(surface_path, delimiter=";",usecols=range(n_heights))
 
         # the element size
-        ele_length = self.lato/n_heights
+        ele_length = self.LateralLength/n_heights
 
         # -------------------------------------------------------------------
         # Compute the profile statistics of the peaks: slopes, maxima (2D) heights and  curvatures
@@ -149,8 +146,8 @@ class RoughSurface():
         # -------------------------------------------------------------------
 
         # create the mesh 
-        x_lin = np.linspace(self.lato/n_heights,self.lato,n_heights)
-        y_lin = np.linspace(self.lato/n_heights,self.lato,n_heights)
+        x_lin = np.linspace(self.LateralLength/n_heights,self.LateralLength,n_heights)
+        y_lin = np.linspace(self.LateralLength/n_heights,self.LateralLength,n_heights)
 
         y, x = np.meshgrid(x_lin, y_lin)
 
