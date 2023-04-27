@@ -4,3 +4,4 @@
 [submodule "MIRCO"]
 	path = MIRCO
 	url = https://github.com/imcs-compsim/MIRCO.git
+	ignore = dirty
