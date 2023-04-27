@@ -206,6 +206,7 @@ class RoughSurface():
         # Compute the statistics of the rough surface itself
         # -------------------------------------------------------------------
         statistical_properties["z_mean"].append(z.mean())
+        statistical_properties["z_max"].append(z.max())
         statistical_properties["z_rms"].append(z.std())
         
         return  statistical_properties
