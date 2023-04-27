@@ -1,6 +1,6 @@
 DeepXDE==1.6.1
 execnet==1.9.0
-joblib==1.0.1
+joblib==1.1.1
 matplotlib==3.4.2
 numba==0.53.1
 numpy==1.19.5
