@@ -1,15 +1,9 @@
 import numpy as np
-from numpy.random import seed
-from numpy import dtype, random as rnd
 import subprocess
 import os
-import json
 import math
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import collections
-import logging
 
 from .iterator import Iterator
 from ..rough_surface.rough_surface import RoughSurface
@@ -56,7 +50,7 @@ class RoughSurfaceMIRCORMDIterator(Iterator):
         sample_model = Sampling(domain=list(domain.values()), 
                         n_samples=self.num_simulations, 
                         sampling_name=self.sampling["sampling_name"], 
-                        sampling_options=self.sampling["sampling_options"])
+                        sampling_options=self.sampling.get("sampling_options"))
 
         # generate the samples
         sampled_parameters = np.array(sample_model.generate_samples())
@@ -107,9 +101,14 @@ class RoughSurfaceMIRCORMDIterator(Iterator):
             surface_path = rough_surf.generate_surface_RMD()
             # generate the input file for MIRCO and run it
             path_to_xml_input = self.generate_xml_input(surface_path, i, file_tail, domain)
-            self.call_executable(path_to_xml_input, driver_options["output_file_prefix"], current_exec, file_tail)
+            time_out = self.call_executable(path_to_xml_input, driver_options, current_exec, file_tail)
             
-            # check if simulation is failed
+            # check if simulation failed due to maximum waiting time
+            if time_out:
+                self.warning_fail(file_tail, driver_options["output_file_prefix"], fail=False)
+                continue
+            
+            # check if simulation is failed due to no convergence
             not_fail_flag = os.path.exists((self.global_settings["output_dir"] + '/' + driver_options["output_file_prefix"] + "_" + file_tail + "_info.csv"))
             if not not_fail_flag:
                 self.warning_fail(file_tail, driver_options["output_file_prefix"])
@@ -121,25 +120,36 @@ class RoughSurfaceMIRCORMDIterator(Iterator):
                 targets = self.get_results(info_output_file, targets)
                 # calculate the Statistical properties
                 features = rough_surf.random_postprocess(surface_path, features)
+                features["topology_file"] = os.path.splitext(os.path.basename(surface_path))[0]
 
                 for key, _ in domain.items():
                     features[key].append(domain[key][i])
                 
-                self.write_final_results(targets, features, i)
+                final_results = self.write_final_results(targets, features, i)
                 # features["H"].append(domain["H"][i])
+        
+        print(f'''
+-------------------------------------------------------------------------
+Simulation inputs/ouputs are stored in {final_results}
+-------------------------------------------------------------------------
+        ''')
                  
-    def warning_fail(self, file_tail, output_file_prefix):
+    def warning_fail(self, file_tail, output_file_prefix, fail=True):
+        flag_print = "failed"  if fail else "terminated due to run time"
         sim_fail = f'''
-***********************************************************************
--------- Simulation {file_tail} failed, jumping to the next simulation --------
-***********************************************************************
+*************************************************************************************
+- Simulation {file_tail} {flag_print}, jumping to the next simulation -
+*************************************************************************************
                 '''
         print(sim_fail)
         # generate log file
         log_file = self.global_settings["output_dir"] + "/" +output_file_prefix + ".log"
         mode = 'a' if os.path.exists(log_file) else 'w'
         with open(log_file , mode) as f :
-            f.write(f"Simulation {file_tail} failed.\n")
+            if fail:
+                f.write(f"Simulation {file_tail} failed.\n")
+            else:
+                f.write(f"Simulation {file_tail} interrupted.\n")
     
     def get_parameters(self):
         '''
@@ -233,7 +243,7 @@ class RoughSurfaceMIRCORMDIterator(Iterator):
         
         return path_to_xml_input
 
-    def call_executable(self, path_to_xml_input, output_file_prefix, current_exec, file_tail):
+    def call_executable(self, path_to_xml_input, driver_options, current_exec, file_tail):
         '''
         Calls the MIRCO executable
 
@@ -246,7 +256,7 @@ class RoughSurfaceMIRCORMDIterator(Iterator):
         current_exec : EXE
             current executable  
         '''   
-        output_file_prefix = output_file_prefix + "_" + file_tail
+        output_file_prefix = driver_options["output_file_prefix"] + "_" + file_tail
         args = [current_exec, path_to_xml_input, output_file_prefix]
 
         simulation_start = f'''
@@ -257,9 +267,14 @@ Simulation number: -{file_tail}-
 -----------------------------------------------------------------------------------------
         '''
         print(simulation_start)
-
-        subprocess.call(args)
-
+        try:
+            subprocess.call(args, timeout=driver_options.get("max_run_time"))
+            time_out = False
+        except:
+            time_out = True
+        
+        return time_out
+    
     def get_results(self, mirco_output_file, targets):
         '''
         Obtain simulation results after MIRCO simulation is finished.
@@ -292,12 +307,6 @@ Simulation number: -{file_tail}-
         '''
         final_results = "_".join(self.global_settings["experiment_name"].split())
         final_results = self.global_settings["output_dir"] + '/simulation_output_' + final_results + '.csv'
-
-        print(f'''
--------------------------------------------------------------------------
-Simulation inputs/ouputs are stored in {final_results}
--------------------------------------------------------------------------
-        ''')
         
         # copy features into targets (merge two dicts)
         targets.update(features)
@@ -309,3 +318,6 @@ Simulation inputs/ouputs are stored in {final_results}
             df.to_csv(final_results, index=False, sep="\t", float_format='%.5f')
         else:
             df.to_csv(final_results, mode="a", index=False, header=False, sep="\t", float_format='%.5f')
+            
+        return final_results
+            
