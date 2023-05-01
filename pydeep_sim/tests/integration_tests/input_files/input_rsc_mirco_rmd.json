@@ -14,17 +14,13 @@
       "driver_params"         :{
         "executable_name"    : "mirco",
         "driver_options" : {
-          "output_file_prefix" : "MIRCO_simulations"
+          "output_file_prefix" : "MIRCO_simulations",
+          "max_run_time" : 2.0
         }
       }
   },
   "sampling":{
-    "sampling_name": "lhs",
-    "sampling_options": {
-        "lhs_type" : "classic",
-        "criterion": "ratio",
-        "iterations": 1000 
-    }
+    "sampling_name": "random_sampling"
   },  
   "parameters" : {
     "simulation_parameters":{
