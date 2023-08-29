@@ -35,6 +35,8 @@ class Iterator (metaclass=abc.ABCMeta):
             from .beam_fem_model_generator import BeamFemModelGenerator as main_iter
         elif config['method']['method_name'] == "pinns":
             from .pinn_iterator import PinnIterator as main_iter
+        elif config['method']['method_name'] == "rsc_mirco_rmd":
+            from .rsc_mirco_rmd_iterator import RoughSurfaceMIRCORMDIterator as main_iter
         else:
             raise Exception("Method does not exits!")
         

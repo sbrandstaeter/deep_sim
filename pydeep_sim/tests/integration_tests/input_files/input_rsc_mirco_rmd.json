@@ -1,0 +1,108 @@
+{
+  "experiment_name" : "Rough Surface Contact Simulation run by MIRCO",
+  "method": {
+    "method_name": "rsc_mirco_rmd",
+    "method_options" :{
+      "num_simulations":3,
+      "result_description" : {
+          "write_results" : true
+          }
+    }
+  },
+  "driver" :{
+      "driver_type"           : "rsc_mirco_driver",
+      "driver_params"         :{
+        "executable_name"    : "mirco",
+        "driver_options" : {
+          "output_file_prefix" : "MIRCO_simulations",
+          "max_run_time" : 2.0
+        }
+      }
+  },
+  "sampling":{
+    "sampling_name": "random_sampling"
+  },  
+  "parameters" : {
+    "simulation_parameters":{
+      "WarmStartingFlag" : {
+        "type" : "bool",
+        "size" : 1,
+        "distribution_parameter" : true
+      },
+      "RandomTopologyFlag" : {
+        "type" : "bool",
+        "size" : 1,
+        "distribution_parameter" : false
+      },
+      "RandomSeedFlag" : {
+        "type" : "bool",
+        "size" : 1,
+        "distribution_parameter" : false
+      },
+      "RandomGeneratorSeed" : {
+        "type" : "int",
+        "size" : 1,
+        "distribution_parameter" : 95
+      },
+      "MaxIteration" : {
+        "type" : "int",
+        "size" : 1,
+        "distribution_parameter" : 100
+      }
+    },
+    "material_parameters" : {
+      "E1" : {
+        "type" : "float",
+        "size" : 1,
+        "distribution_parameter" : 1
+      },
+      "nu1" : {
+        "type" : "float",
+        "size" : 1,
+        "distribution_parameter" : 0.3
+      },
+      "E2" : {
+        "type" : "float",
+        "size" : 1,
+        "distribution_parameter" : 1
+      },
+      "nu2" : {
+        "type" : "float",
+        "size" : 1,
+        "distribution_parameter" : 0.3
+      }
+    },
+    "geometrical_parameters" : {
+      "LateralLength" : {
+          "type" : "float",
+          "size" : 1,
+          "distribution_parameter" : 1000.0
+      },
+      "Resolution" : {
+        "type" : "int",
+        "size" : 1,
+        "distribution_parameter" : 6
+      },
+      "HurstExponent" : {
+        "type"  : "float",
+        "size"  : 10,
+        "distribution_parameter" : [0.5, 0.8]
+      },
+      "InitialTopologyStdDeviation" : {
+          "type" : "float",
+          "size" : 1,
+          "distribution_parameter" : 20.0
+      },
+      "Delta" :{
+          "type" : "float",
+          "size" : 10,
+          "distribution_parameter" : [2.0, 15.0]
+      },
+      "Tolerance" : {
+          "type" : "float",
+          "size" : 1,
+          "distribution_parameter" : 0.01
+      }
+    }
+  }
+}

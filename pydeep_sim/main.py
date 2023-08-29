@@ -163,6 +163,15 @@ def get_paths(global_settings):
                         " you will face with errors."
                         "\n"
                         "Be sure that you export BEM env variable and the executable bem does exist!\n"))
+        
+    try: 
+        os.path.isfile(os.environ['MIRCO'])
+        exe_path["mirco"] = os.environ["MIRCO"]
+    except:
+        warnings.warn(("Path to MIRCO not found! If you will run rough surface contact simulations vi MIRCO,"
+                        " you will face with errors."
+                        "\n"
+                        "Be sure that you export BEM env variable and the executable bem does exist!\n"))
     
     global_settings["exe_paths"] = exe_path
     
