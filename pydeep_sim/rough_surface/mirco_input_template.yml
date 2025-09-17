@@ -1,0 +1,16 @@
+mirco_input:
+  WarmStartingFlag: true
+  RandomTopologyFlag: false
+  TopologyFilePath: {{ surface_path }}
+  MaxIteration: 100
+  PressureGreenFunFlag: false
+  parameters:
+    material_parameters:
+      E1: 1
+      nu1: 0.3
+      E2: 1
+      nu2: 0.3
+    geometrical_parameters:
+      LateralLength: {{ lateral_length }}
+      Delta: {{ far_field_displacement }}
+      Tolerance: 0.01
