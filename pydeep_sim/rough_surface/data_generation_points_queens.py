@@ -1,0 +1,46 @@
+import numpy as np
+
+from queens.global_settings import GlobalSettings
+from queens.iterators import Points
+from queens.main import run_iterator
+from queens.models.simulation import Simulation
+from queens.schedulers import Local
+from queens.utils.io import load_result
+
+from pydeep_sim.rough_surface.mirco_queens_driver import MIRCO_DRIVER
+from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
+
+
+experiment_name = "queens_rough_surface_points"
+output_dir = "./"
+
+global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
+
+num_points = 10
+hurst_values = np.array([0.55] * num_points)
+far_field_displacement = np.array([5.0] * num_points)
+points = {"hurst": hurst_values, "far_field_displacement": far_field_displacement}
+
+if __name__ == "__main__":
+    scheduler = Local(
+        experiment_name=global_settings.experiment_name,
+        num_jobs=1,
+        num_procs=1,
+        restart_workers=False,
+        verbose=True,
+    )
+    model = Simulation(scheduler=scheduler, driver=MIRCO_DRIVER)
+    iterator = Points(
+        points=points,
+        result_description={"write_results": True},
+        model=model,
+        parameters=ROUGH_SURFACE_PARAMETERS,
+        global_settings=global_settings,
+    )
+
+    with global_settings:
+        # Actual analysis
+        run_iterator(iterator, global_settings=global_settings)
+
+        # Load results
+        results = load_result(global_settings.result_file(".pickle"))
