@@ -9,10 +9,21 @@ from queens.utils.metadata import SimulationMetadata
 
 from pydeep_sim.rough_surface.rough_surface import RoughSurface
 
-JOBSCRIPT_TEMPLATE = """
+JOBSCRIPT_LOCAL_HEADER = """
+#!/bin/bash
+# Setup shell environment and start from home dir
+"""
+
+JOBSCRIPT_CLUSTER_HEADER = """
 #!/bin/bash
 # Setup shell environment and start from home dir
 
+source /home/cluster_tools/user/load_four_c_environment.sh
+
+module list
+"""
+
+JOBSCRIPT_TEMPLATE_CORE = """
 MIRCO_EXE={{ executable }}
 
 MIRCO_INPUT_FILE={{ mirco_input_file }}
@@ -32,6 +43,10 @@ echo 'Computations are done. About to finish the job.'
 echo
 echo "Job finished with exit code $? at: `date`"
 """
+
+JOBSCRIPT_TEMPLATE = JOBSCRIPT_LOCAL_HEADER + JOBSCRIPT_TEMPLATE_CORE
+
+JOBSCRIPT_CLUSTER_TEMPLATE = JOBSCRIPT_CLUSTER_HEADER + JOBSCRIPT_TEMPLATE_CORE
 
 
 class MircoJobscript(Jobscript):
