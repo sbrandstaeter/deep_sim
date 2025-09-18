@@ -11,8 +11,9 @@ from queens.utils.io import load_result
 
 from pydeep_sim.rough_surface.mirco_queens_driver import (
     MircoJobscript,
-    JOBSCRIPT_TEMPLATE,
+    JOBSCRIPT_CLUSTER_TEMPLATE,
 )
+from pydeep_sim.rough_surface.mirco_effective_contact_area_data_processor import MIRCO_EFFECTIVE_CONTACT_AREA_DATAPROCESSOR
 
 experiment_name = "queens_rough_surface"
 output_dir = "./"
@@ -28,10 +29,10 @@ parameters = Parameters(hurst=hurst, far_field_displacement=far_field_displaceme
 driver = MircoJobscript(
     parameters=parameters,
     input_templates={"mirco_input_file": "./mirco_input_template.yml"},
-    jobscript_template=JOBSCRIPT_TEMPLATE,
-    executable="path-to-mirco",
+    jobscript_template=JOBSCRIPT_CLUSTER_TEMPLATE,
+    executable="/home/a11bsebr/codespace/mirco/build/mirco",
     files_to_copy=None,
-    data_processor=None,
+    data_processor=MIRCO_EFFECTIVE_CONTACT_AREA_DATAPROCESSOR,
     gradient_data_processor=None,
     jobscript_file_name="jobscript.sh",
     extra_options=None,

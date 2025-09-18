@@ -31,7 +31,7 @@ MIRCO_INPUT_FILE={{ mirco_input_file }}
 OUTPUT_DIR={{ output_dir }}
 
 
-### $MIRCO_EXE $MIRCO_INPUT_FILE 
+$MIRCO_EXE $MIRCO_INPUT_FILE 
 
 wait
 
@@ -192,7 +192,7 @@ class MircoJobscript(Jobscript):
         with metadata.time_code("data_processing"):
             result, gradient = self._get_results(output_dir)
             if result is not None:
-                result = np.concatenate(statistical_properties_results, result)
+                result = np.concatenate([statistical_properties_results, result])
             else:
                 result = statistical_properties_results
             metadata.outputs = result, gradient
