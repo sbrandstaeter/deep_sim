@@ -23,3 +23,10 @@ dummy_files/
 
 # ignore the env file
 debug.env
+
+# ignore files in surfaces folder
+pydeep_sim/rough_surface/surface_database
+pydeep_sim/rough_surface/surface_patches
+
+# ignore .pdf files
+*.pdf
