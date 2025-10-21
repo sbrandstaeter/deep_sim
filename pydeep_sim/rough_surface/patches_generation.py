@@ -106,16 +106,12 @@ def patches_generation(
         ]
     )
 
-    final_surface = "topology_RMD_aggregated_{0:02d}x{1:03d}_{2:04d}.dat".format(
-        n_iter, int(N / np.sqrt(n_iter)), surf_id
-    )
-
     delete_content(path_to_patches)
 
     # Save final patchwork surface and store it in surface database
     try:
         np.savetxt(
-            path_to_surface / final_surface,
+            path_to_surface,
             z_patch,
             fmt="%14.5e",
             delimiter=";",
@@ -147,7 +143,15 @@ if __name__ == "__main__":
     surf_id = 0
     for n in n_iter:
         surf_id += 1
-        z_surf[n] = patches_generation(H, n, surf_id)
+        final_surface_name = (
+            "topology_RMD_aggregated_{0:02d}x{1:03d}_{2:04d}.dat".format(
+                n, int(N / np.sqrt(n)), surf_id
+            )
+        )
+        path_to_surface = Path("./surface_database") / final_surface_name
+        z_surf[n] = patches_generation(
+            H=H, n_iter=n, surf_id=surf_id, N=N, path_to_surface=path_to_surface
+        )
         z_surf[n] -= np.min(z_surf[n])
 
     """
