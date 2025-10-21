@@ -1,4 +1,5 @@
 from itertools import chain
+from pathlib import Path
 
 import numpy as np
 from queens.drivers import Jobscript
@@ -8,6 +9,7 @@ from queens.utils.logger_settings import log_init_args
 from queens.utils.metadata import SimulationMetadata
 
 from pydeep_sim.rough_surface.rough_surface import RoughSurface
+from pydeep_sim.rough_surface.patches_generation import patches_generation
 from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
 from pydeep_sim.rough_surface.mirco_effective_contact_area_data_processor import (
     MIRCO_EFFECTIVE_CONTACT_AREA_DATAPROCESSOR,
@@ -105,17 +107,26 @@ class MircoJobscript(Jobscript):
 
         sample_dict = self.parameters.sample_as_dict(sample)
 
-        rough_surface = RoughSurface(
-            output_dir=str(job_dir),
-            file_tail=str(job_id),
-            Resolution=self.rmd_resolution,
-            Hurst=sample_dict["hurst"],
-            InitialTopologyStdDeviation=self.initial_topology_std_dev,
-            LateralLength=self.lateral_length,
-            n_iter=0,
+        N = 2**self.rmd_resolution
+        n_iter = 4
+        final_surface_name = (
+            "topology_RMD_aggregated_{0:02d}x{1:03d}_{2:04d}.dat".format(
+                n_iter, int(N / np.sqrt(n_iter)), job_id
+            )
         )
-
-        surface_path = rough_surface.generate_surface_RMD()
+        surface_path = job_dir / final_surface_name
+        rough_surface = patches_generation(
+            H=sample_dict["hurst"],
+            n_iter=n_iter,
+            surf_id=job_id,
+            path_to_patches=job_dir / "patches",
+            path_to_surface=surface_path,
+            file_tail="RMD_" + str(job_id),
+            N=N,
+            l=self.lateral_length,
+            std0=self.initial_topology_std_dev,
+        )
+        rough_surface -= np.min(rough_surface)
 
         sample_dict["surface_path"] = surface_path
         sample_dict["lateral_length"] = self.lateral_length
