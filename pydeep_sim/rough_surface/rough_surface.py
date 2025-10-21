@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 from numpy import dtype, random as rnd
 from scipy.stats import norm, kurtosis
@@ -86,7 +88,7 @@ class RoughSurface:
 
         # z = self.g0*(z-np.min(z))/(np.max(z)-np.min(z)); # (scaling between 0 and g0)
 
-        full_path = self.output_dir + "/topology_" + self.file_tail + ".dat"
+        full_path = Path(self.output_dir) / ("topology_" + self.file_tail + ".dat")
         np.savetxt(full_path, z, delimiter=";", fmt="%15.5e")
 
         return full_path

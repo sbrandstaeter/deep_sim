@@ -51,19 +51,8 @@ def patches_generation(
         )
     )
 
-    path_to_dir = os.path.join(path_to_surface, "niter_{0:02d}".format(n_iter))
-
-    # Check if proper folder is already present, otherwise create it:
-    try:
-        # Try to check if the folder exists
-        if not os.path.exists(path_to_dir):
-            os.mkdir(path_to_dir)
-            print(f"Folder '{path_to_dir}' was created successfully.")
-        else:
-            print(f"Folder '{path_to_dir}' already exists.")
-    except Exception as e:
-        # If an error occurs (e.g., permissions issue), print the error
-        print(f"An error occurred: {e}")
+    path_to_dir = Path(path_to_surface) / "niter_{0:02d}".format(n_iter)
+    path_to_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate the patches:
     path_to_topology = {}
@@ -121,7 +110,7 @@ def patches_generation(
     # Save final patchwork surface and store it in surface database
     try:
         np.savetxt(
-            os.path.join("surface_database", final_surface),
+            Path("surface_database") / final_surface,
             z_patch,
             fmt="%14.5e",
             delimiter=";",
