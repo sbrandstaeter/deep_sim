@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 from pydeep_sim.rough_surface.rough_surface import RoughSurface
 
@@ -128,55 +129,59 @@ def patches_generation(
 ################################################################################
 # MAIN STARTS HERE
 ################################################################################
-from matplotlib import pyplot as plt
 
-std0 = 0.09
-l = 1.0
-N = 128
+if __name__ == "__main__":
+    std0 = 0.09
+    l = 1.0
+    N = 128
 
-# Let us fix the number of points per side of the patchwork to N=128, and the
-# number of patches to [1,4,16,64], this leaves us with [128, 64, 32, 16] points
-# per side, respectively, and resolutions of [7,6,5,4].
+    # Let us fix the number of points per side of the patchwork to N=128, and the
+    # number of patches to [1,4,16,64], this leaves us with [128, 64, 32, 16] points
+    # per side, respectively, and resolutions of [7,6,5,4].
 
-n_iter = [1, 4, 16, 64]  # number of patches in total
-H = 0.75
-surf_id = 1  # unique identifier for final "big" surface (I hope this help in database generation)
+    n_iter = [1, 4, 16, 64]  # number of patches in total
+    H = 0.75
+    surf_id = 1  # unique identifier for final "big" surface (I hope this help in database generation)
 
-z_surf = {}
-surf_id = 0
-for n in n_iter:
-    surf_id += 1
-    z_surf[n] = patches_generation(H, n, surf_id)
-    z_surf[n] -= np.min(z_surf[n])
+    z_surf = {}
+    surf_id = 0
+    for n in n_iter:
+        surf_id += 1
+        z_surf[n] = patches_generation(H, n, surf_id)
+        z_surf[n] -= np.min(z_surf[n])
 
-"""
-std_z = st.tstd(z_surf[n], axis = None)
-mean_z = st.tmean(z_surf[n], axis = None)
-z_flat = np.ravel(z_surf[n], order = 'F')
-x = np.linspace(-5*std_z,+5*std_z, 1000)
-"""
+    """
+    std_z = st.tstd(z_surf[n], axis = None)
+    mean_z = st.tmean(z_surf[n], axis = None)
+    z_flat = np.ravel(z_surf[n], order = 'F')
+    x = np.linspace(-5*std_z,+5*std_z, 1000)
+    """
 
-plt.figure(1, figsize=(10, 6))
-for n in n_iter:
-    hist_patch = np.histogram(np.ravel(z_surf[n], order="F"), bins=500, density=True)
-    plt.plot(hist_patch[1][:-1], hist_patch[0], label="Patches: {}".format(n))
-    # plt.plot(x, st.norm.pdf(x, 0.0, std_z))
-    # plt.axvline(3*std_z, linestyle = '-.', color = 'k',linewidth = 0.75)
-    plt.legend()
-    plt.grid("show")
-    plt.xlabel("h (mum)")
-    plt.ylabel("Probability density")
-plt.savefig("histogram.png")
+    plt.figure(1, figsize=(10, 6))
+    for n in n_iter:
+        hist_patch = np.histogram(
+            np.ravel(z_surf[n], order="F"), bins=500, density=True
+        )
+        plt.plot(hist_patch[1][:-1], hist_patch[0], label="Patches: {}".format(n))
+        # plt.plot(x, st.norm.pdf(x, 0.0, std_z))
+        # plt.axvline(3*std_z, linestyle = '-.', color = 'k',linewidth = 0.75)
+        plt.legend()
+        plt.grid("show")
+        plt.xlabel("h (mum)")
+        plt.ylabel("Probability density")
+    plt.savefig("histogram.png")
 
-plt.figure(2, figsize=(10, 6))
-for n in n_iter:
-    hist_patch = np.histogram(np.ravel(z_surf[n], order="F"), bins=500, density=True)
-    cumulated_sum = (hist_patch[1][1] - hist_patch[1][0]) * np.cumsum(hist_patch[0])
-    plt.plot(hist_patch[1][:-1], cumulated_sum, label="Patches: {}".format(n))
-    # plt.plot(x,cumulated_dist)
-    # cumulated_dist = 1/2*(1+erf((x-mean_z)/(np.sqrt(2)*std_z)))
-    plt.legend()
-    plt.grid("show")
-    plt.xlabel("h (mum)")
-    plt.ylabel("Cumulated distribution")
-plt.savefig("cumulated.png")
+    plt.figure(2, figsize=(10, 6))
+    for n in n_iter:
+        hist_patch = np.histogram(
+            np.ravel(z_surf[n], order="F"), bins=500, density=True
+        )
+        cumulated_sum = (hist_patch[1][1] - hist_patch[1][0]) * np.cumsum(hist_patch[0])
+        plt.plot(hist_patch[1][:-1], cumulated_sum, label="Patches: {}".format(n))
+        # plt.plot(x,cumulated_dist)
+        # cumulated_dist = 1/2*(1+erf((x-mean_z)/(np.sqrt(2)*std_z)))
+        plt.legend()
+        plt.grid("show")
+        plt.xlabel("h (mum)")
+        plt.ylabel("Cumulated distribution")
+    plt.savefig("cumulated.png")
