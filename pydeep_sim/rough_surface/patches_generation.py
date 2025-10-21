@@ -36,12 +36,16 @@ def patches_generation(
     H,
     n_iter,
     surf_id=0,
-    path_to_surface="surface_patches",
+    path_to_patches="./surface_patches",
+    path_to_surface="./surface_database",
     file_tail="RMD",
     N=128,
     l=1.0,
     std0=0.09,
 ):
+
+    path_to_patches = Path(path_to_patches)
+    path_to_surface = Path(path_to_surface)
 
     assert int(N % np.sqrt(n_iter)) == 0
     resolution = int(np.log2(N / np.sqrt(n_iter)))
@@ -51,7 +55,7 @@ def patches_generation(
         )
     )
 
-    path_to_dir = Path(path_to_surface) / "niter_{0:02d}".format(n_iter)
+    path_to_dir = path_to_patches / "niter_{0:02d}".format(n_iter)
     path_to_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate the patches:
@@ -105,12 +109,12 @@ def patches_generation(
         n_iter, int(N / np.sqrt(n_iter)), surf_id
     )
 
-    delete_content(path_to_surface)
+    delete_content(path_to_patches)
 
     # Save final patchwork surface and store it in surface database
     try:
         np.savetxt(
-            Path("surface_database") / final_surface,
+            path_to_surface / final_surface,
             z_patch,
             fmt="%14.5e",
             delimiter=";",
