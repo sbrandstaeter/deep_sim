@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+import scipy.stats as st
+from scipy.special import erf
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -113,13 +115,46 @@ def patches_generation(
         np.savetxt(
             path_to_surface,
             z_patch,
-            fmt="%.17e",
+            fmt="%25.17e",
             delimiter=";",
         )
         print("Final aggregated surface was created successfully")
         return z_patch
     except Exception as e:
         print(f"An error occurred: {e}")
+
+
+def plot_probability_density(z, path_to_figure):
+    plt.figure(1, figsize=(10, 6))
+    hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
+    plt.plot(hist_patch[1][:-1], hist_patch[0], label="Patches: {}".format(n))
+    # plt.plot(x, st.norm.pdf(x, 0.0, std_z))
+    # plt.axvline(3*std_z, linestyle = '-.', color = 'k',linewidth = 0.75)
+    plt.legend()
+    plt.grid("show")
+    plt.xlabel("h (mum)")
+    plt.ylabel("Probability density")
+    plt.savefig(path_to_figure)
+    plt.close()
+
+
+def plot_cumulative_distribution(z, path_to_figure):
+    plt.figure(2, figsize=(10, 6))
+    hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
+    cumulated_sum = (hist_patch[1][1] - hist_patch[1][0]) * np.cumsum(hist_patch[0])
+    plt.plot(hist_patch[1][:-1], cumulated_sum, label="Patches: {}".format(n))
+    std_z = st.tstd(z, axis=None)
+    mean_z = st.tmean(z, axis=None)
+    z_flat = np.ravel(z, order="F")
+    x = np.linspace(-5 * std_z, +5 * std_z, 1000)
+    cumulated_dist = 1 / 2 * (1 + erf((x - mean_z) / (np.sqrt(2) * std_z)))
+    plt.plot(x, cumulated_dist)
+    plt.legend()
+    plt.grid("show")
+    plt.xlabel("h (mum)")
+    plt.ylabel("Cumulated distribution")
+    plt.savefig(path_to_figure)
+    plt.close()
 
 
 ################################################################################
@@ -141,51 +176,22 @@ if __name__ == "__main__":
 
     z_surf = {}
     surf_id = 0
+    path_to_database = Path("./surface_database")
     for n in n_iter:
         surf_id += 1
-        final_surface_name = (
-            "topology_RMD_aggregated_{0:02d}x{1:03d}_{2:04d}.dat".format(
-                n, int(N / np.sqrt(n)), surf_id
-            )
+        final_surface_name = "topology_RMD_aggregated_{0:02d}x{1:03d}_{2:04d}".format(
+            n, int(N / np.sqrt(n)), surf_id
         )
-        path_to_surface = Path("./surface_database") / final_surface_name
+        path_to_surface = path_to_database / (final_surface_name + ".dat")
         z_surf[n] = patches_generation(
             H=H, n_iter=n, surf_id=surf_id, N=N, path_to_surface=path_to_surface
         )
         z_surf[n] -= np.min(z_surf[n])
-
-    """
-    std_z = st.tstd(z_surf[n], axis = None)
-    mean_z = st.tmean(z_surf[n], axis = None)
-    z_flat = np.ravel(z_surf[n], order = 'F')
-    x = np.linspace(-5*std_z,+5*std_z, 1000)
-    """
-
-    plt.figure(1, figsize=(10, 6))
-    for n in n_iter:
-        hist_patch = np.histogram(
-            np.ravel(z_surf[n], order="F"), bins=500, density=True
+        plot_probability_density(
+            z_surf[n],
+            path_to_figure=path_to_database / (final_surface_name + "_histogram.png"),
         )
-        plt.plot(hist_patch[1][:-1], hist_patch[0], label="Patches: {}".format(n))
-        # plt.plot(x, st.norm.pdf(x, 0.0, std_z))
-        # plt.axvline(3*std_z, linestyle = '-.', color = 'k',linewidth = 0.75)
-        plt.legend()
-        plt.grid("show")
-        plt.xlabel("h (mum)")
-        plt.ylabel("Probability density")
-    plt.savefig("histogram.png")
-
-    plt.figure(2, figsize=(10, 6))
-    for n in n_iter:
-        hist_patch = np.histogram(
-            np.ravel(z_surf[n], order="F"), bins=500, density=True
+        plot_cumulative_distribution(
+            z_surf[n],
+            path_to_figure=path_to_database / (final_surface_name + "_cdf.png"),
         )
-        cumulated_sum = (hist_patch[1][1] - hist_patch[1][0]) * np.cumsum(hist_patch[0])
-        plt.plot(hist_patch[1][:-1], cumulated_sum, label="Patches: {}".format(n))
-        # plt.plot(x,cumulated_dist)
-        # cumulated_dist = 1/2*(1+erf((x-mean_z)/(np.sqrt(2)*std_z)))
-        plt.legend()
-        plt.grid("show")
-        plt.xlabel("h (mum)")
-        plt.ylabel("Cumulated distribution")
-    plt.savefig("cumulated.png")
