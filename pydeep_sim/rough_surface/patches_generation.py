@@ -113,7 +113,7 @@ def patches_generation(
         np.savetxt(
             path_to_surface,
             z_patch,
-            fmt="%14.5e",
+            fmt="%.17e",
             delimiter=";",
         )
         print("Final aggregated surface was created successfully")
