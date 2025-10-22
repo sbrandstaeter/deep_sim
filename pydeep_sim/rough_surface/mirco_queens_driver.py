@@ -8,7 +8,7 @@ from queens.utils.injector import inject, inject_in_template
 from queens.utils.logger_settings import log_init_args
 from queens.utils.metadata import SimulationMetadata
 
-from pydeep_sim.rough_surface.rough_surface import RoughSurface
+from pydeep_sim.rough_surface.rough_surface import RoughSurface, plot_surface
 from pydeep_sim.rough_surface.patches_generation import patches_generation
 from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
 from pydeep_sim.rough_surface.mirco_effective_contact_area_data_processor import (
@@ -115,7 +115,7 @@ class MircoJobscript(Jobscript):
             )
         )
         surface_path = job_dir / final_surface_name
-        rough_surface = patches_generation(
+        rough_surface, topology = patches_generation(
             H=sample_dict["hurst"],
             n_iter=n_iter,
             surf_id=job_id,
@@ -131,8 +131,16 @@ class MircoJobscript(Jobscript):
         sample_dict["surface_path"] = surface_path
         sample_dict["lateral_length"] = self.lateral_length
 
+        np.testing.assert_allclose(
+            rough_surface, np.loadtxt(surface_path, delimiter=";")
+        )
+
         if self.plot_surface:
-            rough_surface.plot_surface(surface_path, output_dir)
+            plot_surface(
+                rough_surface=rough_surface,
+                lateral_length=self.lateral_length,
+                output_dir=output_dir,
+            )
 
         statistical_properties = {
             # peaks
@@ -162,7 +170,7 @@ class MircoJobscript(Jobscript):
             "z_rms": [],
         }
 
-        rough_surface.random_postprocess(surface_path, statistical_properties)
+        topology.random_postprocess(surface_path, statistical_properties)
 
         statistical_properties_results = np.array(
             list(chain.from_iterable(statistical_properties.values()))

@@ -266,29 +266,27 @@ class RoughSurface:
 
         return statistical_properties
 
-    def plot_surface(self, surface_path, output_dir):
 
-        # import the rough surface
-        values = np.loadtxt(surface_path, delimiter=";")
+def plot_surface(rough_surface, lateral_length, output_dir):
 
-        # Create grid coordinates
-        x = np.linspace(0, self.LateralLength, values.shape[0])
-        y = np.linspace(0, self.LateralLength, values.shape[1])
-        X, Y = np.meshgrid(x, y)
+    # Create grid coordinates
+    x = np.linspace(0, lateral_length, rough_surface.shape[0])
+    y = np.linspace(0, lateral_length, rough_surface.shape[1])
+    X, Y = np.meshgrid(x, y)
 
-        # Make 3D surface plot
-        fig = go.Figure(data=[go.Surface(z=values, x=X, y=Y, colorscale="Viridis")])
+    # Make 3D surface plot
+    fig = go.Figure(data=[go.Surface(z=rough_surface, x=X, y=Y, colorscale="Viridis")])
 
-        fig.update_layout(
-            scene=dict(
-                xaxis_title="X",
-                yaxis_title="Y",
-                zaxis_title="height",
-            ),
-            title="3D Surface Plot",
-        )
+    fig.update_layout(
+        scene=dict(
+            xaxis_title="X",
+            yaxis_title="Y",
+            zaxis_title="height",
+        ),
+        title="3D Surface Plot",
+    )
 
-        # Save as HTML
-        fig.write_html(output_dir / "surface_plot.html")
-        # Save as png
-        fig.write_image(output_dir / "surface_plot.png")
+    # Save as HTML
+    fig.write_html(output_dir / "surface_plot.html")
+    # Save as png
+    fig.write_image(output_dir / "surface_plot.png")
