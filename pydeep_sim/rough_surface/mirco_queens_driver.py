@@ -146,54 +146,8 @@ class MircoJobscript(Jobscript):
                 output_dir=output_dir,
             )
 
-        statistical_properties_old = {
-            # peaks
-            "mean_z_peaks": [],
-            "rms_z_peaks": [],
-            "ks_z_peaks": [],
-            "sk_z_peaks": [],
-            "mean_curv_peaks": [],
-            "ks_curv_peaks": [],
-            "sk_curv_peaks": [],
-            "dn_peaks": [],
-            "alfa_x": [],
-            "alfa_y": [],
-            # asperities
-            "mean_z_asp": [],
-            "rms_z_asp": [],
-            "ks_z_asp": [],
-            "sk_z_asp": [],
-            "mean_curv_asp": [],
-            "rms_curv_asp": [],
-            "ks_curv_asp": [],
-            "sk_curv_asp": [],
-            "dns_asp": [],
-            # surface statistics
-            "z_mean": [],
-            "z_max": [],
-            "z_rms": [],
-        }
-
-        rough_surface_obj = RoughSurface(
-            output_dir=str(job_dir),
-            file_tail=str(job_id),
-            Resolution=self.rmd_resolution,
-            Hurst=sample_dict["hurst"],
-            InitialTopologyStdDeviation=self.initial_topology_std_dev,
-            n_iter=n_iter,
-            LateralLength=self.lateral_length,
-        )
-
-        statistical_properties_old = rough_surface_obj.random_postprocess(
-            surface_path, statistical_properties_old
-        )
-
         statistical_properties = random_postprocess(
             rough_surface=rough_surface, lateral_length=self.lateral_length
-        )
-
-        statistical_properties_results_old = np.array(
-            list(chain.from_iterable(statistical_properties_old.values()))
         )
 
         statistical_properties_results = np.array(list(statistical_properties.values()))
