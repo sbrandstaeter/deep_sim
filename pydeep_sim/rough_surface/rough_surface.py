@@ -268,25 +268,16 @@ class RoughSurface:
 
     def plot_surface(self, surface_path, output_dir):
 
-        # the number of heights
-        n_heights = 2**self.Resolution + 1
-
         # import the rough surface
-        values = np.loadtxt(surface_path, delimiter=";", usecols=range(n_heights))
-
-        # the element size
-        ele_length = self.LateralLength / n_heights
-
-        # Assuming it's meant to be a square grid
-        Z = np.array(values).reshape((n_heights, n_heights))
+        values = np.loadtxt(surface_path, delimiter=";")
 
         # Create grid coordinates
-        x = np.linspace(0, self.LateralLength, n_heights)
-        y = np.linspace(0, self.LateralLength, n_heights)
+        x = np.linspace(0, self.LateralLength, values.shape[0])
+        y = np.linspace(0, self.LateralLength, values.shape[1])
         X, Y = np.meshgrid(x, y)
 
         # Make 3D surface plot
-        fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale="Viridis")])
+        fig = go.Figure(data=[go.Surface(z=values, x=X, y=Y, colorscale="Viridis")])
 
         fig.update_layout(
             scene=dict(
@@ -299,3 +290,5 @@ class RoughSurface:
 
         # Save as HTML
         fig.write_html(output_dir / "surface_plot.html")
+        # Save as png
+        fig.write_image(output_dir / "surface_plot.png")
