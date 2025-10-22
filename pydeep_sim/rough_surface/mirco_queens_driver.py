@@ -72,6 +72,7 @@ class MircoJobscript(Jobscript):
         rmd_resolution=7,
         lateral_length=1.0,
         initial_topology_std_deviation=1.0,
+        max_effective_contact_area=0.1,
         plot_surface=False,
         **kwargs,
     ):
@@ -79,6 +80,7 @@ class MircoJobscript(Jobscript):
         self.rmd_resolution = rmd_resolution
         self.lateral_length = lateral_length
         self.initial_topology_std_dev = initial_topology_std_deviation
+        self.max_effective_contact_area = max_effective_contact_area
         self.plot_surface = plot_surface
 
     def prepare_input_files(self, sample_dict, experiment_dir, input_files):
@@ -138,6 +140,12 @@ class MircoJobscript(Jobscript):
         sample_dict["surface_path"] = surface_path
         sample_dict["lateral_length"] = self.lateral_length
 
+        if sample_dict.get("far_field_displacement") is None:
+            max_far_field_displacement = np.quantile(
+                np.ravel(rough_surface), self.max_effective_contact_area
+            )
+            sample_dict["far_field_displacement"] = max_far_field_displacement
+
         np.testing.assert_allclose(
             rough_surface, np.loadtxt(surface_path, delimiter=";")
         )
@@ -157,6 +165,7 @@ class MircoJobscript(Jobscript):
                 rough_surface,
                 num_patches=n_iter,
                 path_to_figure=output_dir / f"cdf.png",
+                probability=self.max_effective_contact_area,
             )
 
         statistical_properties = random_postprocess(
@@ -226,5 +235,6 @@ MIRCO_DRIVER = MircoJobscript(
     raise_error_on_jobscript_failure=True,
     initial_topology_std_deviation=20.0,
     lateral_length=1000.0,
+    max_effective_contact_area=0.1,
     plot_surface=True,
 )

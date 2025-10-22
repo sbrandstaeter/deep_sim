@@ -161,7 +161,7 @@ def plot_probability_density(z, num_patches, path_to_figure):
     plt.close()
 
 
-def plot_cumulative_distribution(z, num_patches, path_to_figure):
+def plot_cumulative_distribution(z, num_patches, path_to_figure, probability=0.1):
     plt.figure(2, figsize=(10, 6))
     std_z = st.tstd(z, axis=None)
     mean_z = st.tmean(z, axis=None)
@@ -178,6 +178,18 @@ def plot_cumulative_distribution(z, num_patches, path_to_figure):
     hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
     cumulated_sum = (hist_patch[1][1] - hist_patch[1][0]) * np.cumsum(hist_patch[0])
     plt.plot(hist_patch[1][:-1], cumulated_sum, label=f"Patches: {num_patches}")
+    probabilities = np.linspace(0, 1, 100)
+    quantiles = np.quantile(z_flat, probabilities)
+    plt.plot(quantiles, probabilities, label=f"Scipy")
+
+    plt.axhline(y=probability, color="grey", linestyle=":", linewidth=1)
+    plt.axvline(
+        x=np.quantile(z_flat, probability),
+        color="grey",
+        linestyle=":",
+        linewidth=1,
+        label=f"{probability} quantile",
+    )
     plt.legend()
     plt.grid("show")
     plt.xlabel("h (mum)")
