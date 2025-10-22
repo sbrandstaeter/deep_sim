@@ -141,15 +141,21 @@ def plot_probability_density(z, path_to_figure):
 
 def plot_cumulative_distribution(z, path_to_figure):
     plt.figure(2, figsize=(10, 6))
-    hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
-    cumulated_sum = (hist_patch[1][1] - hist_patch[1][0]) * np.cumsum(hist_patch[0])
-    plt.plot(hist_patch[1][:-1], cumulated_sum, label="Patches: {}".format(n))
     std_z = st.tstd(z, axis=None)
     mean_z = st.tmean(z, axis=None)
     z_flat = np.ravel(z, order="F")
-    x = np.linspace(-5 * std_z, +5 * std_z, 1000)
+    x = np.linspace(mean_z - 5 * std_z, mean_z + 5 * std_z, 1000)
     cumulated_dist = 1 / 2 * (1 + erf((x - mean_z) / (np.sqrt(2) * std_z)))
-    plt.plot(x, cumulated_dist)
+    plt.plot(
+        x,
+        cumulated_dist,
+        label=f"Normal({mean_z:.3f}, {std_z:.3f})",
+        linestyle="--",
+        color="k",
+    )
+    hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
+    cumulated_sum = (hist_patch[1][1] - hist_patch[1][0]) * np.cumsum(hist_patch[0])
+    plt.plot(hist_patch[1][:-1], cumulated_sum, label="Patches: {}".format(n))
     plt.legend()
     plt.grid("show")
     plt.xlabel("h (mum)")
