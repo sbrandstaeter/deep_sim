@@ -117,7 +117,7 @@ def patches_generation(
             delimiter=";",
         )
         print("Final aggregated surface was created successfully")
-        return z_patch, topology
+        return z_patch
     except Exception as e:
         print(f"An error occurred: {e}")
 
