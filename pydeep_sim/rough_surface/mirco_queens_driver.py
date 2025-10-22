@@ -130,7 +130,6 @@ class MircoJobscript(Jobscript):
             l=self.lateral_length,
             std0=self.initial_topology_std_dev,
         )
-        # rough_surface -= np.min(rough_surface)
 
         sample_dict["surface_path"] = surface_path
         sample_dict["lateral_length"] = self.lateral_length

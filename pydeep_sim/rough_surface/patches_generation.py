@@ -110,6 +110,7 @@ def patches_generation(
 
     delete_content(path_to_patches)
 
+    z_patch -= np.min(z_patch)
     # Save final patchwork surface and store it in surface database
     try:
         np.savetxt(
@@ -186,7 +187,6 @@ if __name__ == "__main__":
         z_surf[n] = patches_generation(
             H=H, n_iter=n, surf_id=surf_id, N=N, path_to_surface=path_to_surface
         )
-        z_surf[n] -= np.min(z_surf[n])
         plot_probability_density(
             z_surf[n],
             path_to_figure=path_to_database / (final_surface_name + "_histogram.png"),
