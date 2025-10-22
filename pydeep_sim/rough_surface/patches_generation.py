@@ -125,7 +125,7 @@ def patches_generation(
         print(f"An error occurred: {e}")
 
 
-def plot_probability_density(z, path_to_figure):
+def plot_probability_density(z, num_patches, path_to_figure):
     plt.figure(1, figsize=(10, 6))
     std_z = st.tstd(z, axis=None)
     mean_z = st.tmean(z, axis=None)
@@ -152,7 +152,7 @@ def plot_probability_density(z, path_to_figure):
         linewidth=0.75,
     )
     hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
-    plt.plot(hist_patch[1][:-1], hist_patch[0], label="Patches: {}".format(n))
+    plt.plot(hist_patch[1][:-1], hist_patch[0], label=f"Patches: {num_patches}")
     plt.legend()
     plt.grid("show")
     plt.xlabel("h (mum)")
@@ -161,7 +161,7 @@ def plot_probability_density(z, path_to_figure):
     plt.close()
 
 
-def plot_cumulative_distribution(z, path_to_figure):
+def plot_cumulative_distribution(z, num_patches, path_to_figure):
     plt.figure(2, figsize=(10, 6))
     std_z = st.tstd(z, axis=None)
     mean_z = st.tmean(z, axis=None)
@@ -171,13 +171,13 @@ def plot_cumulative_distribution(z, path_to_figure):
     plt.plot(
         x,
         cumulated_dist,
-        label=f"N($\mu=${mean_z:.3f}, $\sigma=${std_z:.3f})",
+        label=f"Normal({mean_z:.3f}, {std_z:.3f})",
         linestyle="--",
         color="k",
     )
     hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
     cumulated_sum = (hist_patch[1][1] - hist_patch[1][0]) * np.cumsum(hist_patch[0])
-    plt.plot(hist_patch[1][:-1], cumulated_sum, label="Patches: {}".format(n))
+    plt.plot(hist_patch[1][:-1], cumulated_sum, label=f"Patches: {num_patches}")
     plt.legend()
     plt.grid("show")
     plt.xlabel("h (mum)")
@@ -217,9 +217,11 @@ if __name__ == "__main__":
         )
         plot_probability_density(
             z_surf[n],
+            num_patches=n,
             path_to_figure=path_to_database / (final_surface_name + "_histogram.png"),
         )
         plot_cumulative_distribution(
             z_surf[n],
+            num_patches=n,
             path_to_figure=path_to_database / (final_surface_name + "_cdf.png"),
         )

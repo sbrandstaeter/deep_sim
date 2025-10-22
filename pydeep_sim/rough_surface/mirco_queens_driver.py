@@ -13,7 +13,11 @@ from pydeep_sim.rough_surface.rough_surface import (
     plot_surface,
     random_postprocess,
 )
-from pydeep_sim.rough_surface.patches_generation import patches_generation
+from pydeep_sim.rough_surface.patches_generation import (
+    patches_generation,
+    plot_cumulative_distribution,
+    plot_probability_density,
+)
 from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
 from pydeep_sim.rough_surface.mirco_effective_contact_area_data_processor import (
     MIRCO_EFFECTIVE_CONTACT_AREA_DATAPROCESSOR,
@@ -143,6 +147,16 @@ class MircoJobscript(Jobscript):
                 rough_surface=rough_surface,
                 lateral_length=self.lateral_length,
                 output_dir=output_dir,
+            )
+            plot_probability_density(
+                rough_surface,
+                num_patches=n_iter,
+                path_to_figure=output_dir / f"pdf.png",
+            )
+            plot_cumulative_distribution(
+                rough_surface,
+                num_patches=n_iter,
+                path_to_figure=output_dir / f"cdf.png",
             )
 
         statistical_properties = random_postprocess(
