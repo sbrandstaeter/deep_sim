@@ -118,16 +118,18 @@ class MircoJobscript(Jobscript):
         sample_dict = self.parameters.sample_as_dict(sample)
 
         N = 2**self.rmd_resolution
-        n_iter = 4
+
+        num_patches = sample_dict.get("num_patches", 1)
+
         final_surface_name = (
             "topology_RMD_aggregated_{0:02d}x{1:03d}_{2:04d}.dat".format(
-                n_iter, int(N / np.sqrt(n_iter)), job_id
+                num_patches, int(N / np.sqrt(num_patches)), job_id
             )
         )
         surface_path = job_dir / final_surface_name
         rough_surface = patches_generation(
             H=sample_dict["hurst"],
-            n_iter=n_iter,
+            n_iter=num_patches,
             surf_id=job_id,
             path_to_patches=job_dir / "patches",
             path_to_surface=surface_path,
@@ -158,12 +160,12 @@ class MircoJobscript(Jobscript):
             )
             plot_probability_density(
                 rough_surface,
-                num_patches=n_iter,
+                num_patches=num_patches,
                 path_to_figure=output_dir / f"pdf.png",
             )
             plot_cumulative_distribution(
                 rough_surface,
-                num_patches=n_iter,
+                num_patches=num_patches,
                 path_to_figure=output_dir / f"cdf.png",
                 probability=self.max_effective_contact_area,
             )
