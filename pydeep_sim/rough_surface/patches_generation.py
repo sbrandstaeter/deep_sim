@@ -127,10 +127,32 @@ def patches_generation(
 
 def plot_probability_density(z, path_to_figure):
     plt.figure(1, figsize=(10, 6))
+    std_z = st.tstd(z, axis=None)
+    mean_z = st.tmean(z, axis=None)
+    x = np.linspace(mean_z - 5 * std_z, mean_z + 5 * std_z, 100)
+    plt.plot(
+        x,
+        st.norm.pdf(x, mean_z, std_z),
+        label=f"N($\mu=${mean_z:.3f}, $\sigma=${std_z:.3f})",
+        linestyle="--",
+        color="k",
+    )
+    plt.axvline(mean_z, linestyle=":", color="k", linewidth=0.75, label="$\mu$")
+    plt.axvline(
+        mean_z + 2 * std_z,
+        linestyle="-.",
+        color="k",
+        linewidth=0.75,
+        label="$\mu \pm 2 \sigma$",
+    )
+    plt.axvline(
+        mean_z - 2 * std_z,
+        linestyle="-.",
+        color="k",
+        linewidth=0.75,
+    )
     hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
     plt.plot(hist_patch[1][:-1], hist_patch[0], label="Patches: {}".format(n))
-    # plt.plot(x, st.norm.pdf(x, 0.0, std_z))
-    # plt.axvline(3*std_z, linestyle = '-.', color = 'k',linewidth = 0.75)
     plt.legend()
     plt.grid("show")
     plt.xlabel("h (mum)")
@@ -144,12 +166,12 @@ def plot_cumulative_distribution(z, path_to_figure):
     std_z = st.tstd(z, axis=None)
     mean_z = st.tmean(z, axis=None)
     z_flat = np.ravel(z, order="F")
-    x = np.linspace(mean_z - 5 * std_z, mean_z + 5 * std_z, 1000)
+    x = np.linspace(mean_z - 5 * std_z, mean_z + 5 * std_z, 100)
     cumulated_dist = 1 / 2 * (1 + erf((x - mean_z) / (np.sqrt(2) * std_z)))
     plt.plot(
         x,
         cumulated_dist,
-        label=f"Normal({mean_z:.3f}, {std_z:.3f})",
+        label=f"N($\mu=${mean_z:.3f}, $\sigma=${std_z:.3f})",
         linestyle="--",
         color="k",
     )
