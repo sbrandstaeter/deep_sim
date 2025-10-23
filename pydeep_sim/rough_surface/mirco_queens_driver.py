@@ -119,13 +119,9 @@ class MircoJobscript(Jobscript):
 
         N = 2**self.rmd_resolution
 
-        num_patches = sample_dict.get("num_patches", 1)
+        num_patches = int(sample_dict.get("num_patches", 1))
 
-        final_surface_name = (
-            "topology_RMD_aggregated_{0:02d}x{1:03d}_{2:04d}.dat".format(
-                num_patches, int(N / np.sqrt(num_patches)), job_id
-            )
-        )
+        final_surface_name = "topology_RMD_aggregated.dat"
         surface_path = job_dir / final_surface_name
         rough_surface = patches_generation(
             H=sample_dict["hurst"],
