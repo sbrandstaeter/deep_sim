@@ -45,6 +45,7 @@ def patches_generation(
     N=128,
     l=1.0,
     std0=0.09,
+    verbose=False,
 ):
 
     path_to_patches = Path(path_to_patches)
@@ -52,11 +53,12 @@ def patches_generation(
 
     assert int(N % np.sqrt(n_iter)) == 0
     resolution = int(np.log2(N / np.sqrt(n_iter)))
-    print(
-        "{0} points, repeated {1} times on each side.".format(
-            2**resolution, int(np.sqrt(n_iter))
+    if verbose:
+        print(
+            "{0} points, repeated {1} times on each side.".format(
+                2**resolution, int(np.sqrt(n_iter))
+            )
         )
-    )
 
     path_to_dir = path_to_patches / "niter_{0:02d}".format(n_iter)
     path_to_dir.mkdir(parents=True, exist_ok=True)
@@ -108,7 +110,7 @@ def patches_generation(
         ]
     )
 
-    delete_content(path_to_patches)
+    # delete_content(path_to_patches)
 
     z_patch -= np.min(z_patch)
     # Save final patchwork surface and store it in surface database
@@ -119,7 +121,8 @@ def patches_generation(
             fmt="%25.17e",
             delimiter=";",
         )
-        print("Final aggregated surface was created successfully")
+        if verbose:
+            print("Final aggregated surface was created successfully")
         return z_patch
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -225,7 +228,12 @@ if __name__ == "__main__":
         )
         path_to_surface = path_to_database / (final_surface_name + ".dat")
         z_surf[n] = patches_generation(
-            H=H, n_iter=n, surf_id=surf_id, N=N, path_to_surface=path_to_surface
+            H=H,
+            n_iter=n,
+            surf_id=surf_id,
+            N=N,
+            path_to_surface=path_to_surface,
+            verbose=True,
         )
         plot_probability_density(
             z_surf[n],
