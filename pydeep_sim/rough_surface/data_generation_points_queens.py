@@ -11,7 +11,7 @@ from pydeep_sim.rough_surface.mirco_queens_driver import MIRCO_DRIVER
 from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
 
 
-experiment_name = "queens_rough_surface_points"
+experiment_name = "rough_surface_points_max_effective_area_0.2"
 output_dir = "./"
 
 global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
