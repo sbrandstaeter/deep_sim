@@ -119,62 +119,69 @@ class MircoJobscript(Jobscript):
 
         N = 2**self.rmd_resolution
 
-        num_patches = int(sample_dict.get("num_patches", 1))
-
-        final_surface_name = "topology_RMD_aggregated.dat"
-        surface_path = job_dir / final_surface_name
-        rough_surface = patches_generation(
-            H=sample_dict["hurst"],
-            n_iter=num_patches,
-            surf_id=job_id,
-            path_to_patches=job_dir / "patches",
-            path_to_surface=surface_path,
-            file_tail="RMD_" + str(job_id),
-            N=N,
-            l=self.lateral_length,
-            std0=self.initial_topology_std_dev,
-        )
-
-        sample_dict["surface_path"] = surface_path
-        sample_dict["lateral_length"] = self.lateral_length
-
-        if sample_dict.get("far_field_displacement") is None:
-            max_far_field_displacement = np.quantile(
-                np.ravel(rough_surface), self.max_effective_contact_area
-            )
-            sample_dict["far_field_displacement"] = max_far_field_displacement
-
-        np.testing.assert_allclose(
-            rough_surface, np.loadtxt(surface_path, delimiter=";")
-        )
-
-        if self.plot_surface:
-            plot_surface(
-                rough_surface=rough_surface,
-                lateral_length=self.lateral_length,
-                output_dir=output_dir,
-            )
-            plot_probability_density(
-                rough_surface,
-                num_patches=num_patches,
-                path_to_figure=output_dir / f"pdf.png",
-            )
-            plot_cumulative_distribution(
-                rough_surface,
-                num_patches=num_patches,
-                path_to_figure=output_dir / f"cdf.png",
-                probability=self.max_effective_contact_area,
-            )
-
-        statistical_properties = random_postprocess(
-            rough_surface=rough_surface, lateral_length=self.lateral_length
-        )
-
-        statistical_properties_results = np.array(list(statistical_properties.values()))
+        if sample_dict.get("num_patches") is None:
+            num_patches = 1
+            sample_dict["num_patches"] = num_patches
+        else:
+            num_patches = int(sample_dict["num_patches"])
 
         metadata = SimulationMetadata(
             job_id=job_id, inputs=sample_dict, job_dir=job_dir
         )
+
+        with metadata.time_code("create_and_analyse_surface"):
+            final_surface_name = "topology_RMD_aggregated.dat"
+            surface_path = job_dir / final_surface_name
+            rough_surface = patches_generation(
+                H=sample_dict["hurst"],
+                n_iter=num_patches,
+                surf_id=job_id,
+                path_to_patches=job_dir / "patches",
+                path_to_surface=surface_path,
+                file_tail="RMD_" + str(job_id),
+                N=N,
+                l=self.lateral_length,
+                std0=self.initial_topology_std_dev,
+            )
+
+            sample_dict["surface_path"] = surface_path
+            sample_dict["lateral_length"] = self.lateral_length
+
+            if sample_dict.get("far_field_displacement") is None:
+                max_far_field_displacement = np.quantile(
+                    np.ravel(rough_surface), self.max_effective_contact_area
+                )
+                sample_dict["far_field_displacement"] = max_far_field_displacement
+
+            np.testing.assert_allclose(
+                rough_surface, np.loadtxt(surface_path, delimiter=";")
+            )
+
+            if self.plot_surface:
+                plot_surface(
+                    rough_surface=rough_surface,
+                    lateral_length=self.lateral_length,
+                    output_dir=output_dir,
+                )
+                plot_probability_density(
+                    rough_surface,
+                    num_patches=num_patches,
+                    path_to_figure=output_dir / f"pdf.png",
+                )
+                plot_cumulative_distribution(
+                    rough_surface,
+                    num_patches=num_patches,
+                    path_to_figure=output_dir / f"cdf.png",
+                    probability=self.max_effective_contact_area,
+                )
+
+            statistical_properties = random_postprocess(
+                rough_surface=rough_surface, lateral_length=self.lateral_length
+            )
+
+            statistical_properties_results = np.array(
+                list(statistical_properties.values())
+            )
 
         with metadata.time_code("prepare_input_files"):
             job_options = JobOptions(
@@ -209,14 +216,16 @@ class MircoJobscript(Jobscript):
             self._run_executable(job_id, execute_cmd)
 
         with metadata.time_code("data_processing"):
-            result, gradient = self._get_results(output_dir)
-            if result is not None:
-                result = np.concatenate([statistical_properties_results, result])
+            mirco_result, gradient = self._get_results(output_dir)
+            if mirco_result is not None:
+                overall_result = np.concatenate(
+                    [statistical_properties_results, mirco_result]
+                )
             else:
-                result = statistical_properties_results
-            metadata.outputs = result, gradient
+                overall_result = statistical_properties_results
+            metadata.outputs = overall_result, gradient
 
-        return result, gradient
+        return overall_result, gradient
 
 
 # Setup iterator
