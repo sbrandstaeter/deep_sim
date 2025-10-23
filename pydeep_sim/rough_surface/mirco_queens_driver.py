@@ -73,6 +73,7 @@ class MircoJobscript(Jobscript):
         lateral_length=1.0,
         initial_topology_std_deviation=1.0,
         max_effective_contact_area=0.1,
+        num_far_field_displacements=1,
         plot_surface=False,
         **kwargs,
     ):
@@ -81,6 +82,7 @@ class MircoJobscript(Jobscript):
         self.lateral_length = lateral_length
         self.initial_topology_std_dev = initial_topology_std_deviation
         self.max_effective_contact_area = max_effective_contact_area
+        self.num_far_field_displacements = num_far_field_displacements
         self.plot_surface = plot_surface
 
     def prepare_input_files(self, sample_dict, experiment_dir, input_files):
@@ -151,7 +153,19 @@ class MircoJobscript(Jobscript):
                 max_far_field_displacement = np.quantile(
                     np.ravel(rough_surface), self.max_effective_contact_area
                 )
-                sample_dict["far_field_displacement"] = max_far_field_displacement
+                far_field_displacements = np.linspace(
+                    0.0,
+                    max_far_field_displacement,
+                    num=self.num_far_field_displacements + 1,
+                )
+                # discard far_field_discplacement = 0.0
+                far_field_displacements = far_field_displacements[1:]
+            else:
+                far_field_displacements = np.array(
+                    [sample_dict["far_field_displacement"]]
+                )
+
+            sample_dict["far_field_displacement"] = far_field_displacements[0]
 
             if self.plot_surface:
                 plot_surface(
@@ -215,10 +229,16 @@ class MircoJobscript(Jobscript):
             mirco_result, gradient = self._get_results(output_dir)
             if mirco_result is not None:
                 overall_result = np.concatenate(
-                    [statistical_properties_results, mirco_result]
+                    [
+                        far_field_displacements,
+                        statistical_properties_results,
+                        mirco_result,
+                    ]
                 )
             else:
-                overall_result = statistical_properties_results
+                overall_result = np.concatenate(
+                    [far_field_displacements, statistical_properties_results]
+                )
             metadata.outputs = overall_result, gradient
 
         return overall_result, gradient
