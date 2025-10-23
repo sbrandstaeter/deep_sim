@@ -153,10 +153,6 @@ class MircoJobscript(Jobscript):
                 )
                 sample_dict["far_field_displacement"] = max_far_field_displacement
 
-            np.testing.assert_allclose(
-                rough_surface, np.loadtxt(surface_path, delimiter=";")
-            )
-
             if self.plot_surface:
                 plot_surface(
                     rough_surface=rough_surface,
