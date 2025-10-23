@@ -24,7 +24,7 @@ class MircoEffectiveContactAreaFromLogFile(TxtFile):
             To be implemented by user.
         """
         regex_global = r"Effective contact area fraction is: "
-        regex_numeric_vals = r"\b\d+\.\d+\b"
+        regex_numeric_vals = r"\b[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?\b"
         global_matches = self._extract_lines_with_regex(  # pylint: disable=W0212
             raw_data, regex_global
         )
