@@ -240,8 +240,8 @@ MIRCO_DRIVER = MircoJobscript(
     jobscript_file_name="jobscript.sh",
     extra_options=None,
     raise_error_on_jobscript_failure=True,
-    initial_topology_std_deviation=20.0,
+    initial_topology_std_deviation=90.0,
     lateral_length=1000.0,
-    max_effective_contact_area=0.1,
+    max_effective_contact_area=0.2,
     plot_surface=True,
 )
