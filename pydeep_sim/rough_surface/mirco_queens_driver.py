@@ -85,20 +85,21 @@ class MircoJobscript(Jobscript):
         self.num_far_field_displacements = num_far_field_displacements
         self.plot_surface = plot_surface
 
-    def prepare_input_files(self, sample_dict, experiment_dir, input_files):
+    def prepare_input_file(self, sample_dict, experiment_dir, input_file):
         """prepare and parse data to input files.
 
         args:
             sample_dict (dict): dict containing sample
             experiment_dir (path): path to queens experiment directory.
-            input_files (dict): dict with name and path of the input file(s)
+            input_file (path): path of the input file
         """
-        for input_template_name, input_template_path in self.input_templates.items():
-            inject(
-                sample_dict,
-                experiment_dir / input_template_path.name,
-                input_files[input_template_name],
-            )
+        # we only expect one input template here
+        input_template_name, input_template_path = list(self.input_templates.items())[0]
+        inject(
+            sample_dict,
+            experiment_dir / input_template_path.name,
+            input_file,
+        )
 
     def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
@@ -165,8 +166,6 @@ class MircoJobscript(Jobscript):
                     [sample_dict["far_field_displacement"]]
                 )
 
-            sample_dict["far_field_displacement"] = far_field_displacements[0]
-
             if self.plot_surface:
                 plot_surface(
                     rough_surface=rough_surface,
@@ -193,52 +192,80 @@ class MircoJobscript(Jobscript):
                 list(statistical_properties.values())
             )
 
-        with metadata.time_code("prepare_input_files"):
-            job_options = JobOptions(
-                job_dir=job_dir,
-                output_dir=output_dir,
-                output_file=output_file,
-                job_id=job_id,
-                num_procs=num_procs,
-                experiment_dir=experiment_dir,
-                experiment_name=experiment_name,
-                input_files=input_files,
+        mirco_results = []
+        for i, far_field_displacement in enumerate(far_field_displacements):
+
+            sample_dict["far_field_displacement"] = far_field_displacement
+            sub_output_dir = output_dir / str(i)
+            sub_output_dir.mkdir(exist_ok=True, parents=True)
+            input_template_name, input_template_path = list(
+                self.input_templates.items()
+            )[0]
+            input_file_str = (
+                input_template_path.name + f"_{i}" + input_template_path.suffix
             )
+            input_file = job_dir / input_file_str
+            input_files[input_template_name] = input_file
 
-            # Create the input files
-            self.prepare_input_files(
-                job_options.add_data_and_to_dict(sample_dict),
-                experiment_dir,
-                input_files,
+            job_script_file_name, job_script_file_suffix = (
+                self.jobscript_file_name.split(".")
             )
-
-            jobscript_file = job_dir / self.jobscript_file_name
-
-            # Create jobscript
-            inject_in_template(
-                job_options.add_data_and_to_dict(self.jobscript_options),
-                self.jobscript_template,
-                str(jobscript_file),
+            jobscript_file = job_dir / (
+                job_script_file_name + f"_{i}." + job_script_file_suffix
             )
+            log_file = sub_output_dir / "output.log"
 
-        with metadata.time_code("run_jobscript"):
-            execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
-            self._run_executable(job_id, execute_cmd)
-
-        with metadata.time_code("data_processing"):
-            mirco_result, gradient = self._get_results(output_dir)
-            if mirco_result is not None:
-                overall_result = np.concatenate(
-                    [
-                        far_field_displacements,
-                        statistical_properties_results,
-                        mirco_result,
-                    ]
+            with metadata.time_code(f"prepare_input_files_{i}"):
+                job_options = JobOptions(
+                    job_dir=job_dir,
+                    output_dir=sub_output_dir,
+                    output_file=output_file,
+                    job_id=job_id,
+                    num_procs=num_procs,
+                    experiment_dir=experiment_dir,
+                    experiment_name=experiment_name,
+                    input_files=input_files,
                 )
-            else:
-                overall_result = np.concatenate(
-                    [far_field_displacements, statistical_properties_results]
+
+                # Create the input files
+                self.prepare_input_file(
+                    job_options.add_data_and_to_dict(sample_dict),
+                    experiment_dir,
+                    input_file,
                 )
+
+                # Create jobscript
+                inject_in_template(
+                    job_options.add_data_and_to_dict(self.jobscript_options),
+                    self.jobscript_template,
+                    str(jobscript_file),
+                )
+
+            with metadata.time_code(f"run_jobscript_{i}"):
+                execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
+                self._run_executable(job_id, execute_cmd)
+
+            with metadata.time_code(f"data_processing_{i}"):
+                mirco_result, gradient = self._get_results(sub_output_dir)
+                mirco_results.append(mirco_result)
+
+        with metadata.time_code("finalize_output"):
+
+            try:
+                ravel_mirco_results = np.ravel(mirco_results)
+            except Exception as e:
+                print("An error occurred while raveling 'mirco_results':", e)
+                print("Type of error:", type(e).__name__)
+                print("Problematic input:", mirco_results)
+                print(f"job_id: {job_id}, sub_job_id: {i}")
+                raise  # re-raises the same exception
+            overall_result = np.concatenate(
+                [
+                    statistical_properties_results,
+                    far_field_displacements,
+                    ravel_mirco_results,
+                ]
+            )
             metadata.outputs = overall_result, gradient
 
         return overall_result, gradient
@@ -258,6 +285,7 @@ MIRCO_DRIVER = MircoJobscript(
     raise_error_on_jobscript_failure=True,
     initial_topology_std_deviation=90.0,
     lateral_length=1000.0,
-    max_effective_contact_area=0.2,
+    max_effective_contact_area=0.1,
+    num_far_field_displacements=10,
     plot_surface=True,
 )
