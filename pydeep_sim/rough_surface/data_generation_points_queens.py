@@ -16,15 +16,22 @@ output_dir = "./"
 
 global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
 
-num_points = 10
-hurst_values = np.array([0.55] * num_points)
-far_field_displacement = np.array([5.0] * num_points)
-points = {"hurst": hurst_values, "far_field_displacement": far_field_displacement}
+# hurst_values = np.array([0.5, 0.6, 0.7, 0.8])
+hurst_values = np.linspace(0.5, 0.8, 100)
+num_patches_values = np.array([1, 4, 16, 64])
+
+hurst_grid, num_patches_grid = np.meshgrid(hurst_values, num_patches_values)
+
+points = {"hurst": np.ravel(hurst_grid), "num_patches": np.ravel(num_patches_grid)}
+
 
 if __name__ == "__main__":
+
+    print(points)
+
     scheduler = Local(
         experiment_name=global_settings.experiment_name,
-        num_jobs=1,
+        num_jobs=20,
         num_procs=1,
         restart_workers=False,
         verbose=True,
