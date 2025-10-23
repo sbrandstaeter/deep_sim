@@ -1,10 +1,12 @@
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
+import plotly.graph_objects as go
+from mpl_toolkits.mplot3d import Axes3D  # Required for 3D plotting
 from numpy import dtype, random as rnd
 from scipy.stats import norm, kurtosis
 from scipy.stats import skew
-import plotly.graph_objects as go
 
 
 class RoughSurface:
@@ -284,5 +286,3 @@ def plot_surface(rough_surface, lateral_length, output_dir):
 
     # Save as HTML
     fig.write_html(output_dir / "surface_plot.html")
-    # Save as png
-    fig.write_image(output_dir / "surface_plot.png")
