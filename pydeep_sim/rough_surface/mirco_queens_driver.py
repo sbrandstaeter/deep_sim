@@ -298,7 +298,7 @@ MIRCO_DRIVER = MircoJobscript(
     raise_error_on_jobscript_failure=True,
     initial_topology_std_deviation=90.0,
     lateral_length=1000.0,
-    max_effective_contact_area=0.1,
-    num_far_field_displacements=10,
+    max_effective_contact_area=0.25,
+    num_far_field_displacements=40,
     plot_surface=True,
 )
