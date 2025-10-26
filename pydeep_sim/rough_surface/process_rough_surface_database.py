@@ -9,7 +9,7 @@ from queens.utils.io import load_result
 if __name__ == "__main__":
 
     experiment_name = "rough_surface_points_max_Aeff_0.1_std0_90_L_1000_num_delta_10"
-    experiment_name = "rough_surface_points_1"
+    experiment_name = "rough_surface_points_4"
     output_dir = "./"
     result_file = Path(output_dir) / (experiment_name + ".pickle")
 
@@ -49,7 +49,8 @@ if __name__ == "__main__":
     ]
     num_statistics = len(statistics_names)
 
-    num_far_field_displacements_per_surface = int((qoi.shape[1] - num_statistics) / 2)
+    # reverse engineer repeat operation
+    num_far_field_displacements_per_surface = np.count_nonzero(qoi[0, :] == qoi[0, 0])
     num_effective_contact_area_fraction_per_surface = (
         num_far_field_displacements_per_surface
     )
@@ -69,25 +70,17 @@ if __name__ == "__main__":
         num_patches, num_far_field_displacements_per_surface, axis=0
     )
 
-    surface_statistics = qoi[:, :num_statistics]
-    surface_statistics = np.repeat(
-        surface_statistics, num_far_field_displacements_per_surface, axis=0
+    #
+    qoi = qoi.ravel().reshape(
+        qoi.shape[0] * num_far_field_displacements_per_surface, num_statistics + 3
     )
 
-    far_field_displacements = np.ravel(
-        qoi[
-            :, num_statistics : num_statistics + num_far_field_displacements_per_surface
-        ]
-    )
-    effective_contact_area_fractions = np.ravel(
-        qoi[
-            :,
-            num_statistics
-            + num_far_field_displacements_per_surface : num_statistics
-            + num_far_field_displacements_per_surface
-            + num_effective_contact_area_fraction_per_surface,
-        ]
-    )
+    surface_statistics = qoi[:, :num_statistics]
+    far_field_displacements = qoi[:, num_statistics : num_statistics + 1].ravel()
+    effective_contact_area_fractions = qoi[
+        :, num_statistics + 1 : num_statistics + 2
+    ].ravel()
+    run_times = qoi[:, num_statistics + 2 : num_statistics + 3].ravel()
 
     input_output_df = pd.DataFrame(
         {
@@ -95,6 +88,7 @@ if __name__ == "__main__":
             "num_patches": num_patches,
             "far_field_displacement": far_field_displacements,
             "effective_contact_area_fraction": effective_contact_area_fractions,
+            "run_times": run_times,
         }
     )
 
@@ -104,3 +98,4 @@ if __name__ == "__main__":
 
     fig = px.scatter_matrix(input_output_df, color="effective_contact_area_fraction")
     fig.show()
+    fig.write_html(f"{experiment_name}_scatter_matrix.html")
