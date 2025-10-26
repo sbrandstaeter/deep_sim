@@ -194,6 +194,7 @@ class MircoJobscript(Jobscript):
             )
 
         mirco_results = []
+        run_times = []
         for i, far_field_displacement in enumerate(far_field_displacements):
 
             sample_dict["far_field_displacement"] = far_field_displacement
@@ -240,9 +241,11 @@ class MircoJobscript(Jobscript):
                     str(jobscript_file),
                 )
 
-            with metadata.time_code(f"run_jobscript_{i}"):
+            mirco_computation_section_name = f"run_jobscript_{i}"
+            with metadata.time_code(mirco_computation_section_name):
                 execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
                 self._run_executable(job_id, execute_cmd)
+            run_times.append(metadata.times[mirco_computation_section_name]["time"])
 
             with metadata.time_code(f"data_processing_{i}"):
                 mirco_result, gradient = self._get_results(sub_output_dir)
@@ -263,6 +266,7 @@ class MircoJobscript(Jobscript):
                     statistical_properties_results,
                     far_field_displacements,
                     ravel_mirco_results,
+                    run_times,
                 ]
             )
             metadata.outputs = overall_result, gradient
