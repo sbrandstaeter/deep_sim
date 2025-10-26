@@ -261,14 +261,24 @@ class MircoJobscript(Jobscript):
                 print("Problematic input:", mirco_results)
                 print(f"job_id: {job_id}, sub_job_id: {i}")
                 raise  # re-raises the same exception
-            overall_result = np.concatenate(
+
+            statistical_properties_results = np.repeat(
+                np.atleast_2d(statistical_properties_results),
+                self.num_far_field_displacements,
+                axis=0,
+            )
+            far_field_displacements = np.array(far_field_displacements)
+            run_times = np.array(run_times)
+
+            overall_result = np.hstack(
                 [
                     statistical_properties_results,
-                    far_field_displacements,
-                    ravel_mirco_results,
-                    run_times,
+                    far_field_displacements.reshape(-1, 1),
+                    mirco_results,
+                    run_times.reshape(-1, 1),
                 ]
-            )
+            ).flatten()
+            np.save(output_dir / "overall_result.npy", overall_result)
             metadata.outputs = overall_result, gradient
 
         return overall_result, gradient
