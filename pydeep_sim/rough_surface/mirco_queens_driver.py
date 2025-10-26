@@ -201,9 +201,7 @@ class MircoJobscript(Jobscript):
             input_template_name, input_template_path = list(
                 self.input_templates.items()
             )[0]
-            input_file_str = (
-                input_template_path.name + f"_{i}" + input_template_path.suffix
-            )
+            input_file_str = f"mirco_input_{i}" + input_template_path.suffix
             input_file = job_dir / input_file_str
             input_files[input_template_name] = input_file
 
