@@ -2,7 +2,7 @@ mirco_input:
   WarmStartingFlag: true
   RandomTopologyFlag: false
   TopologyFilePath: {{ surface_path }}
-  MaxIteration: 100
+  MaxIteration: 1
   PressureGreenFunFlag: false
   parameters:
     material_parameters:

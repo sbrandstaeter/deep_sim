@@ -6,10 +6,15 @@ import plotly.express as px
 
 from queens.utils.io import load_result
 
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
+
 if __name__ == "__main__":
 
     experiment_name = "rough_surface_points_max_Aeff_0.1_std0_90_L_1000_num_delta_10"
-    experiment_name = "rough_surface_points_4"
+    experiment_name = "rough_surface_points_10"
     output_dir = "./"
     result_file = Path(output_dir) / (experiment_name + ".pickle")
 
@@ -95,6 +100,8 @@ if __name__ == "__main__":
     surface_statistics_df = pd.DataFrame(surface_statistics, columns=statistics_names)
 
     combined_data_df = pd.concat([input_output_df, surface_statistics_df], axis=1)
+
+    combined_data_df.to_csv(f"{experiment_name}.csv")
 
     fig = px.scatter_matrix(input_output_df, color="effective_contact_area_fraction")
     fig.show()

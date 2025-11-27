@@ -151,10 +151,9 @@ class MircoJobscript(Jobscript):
             sample_dict["lateral_length"] = self.lateral_length
 
             if sample_dict.get("far_field_displacement") is None:
-                max_far_field_displacement = np.max(rough_surface) - np.quantile(
-                    np.ravel(rough_surface), 1 - self.max_effective_contact_area
+                max_far_field_displacement = np.quantile(
+                    np.ravel(rough_surface), self.max_effective_contact_area
                 )
-
                 far_field_displacements = np.linspace(
                     0.0,
                     max_far_field_displacement,
@@ -298,7 +297,7 @@ MIRCO_DRIVER = MircoJobscript(
     raise_error_on_jobscript_failure=True,
     initial_topology_std_deviation=90.0,
     lateral_length=1000.0,
-    max_effective_contact_area=0.25,
-    num_far_field_displacements=40,
+    max_effective_contact_area=0.5,
+    num_far_field_displacements=50,
     plot_surface=True,
 )
