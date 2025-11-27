@@ -11,13 +11,13 @@ from pydeep_sim.rough_surface.mirco_queens_driver import MIRCO_DRIVER
 from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
 
 
-experiment_name = "rough_surface_points_5"
+experiment_name = "rough_surface_points_10"
 output_dir = "./"
 
 global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
 
 # hurst_values = np.array([0.5, 0.6, 0.7, 0.8])
-hurst_values = np.linspace(0.5, 0.8, 60)
+hurst_values = np.linspace(0.6, 0.8, 50)
 num_patches_values = np.array([1, 4, 16, 64])
 
 hurst_grid, num_patches_grid = np.meshgrid(hurst_values, num_patches_values)
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     scheduler = Local(
         experiment_name=global_settings.experiment_name,
-        num_jobs=60,
+        num_jobs=20,
         num_procs=1,
         restart_workers=False,
         verbose=True,
