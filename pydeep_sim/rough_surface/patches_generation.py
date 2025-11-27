@@ -38,42 +38,65 @@ def delete_content(directory):
 
 def patches_generation(
     H,
-    n_iter,
+    iterations,
     surf_id=0,
     path_to_patches="./surface_patches",
     path_to_surface="./surface_database",
     file_tail="RMD",
-    N=128,
+    N_global=128,
     l=1.0,
     std0=0.09,
     verbose=False,
 ):
 
+    """
+    Docstring for patches_generation
+    
+    :param H: Hurst exponenent
+    :param iterations: overall number of local surfaces that will be stitched together
+    :param surf_id: unique identifier for the global surface
+    :param path_to_patches: Description
+    :param path_to_surface: Description
+    :param file_tail: Description
+    :param N: number of points per side of the global surface
+    :param l: length of lateral side of the global surface
+    :param std0: initial standard deviation that determines grid points dislocation
+    :param verbose: Description
+    """
+
+
     path_to_patches = Path(path_to_patches)
     path_to_surface = Path(path_to_surface)
 
-    assert int(N % np.sqrt(n_iter)) == 0
-    resolution = int(np.log2(N / np.sqrt(n_iter)))
+    # nmber of ierations per side
+    patches_per_side = int(np.sqrt(iterations))
+
+    assert N_global % patches_per_side == 0
+
+    # Number of points per side of the local (small) surfaces and local resolution
+    n_local = int(N_global / patches_per_side)
+    resolution = int(np.log2(n_local))
+
     if verbose:
         print(
             "{0} points, repeated {1} times on each side.".format(
-                2**resolution, int(np.sqrt(n_iter))
+                n_local, patches_per_side
             )
         )
 
-    path_to_dir = path_to_patches / "niter_{0:02d}".format(n_iter)
+    path_to_dir = path_to_patches / "niter_{0:02d}".format(iterations)
     path_to_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate the patches:
     path_to_topology = {}
-    for k in range(n_iter):
+    for k in range(iterations):
         topology = RoughSurface(
             path_to_dir,
-            file_tail + "_{0}_{1:03d}".format(k, int(N / np.sqrt(n_iter))),
+            file_tail + "_{0}_{1:03d}".format(k, n_local),
             resolution,
             H,
             std0,
-            n_iter,
+            iterations,
             l,
         )
         path_to_topology[k] = topology.generate_surface_RMD()
@@ -81,7 +104,7 @@ def patches_generation(
     # Import the patch surfaces into a dictionary object
     z_raw = {}
     h_max = []
-    for k in range(n_iter):
+    for k in range(iterations):
         z_raw[k] = np.loadtxt(
             path_to_topology[k], delimiter=";", usecols=range(2**resolution + 1)
         )
@@ -95,13 +118,13 @@ def patches_generation(
     #
     ############################################################################
 
-    dx = l/2**resolution
+    dx = l/n_local
     dy = dx
-    x = np.linspace(dx/2, l-dx/2, 2**resolution)
-    y = np.linspace(dy/2, l-dy/2, 2**resolution)
+    x = np.linspace(dx/2, l-dx/2, n_local)
+    y = np.linspace(dy/2, l-dy/2, n_local)
     X, Y = np.meshgrid(x, y)
 
-    for k in range(n_iter):
+    for k in range(iterations):
 
         # Rearrange surface points to perform plane fitting:
         surface_array = Points(
@@ -124,11 +147,11 @@ def patches_generation(
 
         """
         # Plane normal unit vector:
-        n = fitting_plane.normal
+        unit_normal = fitting_plane.normal
 
         # Original polar and azimuth angles in spherical coordinates:
-        th = np.acos(n[2])
-        phi = np.atan2(n[1], n[0])
+        th = np.acos(unit_normal[2])
+        phi = np.atan2(unit_normal[1], unit_normal[0])
 
         # Rotation of -phi about z-axis:
         Rphi = np.array([[np.cos(-phi), -np.sin(-phi), 0.0],
@@ -159,7 +182,7 @@ def patches_generation(
     #
     ############################################################################
 
-    for k in range(n_iter):
+    for k in range(iterations):
         z_raw[k] -= np.mean(z_raw[k])
 
     # -3- ######################################################################
@@ -177,7 +200,6 @@ def patches_generation(
     A_test = {0:a,1:b,2:c,3:d}
     """
 
-    patches_per_side = int(np.sqrt(n_iter))
     z_patch_raw = np.block(
         [
             [z_raw[i * patches_per_side + j] for j in range(patches_per_side)]
@@ -194,27 +216,27 @@ def patches_generation(
     z_patch = z_patch_raw.copy()
 
     th = 0.8
-    for i in range(N):
+    for i in range(patches_per_side):
 
-        i_top = n*i
-        i_bottom = n*(i+1)-1
+        i_top = n_local*i
+        i_bottom = n_local*(i+1)-1
 
         if i_top > 0:
             z_patch[i_top, :] = th * \
                 z_patch_raw[i_top, :] + (1-th)*z_patch_raw[i_top-1, :]
-        if i_bottom < n*N-1:
+        if i_bottom < n_local*patches_per_side-1:
             z_patch[i_bottom, :] = th * \
                 z_patch_raw[i_bottom, :] + (1-th)*z_patch_raw[i_bottom+1, :]
 
-    for j in range(N):
+    for j in range(patches_per_side):
 
-        j_left = n*j
-        j_right = n*(j+1)-1
+        j_left = n_local*j
+        j_right = n_local*(j+1)-1
 
         if j_left > 0:
             z_patch[:, j_left] = th * \
                 z_patch_raw[:, j_left] + (1-th)*z_patch[:, j_left-1]
-        if j_right < n*N-1:
+        if j_right < n_local*patches_per_side-1:
             z_patch[:, j_right] = th * \
                 z_patch_raw[:, j_right] + (1-th)*z_patch_raw[:, j_right+1]
 
@@ -252,18 +274,18 @@ def plot_probability_density(z, num_patches, path_to_figure):
     plt.plot(
         x,
         st.norm.pdf(x, mean_z, std_z),
-        label=f"N($\mu=${mean_z:.3f}, $\sigma=${std_z:.3f})",
+        label=f"N($\\mu=${mean_z:.3f}, $\\sigma=${std_z:.3f})",
         linestyle="--",
         color="k",
     )
     plt.axvline(mean_z, linestyle=":", color="k",
-                linewidth=0.75, label="$\mu$")
+                linewidth=0.75, label="$\\mu$")
     plt.axvline(
         mean_z + 2 * std_z,
         linestyle="-.",
         color="k",
         linewidth=0.75,
-        label="$\mu \pm 2 \sigma$",
+        label="$\\mu \\pm 2 \\sigma$",
     )
     plt.axvline(
         mean_z - 2 * std_z,
@@ -334,7 +356,7 @@ if __name__ == "__main__":
     # number of patches to [1,4,16,64], this leaves us with [128, 64, 32, 16] points
     # per side, respectively, and resolutions of [7,6,5,4].
 
-    n_iter = [1, 4, 16, 64]  # number of patches in total
+    iterations = [1, 4, 16, 64]  # number of patches in total
     H = 0.75
     # unique identifier for final "big" surface (I hope this help in database generation)
     surf_id = 1
@@ -342,29 +364,29 @@ if __name__ == "__main__":
     z_surf = {}
     surf_id = 0
     path_to_database = Path("./surface_database")
-    for n in n_iter:
+    for k in iterations:
         surf_id += 1
         final_surface_name = "topology_RMD_aggregated_{0:02d}x{1:03d}_{2:04d}".format(
-            n, int(N / np.sqrt(n)), surf_id
+            k, int(N / np.sqrt(k)), surf_id
         )
         path_to_surface = path_to_database / (final_surface_name + ".dat")
-        z_surf[n] = patches_generation(
+        z_surf[k] = patches_generation(
             H=H,
-            n_iter=n,
+            iterations=k,
             surf_id=surf_id,
-            N=N,
+            N_global=N,
             path_to_surface=path_to_surface,
             verbose=True,
         )
         plot_probability_density(
-            z_surf[n],
-            num_patches=n,
+            z_surf[k],
+            num_patches=k,
             path_to_figure=path_to_database /
             (final_surface_name + "_histogram.png"),
         )
         plot_cumulative_distribution(
-            z_surf[n],
-            num_patches=n,
+            z_surf[k],
+            num_patches=k,
             path_to_figure=path_to_database /
             (final_surface_name + "_cdf.png"),
         )
