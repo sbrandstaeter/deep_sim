@@ -137,12 +137,12 @@ class MircoJobscript(Jobscript):
             surface_path = job_dir / final_surface_name
             rough_surface = patches_generation(
                 H=sample_dict["hurst"],
-                n_iter=num_patches,
+                iterations=num_patches,
                 surf_id=job_id,
                 path_to_patches=job_dir / "patches",
                 path_to_surface=surface_path,
                 file_tail="RMD_" + str(job_id),
-                N=N,
+                N_global=N,
                 l=self.lateral_length,
                 std0=self.initial_topology_std_dev,
             )
@@ -297,7 +297,7 @@ MIRCO_DRIVER = MircoJobscript(
     raise_error_on_jobscript_failure=True,
     initial_topology_std_deviation=90.0,
     lateral_length=1000.0,
-    max_effective_contact_area=0.5,
+    max_effective_contact_area=0.6,
     num_far_field_displacements=50,
     plot_surface=True,
 )
