@@ -9,7 +9,11 @@ from queens.data_processors.txt_file import TxtFile
 _logger = logging.getLogger(__name__)
 
 
-class MircoEffectiveContactAreaFromLogFile(TxtFile):
+class MircoOutputFromLogFile(TxtFile):
+    def __init__(self, *args, regex_global, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.regex_global = regex_global
+
     def filter_and_manipulate_raw_data(self, raw_data):
         """Filter the raw data from the txt file.
 
@@ -23,10 +27,9 @@ class MircoEffectiveContactAreaFromLogFile(TxtFile):
         Return:
             To be implemented by user.
         """
-        regex_global = r"Effective contact area fraction is: "
         regex_numeric_vals = r"\b[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?\b"
         global_matches = self._extract_lines_with_regex(  # pylint: disable=W0212
-            raw_data, regex_global
+            raw_data, self.regex_global
         )
         numeric_vals = [
             self._extract_quantities_from_line(  # pylint: disable=W0212
@@ -42,10 +45,20 @@ class MircoEffectiveContactAreaFromLogFile(TxtFile):
         return numeric_vals
 
 
-MIRCO_EFFECTIVE_CONTACT_AREA_DATAPROCESSOR = MircoEffectiveContactAreaFromLogFile(
+MIRCO_EFFECTIVE_CONTACT_AREA_DATAPROCESSOR = MircoOutputFromLogFile(
     file_name_identifier="*.log",
     file_options_dict={},
     files_to_be_deleted_regex_lst=None,
     remove_logger_prefix_from_raw_data=False,
     max_file_size_in_mega_byte=200,
+    regex_global=r"Effective contact area fraction is: ",
+)
+
+MIRCO_PRESSURE_DATAPROCESSOR = MircoOutputFromLogFile(
+    file_name_identifier="*.log",
+    file_options_dict={},
+    files_to_be_deleted_regex_lst=None,
+    remove_logger_prefix_from_raw_data=False,
+    max_file_size_in_mega_byte=200,
+    regex_global=r"Mean pressure is: ",
 )

@@ -9,7 +9,6 @@ from queens.utils.logger_settings import log_init_args
 from queens.utils.metadata import SimulationMetadata
 
 from pydeep_sim.rough_surface.rough_surface import (
-    RoughSurface,
     plot_surface,
     random_postprocess,
 )
@@ -19,8 +18,9 @@ from pydeep_sim.rough_surface.patches_generation import (
     plot_probability_density,
 )
 from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
-from pydeep_sim.rough_surface.mirco_effective_contact_area_data_processor import (
+from pydeep_sim.rough_surface.mirco_data_processors import (
     MIRCO_EFFECTIVE_CONTACT_AREA_DATAPROCESSOR,
+    MIRCO_PRESSURE_DATAPROCESSOR,
 )
 
 JOBSCRIPT_LOCAL_HEADER = """
@@ -75,6 +75,7 @@ class MircoJobscript(Jobscript):
         max_effective_contact_area=0.1,
         num_far_field_displacements=1,
         plot_surface=False,
+        pressure_data_processor=None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -84,6 +85,7 @@ class MircoJobscript(Jobscript):
         self.max_effective_contact_area = max_effective_contact_area
         self.num_far_field_displacements = num_far_field_displacements
         self.plot_surface = plot_surface
+        self.pressure_data_processor = pressure_data_processor
 
     def prepare_input_file(self, sample_dict, experiment_dir, input_file):
         """prepare and parse data to input files.
@@ -192,7 +194,8 @@ class MircoJobscript(Jobscript):
                 list(statistical_properties.values())
             )
 
-        mirco_results = []
+        mirco_area_results = []
+        mirco_pressure_results = []
         run_times = []
         for i, far_field_displacement in enumerate(far_field_displacements):
 
@@ -246,18 +249,25 @@ class MircoJobscript(Jobscript):
                 self._run_executable(job_id, execute_cmd)
             run_times.append(metadata.times[mirco_computation_section_name]["time"])
 
-            with metadata.time_code(f"data_processing_{i}"):
-                mirco_result, gradient = self._get_results(sub_output_dir)
-                mirco_results.append(mirco_result)
+            with metadata.time_code(f"area_data_processing_{i}"):
+                mirco_area_result, gradient = self._get_results(sub_output_dir)
+                mirco_area_results.append(mirco_area_result)
+
+            if self.pressure_data_processor is not None:
+                with metadata.time_code(f"pressure_data_processing_{i}"):
+                    mirco_pressure_result = (
+                        self.pressure_data_processor.get_data_from_file(sub_output_dir)
+                    )
+                    mirco_pressure_results.append(mirco_pressure_result)
 
         with metadata.time_code("finalize_output"):
 
             try:
-                ravel_mirco_results = np.ravel(mirco_results)
+                ravel_mirco_results = np.ravel(mirco_area_results)
             except Exception as e:
-                print("An error occurred while raveling 'mirco_results':", e)
+                print("An error occurred while raveling 'mirco_area_results':", e)
                 print("Type of error:", type(e).__name__)
-                print("Problematic input:", mirco_results)
+                print("Problematic input:", mirco_area_results)
                 print(f"job_id: {job_id}, sub_job_id: {i}")
                 raise  # re-raises the same exception
 
@@ -273,7 +283,8 @@ class MircoJobscript(Jobscript):
                 [
                     statistical_properties_results,
                     far_field_displacements.reshape(-1, 1),
-                    mirco_results,
+                    mirco_area_results,
+                    mirco_pressure_results,
                     run_times.reshape(-1, 1),
                 ]
             ).flatten()
@@ -300,4 +311,5 @@ MIRCO_DRIVER = MircoJobscript(
     max_effective_contact_area=0.6,
     num_far_field_displacements=50,
     plot_surface=True,
+    pressure_data_processor=MIRCO_PRESSURE_DATAPROCESSOR,
 )

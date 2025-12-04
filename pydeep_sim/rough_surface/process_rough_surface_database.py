@@ -13,7 +13,7 @@ from scipy.optimize import curve_fit
 
 if __name__ == "__main__":
 
-    experiment_name = "rough_surface_points_11"
+    experiment_name = "rough_surface_points_12"
     output_dir = "./"
     result_file = Path(output_dir) / (experiment_name + ".pickle")
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     #
     qoi = qoi.ravel().reshape(
-        qoi.shape[0] * num_far_field_displacements_per_surface, num_statistics + 3
+        qoi.shape[0] * num_far_field_displacements_per_surface, num_statistics + 4
     )
 
     surface_statistics = qoi[:, :num_statistics]
@@ -71,7 +71,8 @@ if __name__ == "__main__":
     effective_contact_area_fractions = qoi[
         :, num_statistics + 1 : num_statistics + 2
     ].ravel()
-    run_times = qoi[:, num_statistics + 2 : num_statistics + 3].ravel()
+    pressure = qoi[:, num_statistics + 2 : num_statistics + 3].ravel()
+    run_times = qoi[:, num_statistics + 3 : num_statistics + 4].ravel()
 
     input_output_df = pd.DataFrame(
         {
@@ -79,6 +80,7 @@ if __name__ == "__main__":
             "num_patches": num_patches,
             "far_field_displacement": far_field_displacements,
             "effective_contact_area_fraction": effective_contact_area_fractions,
+            "pressure": pressure,
             "run_times": run_times,
         }
     )
