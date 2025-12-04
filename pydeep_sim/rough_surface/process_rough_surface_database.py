@@ -13,8 +13,7 @@ from scipy.optimize import curve_fit
 
 if __name__ == "__main__":
 
-    experiment_name = "rough_surface_points_max_Aeff_0.1_std0_90_L_1000_num_delta_10"
-    experiment_name = "rough_surface_points_10"
+    experiment_name = "rough_surface_points_11"
     output_dir = "./"
     result_file = Path(output_dir) / (experiment_name + ".pickle")
 
@@ -56,19 +55,6 @@ if __name__ == "__main__":
 
     # reverse engineer repeat operation
     num_far_field_displacements_per_surface = np.count_nonzero(qoi[0, :] == qoi[0, 0])
-    num_effective_contact_area_fraction_per_surface = (
-        num_far_field_displacements_per_surface
-    )
-
-    far_field_displacements_names = [
-        f"far_field_displacement_{i}"
-        for i in range(num_far_field_displacements_per_surface)
-    ]
-
-    effective_contact_area_fraction = [
-        f"eff_contact_area_fraction_{i}"
-        for i in range(num_far_field_displacements_per_surface)
-    ]
 
     hursts = np.repeat(hursts, num_far_field_displacements_per_surface, axis=0)
     num_patches = np.repeat(
