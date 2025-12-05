@@ -13,7 +13,7 @@ from scipy.optimize import curve_fit
 
 if __name__ == "__main__":
 
-    experiment_name = "rough_surface_points_12"
+    experiment_name = "rough_surface_points_16"
     output_dir = "./"
     result_file = Path(output_dir) / (experiment_name + ".pickle")
 
@@ -30,6 +30,7 @@ if __name__ == "__main__":
     statistics_names = [
         "mean_z_peaks",
         "rms_z_peaks",
+        "rms_slope_peaks",
         "ks_z_peaks",
         "sk_z_peaks",
         "mean_curv_peaks",
@@ -94,3 +95,9 @@ if __name__ == "__main__":
     fig = px.scatter_matrix(input_output_df, color="effective_contact_area_fraction")
     fig.show()
     fig.write_html(f"{experiment_name}_scatter_matrix.html")
+
+    fig2 = px.parallel_coordinates(
+        input_output_df, color="effective_contact_area_fraction"
+    )
+    fig2.show()
+    fig2.write_html(f"{experiment_name}_parallel_coordinates.html")

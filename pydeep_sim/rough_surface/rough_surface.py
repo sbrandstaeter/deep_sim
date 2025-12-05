@@ -116,6 +116,25 @@ def random_postprocess(rough_surface, lateral_length):
     slope_x_boudary = slope_x[1:-1, 1:-1]
     slope_y_boudary = slope_y[1:-1, 1:-1]
 
+    # rms slope (surface gradient) based on first-order finite difference
+    slope_x_fd = np.diff(z, axis=0) / ele_length
+    slope_y_fd = np.diff(z, axis=1) / ele_length
+
+    slope_squared = slope_x_fd[:, :-1] ** 2 + slope_y_fd[:-1, :] ** 2
+    rms_slope_fd = np.sqrt(np.mean(slope_squared))
+
+    # print(slope_x_boudary.shape)
+    # print(slope_y_boudary.shape)
+    # print(slope_x_fd.shape)
+    # print(slope_y_fd.shape)
+    # print(slope_squared.shape)
+    # print(rms_slope_fd)
+    # print(np.sqrt(np.mean(slope_x_boudary**2 + slope_y_boudary**2)))
+
+    # import tamaas as tm
+    # print(tm.Statistics2D.computeFDRMSSlope(z))
+    # print(tm.Statistics2D.computeSpectralRMSSlope(z))
+
     # evaluate the 2D maxima (peaks) curvatures
     n_peaks = 0
     curv_peak = []
@@ -235,7 +254,10 @@ def random_postprocess(rough_surface, lateral_length):
     statistical_properties = {}
 
     statistical_properties["mean_z_peaks"] = mean_z_peaks  # mean
-    statistical_properties["rms_z_peaks"] = rms_z_peaks  # root_mean_square
+    statistical_properties["rms_z_peaks"] = rms_z_peaks  # root_mean_squared peaks
+    statistical_properties["rms_slope_peaks"] = (
+        rms_slope_fd  # root_mean_squared slope (rms surface gradient) peaks
+    )
     statistical_properties["ks_z_peaks"] = ks_z_peaks  # kurtosis
     statistical_properties["sk_z_peaks"] = sk_z_peaks  # skewness
     statistical_properties["mean_curv_peaks"] = mean_curv_peaks  # mean
