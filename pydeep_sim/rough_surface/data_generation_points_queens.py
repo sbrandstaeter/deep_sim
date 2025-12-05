@@ -1,6 +1,11 @@
 import numpy as np
 
 from queens.global_settings import GlobalSettings
+
+experiment_name = "rough_surface_points_16"
+output_dir = "./"
+global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
+
 from queens.iterators import Points
 from queens.main import run_iterator
 from queens.models.simulation import Simulation
@@ -10,11 +15,6 @@ from queens.utils.io import load_result
 from pydeep_sim.rough_surface.mirco_queens_driver import MIRCO_DRIVER
 from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
 
-
-experiment_name = "rough_surface_points_10"
-output_dir = "./"
-
-global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
 
 # hurst_values = np.array([0.5, 0.6, 0.7, 0.8])
 hurst_values = np.linspace(0.6, 0.8, 50)
