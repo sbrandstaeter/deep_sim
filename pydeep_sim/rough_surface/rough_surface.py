@@ -36,7 +36,8 @@ class RoughSurface:
         N = 2**self.Resolution
         z = np.zeros([N + 1, N + 1])
 
-        alpha = self.InitialTopologyStdDeviation / np.power(np.sqrt(2), self.Hurst)
+        alpha = self.InitialTopologyStdDeviation / \
+            np.power(np.sqrt(2), self.Hurst)
 
         D = N
         d = N // 2
@@ -90,7 +91,8 @@ class RoughSurface:
 
         # z = self.g0*(z-np.min(z))/(np.max(z)-np.min(z)); # (scaling between 0 and g0)
 
-        full_path = Path(self.output_dir) / ("topology_" + self.file_tail + ".dat")
+        full_path = Path(self.output_dir) / \
+            ("topology_" + self.file_tail + ".dat")
         np.savetxt(full_path, z, delimiter=";", fmt="%15.5e")
 
         return full_path
@@ -100,6 +102,7 @@ def random_postprocess(rough_surface, lateral_length):
 
     # import the rough surface
     z = rough_surface
+
     n_heights = z.shape[0]
 
     # the element size
@@ -110,18 +113,27 @@ def random_postprocess(rough_surface, lateral_length):
     # -------------------------------------------------------------------
 
     # calculate the slopes of each height
-    slope_x, slope_y = np.gradient(z, ele_length)
+    slope_x, slope_y = np.gradient(
+        z, ele_length, ele_length, axis=[0, 1], edge_order=1)
+
+    var_slope_x = np.var(np.ravel(slope_x))
+    var_slope_y = np.var(np.ravel(slope_y))
+
+    rms_slope_x = np.sqrt(var_slope_x)
+    rms_slope_y = np.sqrt(var_slope_y)
+
+    rms_slope_fd = np.sqrt(var_slope_x + var_slope_y)
 
     # discard the boundaries
-    slope_x_boudary = slope_x[1:-1, 1:-1]
-    slope_y_boudary = slope_y[1:-1, 1:-1]
+    # slope_x_boudary = slope_x[1:-1, 1:-1]
+    # slope_y_boudary = slope_y[1:-1, 1:-1]
 
     # rms slope (surface gradient) based on first-order finite difference
-    slope_x_fd = np.diff(z, axis=0) / ele_length
-    slope_y_fd = np.diff(z, axis=1) / ele_length
+    # slope_x_fd = np.diff(z, axis=0) / ele_length
+    # slope_y_fd = np.diff(z, axis=1) / ele_length
 
-    slope_squared = slope_x_fd[:, :-1] ** 2 + slope_y_fd[:-1, :] ** 2
-    rms_slope_fd = np.sqrt(np.mean(slope_squared))
+    # slope_squared = slope_x_fd[:, :-1] ** 2 + slope_y_fd[:-1, :] ** 2
+    # rms_slope_fd = np.sqrt(np.mean(slope_squared))
 
     # print(slope_x_boudary.shape)
     # print(slope_y_boudary.shape)
@@ -131,9 +143,11 @@ def random_postprocess(rough_surface, lateral_length):
     # print(rms_slope_fd)
     # print(np.sqrt(np.mean(slope_x_boudary**2 + slope_y_boudary**2)))
 
-    # import tamaas as tm
-    # print(tm.Statistics2D.computeFDRMSSlope(z))
-    # print(tm.Statistics2D.computeSpectralRMSSlope(z))
+    import tamaas as tm
+    print(rms_slope_fd)
+    print(tm.Statistics2D.computeFDRMSSlope(z))
+    print(tm.Statistics2D.computeSpectralRMSSlope(z))
+    print('###################################################################')
 
     # evaluate the 2D maxima (peaks) curvatures
     n_peaks = 0
@@ -153,11 +167,11 @@ def random_postprocess(rough_surface, lateral_length):
     m0 = np.std(z, ddof=1)
 
     # statistics profile slopes
-    rms_slopex = np.std(slope_x_boudary, ddof=1)
-    rms_slopey = np.std(slope_y_boudary, ddof=1)
+    # rms_slopex = #np.std(slope_x_boudary, ddof=1)
+    # rms_slopey = #np.std(slope_y_boudary, ddof=1)
 
-    m2x = rms_slopex**2
-    m2y = rms_slopey**2
+    m2x = rms_slope_x**2
+    m2y = rms_slope_y**2
 
     # statistics of the heights of the peaks
     mean_z_peaks = np.mean(z_peak)  # 1
@@ -254,9 +268,11 @@ def random_postprocess(rough_surface, lateral_length):
     statistical_properties = {}
 
     statistical_properties["mean_z_peaks"] = mean_z_peaks  # mean
-    statistical_properties["rms_z_peaks"] = rms_z_peaks  # root_mean_squared peaks
-    statistical_properties["rms_slope_peaks"] = (
-        rms_slope_fd  # root_mean_squared slope (rms surface gradient) peaks
+    # root_mean_squared peaks
+    statistical_properties["rms_z_peaks"] = rms_z_peaks
+    statistical_properties["rms_slope_peaks"] = (  # TODO what does this mean?
+        # root_mean_squared slope (rms surface gradient) peaks
+        rms_slope_fd
     )
     statistical_properties["ks_z_peaks"] = ks_z_peaks  # kurtosis
     statistical_properties["sk_z_peaks"] = sk_z_peaks  # skewness
@@ -295,7 +311,8 @@ def plot_surface(rough_surface, lateral_length, output_dir):
     X, Y = np.meshgrid(x, y)
 
     # Make 3D surface plot
-    fig = go.Figure(data=[go.Surface(z=rough_surface, x=X, y=Y, colorscale="Viridis")])
+    fig = go.Figure(
+        data=[go.Surface(z=rough_surface, x=X, y=Y, colorscale="Viridis")])
 
     fig.update_layout(
         scene=dict(

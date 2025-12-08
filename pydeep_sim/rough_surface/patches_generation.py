@@ -125,7 +125,8 @@ def patches_generation(
     for k in range(iterations):
 
         # Rearrange surface points to perform plane fitting:
-        surface_array = Points(np.vstack((X.ravel(), Y.ravel(), z_raw[k].ravel())).T)
+        surface_array = Points(
+            np.vstack((X.ravel(), Y.ravel(), z_raw[k].ravel())).T)
         fitting_plane = Plane.best_fit(surface_array)
 
         # Coefficients of the fitting plane a*x+b*y+c*z+d == 0
@@ -220,11 +221,13 @@ def patches_generation(
 
         if i_top > 0:
             z_patch[i_top, :] = (
-                th * z_patch_raw[i_top, :] + (1 - th) * z_patch_raw[i_top - 1, :]
+                th * z_patch_raw[i_top, :] +
+                (1 - th) * z_patch_raw[i_top - 1, :]
             )
         if i_bottom < n_local * patches_per_side - 1:
             z_patch[i_bottom, :] = (
-                th * z_patch_raw[i_bottom, :] + (1 - th) * z_patch_raw[i_bottom + 1, :]
+                th * z_patch_raw[i_bottom, :] +
+                (1 - th) * z_patch_raw[i_bottom + 1, :]
             )
 
     for j in range(patches_per_side):
@@ -238,7 +241,8 @@ def patches_generation(
             )
         if j_right < n_local * patches_per_side - 1:
             z_patch[:, j_right] = (
-                th * z_patch_raw[:, j_right] + (1 - th) * z_patch_raw[:, j_right + 1]
+                th * z_patch_raw[:, j_right] +
+                (1 - th) * z_patch_raw[:, j_right + 1]
             )
 
     # -5- ######################################################################
@@ -279,7 +283,8 @@ def plot_probability_density(z, num_patches, path_to_figure):
         linestyle="--",
         color="k",
     )
-    plt.axvline(mean_z, linestyle=":", color="k", linewidth=0.75, label="$\\mu$")
+    plt.axvline(mean_z, linestyle=":", color="k",
+                linewidth=0.75, label="$\\mu$")
     plt.axvline(
         mean_z + 2 * std_z,
         linestyle="-.",
@@ -294,7 +299,8 @@ def plot_probability_density(z, num_patches, path_to_figure):
         linewidth=0.75,
     )
     hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
-    plt.plot(hist_patch[1][:-1], hist_patch[0], label=f"Patches: {num_patches}")
+    plt.plot(hist_patch[1][:-1], hist_patch[0],
+             label=f"Patches: {num_patches}")
     plt.legend()
     plt.grid("show")
     plt.xlabel("h (mum)")
@@ -318,8 +324,10 @@ def plot_cumulative_distribution(z, num_patches, path_to_figure, probability=0.1
         color="k",
     )
     hist_patch = np.histogram(np.ravel(z, order="F"), bins=500, density=True)
-    cumulated_sum = (hist_patch[1][1] - hist_patch[1][0]) * np.cumsum(hist_patch[0])
-    plt.plot(hist_patch[1][:-1], cumulated_sum, label=f"Patches: {num_patches}")
+    cumulated_sum = (hist_patch[1][1] - hist_patch[1]
+                     [0]) * np.cumsum(hist_patch[0])
+    plt.plot(hist_patch[1][:-1], cumulated_sum,
+             label=f"Patches: {num_patches}")
     probabilities = np.linspace(0, 1, 100)
     quantiles = np.quantile(z_flat, probabilities)
     plt.plot(quantiles, probabilities, label=f"Scipy")
@@ -378,12 +386,14 @@ if __name__ == "__main__":
         plot_probability_density(
             z_surf[k],
             num_patches=k,
-            path_to_figure=path_to_database / (final_surface_name + "_histogram.png"),
+            path_to_figure=path_to_database /
+            (final_surface_name + "_histogram.png"),
         )
         plot_cumulative_distribution(
             z_surf[k],
             num_patches=k,
-            path_to_figure=path_to_database / (final_surface_name + "_cdf.png"),
+            path_to_figure=path_to_database /
+            (final_surface_name + "_cdf.png"),
         )
         surface_statistics = random_postprocess(z_surf[k], l)
         print(surface_statistics)
