@@ -13,7 +13,9 @@ from queens.schedulers import Local
 from queens.utils.io import load_result
 
 from pydeep_sim.rough_surface.mirco_queens_driver import MIRCO_DRIVER
-from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
+from pydeep_sim.rough_surface.rough_surface_parameters import (
+    MIRCO_ROUGH_SURFACE_PARAMETERS,
+)
 
 
 # hurst_values = np.array([0.5, 0.6, 0.7, 0.8])
@@ -41,7 +43,7 @@ if __name__ == "__main__":
         points=points,
         result_description={"write_results": True},
         model=model,
-        parameters=ROUGH_SURFACE_PARAMETERS,
+        parameters=MIRCO_ROUGH_SURFACE_PARAMETERS,
         global_settings=global_settings,
     )
 
