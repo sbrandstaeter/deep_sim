@@ -12,7 +12,7 @@ n = 512
 L = 1.0
 
 # Grid cell area
-dx = L/n
+dx = L / n
 dA = dx**2
 
 # Surface generator
@@ -66,16 +66,16 @@ solver.solve(p_target)
 # model.operators['dcfft'](model.traction, model.displacement)
 
 # Effective contact area (uncorrected)
-A_raw = dA*len(model.traction[model.traction > 0.0])
+A_raw = dA * len(model.traction[model.traction > 0.0])
 
 # Perform correction of the area according to Yastrebov:
 M = count_switches(model.traction)
-Sd = M*dx
-A_cor = A_raw - (np.pi-1+np.log(2))/24*Sd*dx
+Sd = M * dx
+A_cor = A_raw - (np.pi - 1 + np.log(2)) / 24 * Sd * dx
 
 # Analytical models for benchmarking (only reliable for periodic problems!)
-A_ab = np.sqrt(2*np.pi)*p_target/rms_slope
-A_pr = scipy.special.erf(np.sqrt(2)*p_target/rms_slope)
+A_ab = np.sqrt(2 * np.pi) * p_target / rms_slope
+A_pr = scipy.special.erf(np.sqrt(2) * p_target / rms_slope)
 
 # Minimum and maximum displacement
 Dmin = np.min(model.displacement)
@@ -83,6 +83,6 @@ Dmax = np.max(model.displacement)
 
 # Reference datum for displacement is set in correspondence of mean elevation of the surface,
 # so that only relative displacements can be evaluated for periodic problems
-print(A_pr, A_cor,  A_raw, A_ab)
+print(A_pr, A_cor, A_raw, A_ab)
 print(Dmin, Dmax)
 print(np.min(surface), np.mean(surface), np.max(surface))

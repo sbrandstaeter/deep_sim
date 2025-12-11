@@ -12,7 +12,7 @@ n = 512
 L = 1.0
 
 # Grid cell area
-dx = L/n
+dx = L / n
 dA = dx**2
 
 # Surface generator
@@ -58,7 +58,7 @@ solver = tm.PolonskyKeerRey(model, surface, 1e-11)
 
 # Define load steps:
 p_target = 0.1
-loads = np.linspace(p_target/10, p_target, 10)
+loads = np.linspace(p_target / 10, p_target, 10)
 
 # Solve for given load path:
 A_raw = np.empty((len(loads),))
@@ -76,43 +76,43 @@ for i, model in enumerate(load_path(solver, loads)):
     # model.operators['dcfft'](model.traction, model.displacement)
 
     # Effective contact area (uncorrected)
-    A_raw[i] = dA*len(model.traction[model.traction > 0.0])
+    A_raw[i] = dA * len(model.traction[model.traction > 0.0])
 
     # Perform correction of the area according to Yastrebov:
     M = count_switches(model.traction)
-    Sd = M*dx
-    A_cor[i] = A_raw[i] - (np.pi-1+np.log(2))/24*Sd*dx
+    Sd = M * dx
+    A_cor[i] = A_raw[i] - (np.pi - 1 + np.log(2)) / 24 * Sd * dx
 
     Dmin.append(np.min(model.displacement))
     Dmean.append(np.mean(model.displacement))
     Dmax.append(np.max(model.displacement))
 
-A_ab = np.sqrt(2*np.pi)*loads/rms_slope
-A_pr = scipy.special.erf(np.sqrt(2)*loads/rms_slope)
+A_ab = np.sqrt(2 * np.pi) * loads / rms_slope
+A_pr = scipy.special.erf(np.sqrt(2) * loads / rms_slope)
 
 fig, axs = plt.subplots(1, 2, figsize=(12, 5))
-axs[0].plot(loads/rms_slope, A_raw[:], '-v', label='n=512')
-axs[1].plot(loads/rms_slope, A_cor[:], '-^', label='n=512')
-axs[0].set_title('raw data')
-axs[1].set_title('corrected data')
+axs[0].plot(loads / rms_slope, A_raw[:], "-v", label="n=512")
+axs[1].plot(loads / rms_slope, A_cor[:], "-^", label="n=512")
+axs[0].set_title("raw data")
+axs[1].set_title("corrected data")
 for i in range(2):
-    axs[i].plot(loads/rms_slope, A_ab, label='BGT')
-    axs[i].plot(loads/rms_slope, A_pr, label='Persson')
-    axs[i].set_xlabel('p0')
-    axs[i].set_ylabel('A/A0')
+    axs[i].plot(loads / rms_slope, A_ab, label="BGT")
+    axs[i].plot(loads / rms_slope, A_pr, label="Persson")
+    axs[i].set_xlabel("p0")
+    axs[i].set_ylabel("A/A0")
     axs[i].grid(True)
     axs[i].set_xlim([0.0, 0.15])
     axs[i].set_ylim([0.0, 0.30])
     axs[i].legend(loc="lower right")
-plt.savefig('plot_load.png')
+plt.savefig("plot_load.png")
 
 fig, axs = plt.subplots(1, 1, figsize=(5, 5))
-axs.plot(loads/rms_slope, Dmin/np.max(surface), '-^', label='D_min')
-axs.plot(loads/rms_slope, Dmean/np.max(surface), '-^', label='D_mean')
-axs.plot(loads/rms_slope, Dmax/np.max(surface), '-<', label='D_max')
-axs.set_ylabel('D/zmax')
-axs.set_xlabel('p0')
+axs.plot(loads / rms_slope, Dmin / np.max(surface), "-^", label="D_min")
+axs.plot(loads / rms_slope, Dmean / np.max(surface), "-^", label="D_mean")
+axs.plot(loads / rms_slope, Dmax / np.max(surface), "-<", label="D_max")
+axs.set_ylabel("D/zmax")
+axs.set_xlabel("p0")
 axs.grid(True)
 axs.legend(loc="upper right")
-axs.set_title('displacements')
-plt.savefig('plot_disp.png')
+axs.set_title("displacements")
+plt.savefig("plot_disp.png")
