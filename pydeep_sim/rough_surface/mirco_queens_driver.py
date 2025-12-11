@@ -17,7 +17,9 @@ from pydeep_sim.rough_surface.patches_generation import (
     plot_cumulative_distribution,
     plot_probability_density,
 )
-from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
+from pydeep_sim.rough_surface.rough_surface_parameters import (
+    MIRCO_ROUGH_SURFACE_PARAMETERS,
+)
 from pydeep_sim.rough_surface.mirco_data_processors import (
     MIRCO_EFFECTIVE_CONTACT_AREA_DATAPROCESSOR,
     MIRCO_PRESSURE_DATAPROCESSOR,
@@ -296,7 +298,7 @@ class MircoJobscript(Jobscript):
 
 # Setup iterator
 MIRCO_DRIVER = MircoJobscript(
-    parameters=ROUGH_SURFACE_PARAMETERS,
+    parameters=MIRCO_ROUGH_SURFACE_PARAMETERS,
     input_templates={"mirco_input_file": "./mirco_input_template.yml"},
     jobscript_template=JOBSCRIPT_CLUSTER_TEMPLATE,
     executable="/home/a11bsebr/codespace/mirco/build/mirco",
