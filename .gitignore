@@ -30,3 +30,18 @@ pydeep_sim/rough_surface/surface_patches
 
 # ignore .pdf files
 *.pdf
+
+# ignore .log files
+*.log
+
+# ignore .html files
+*.html
+
+# ignore .pickle files
+*.pickle
+
+# ignore .png files
+*.png
+
+# ignore .csv files
+*.csv
