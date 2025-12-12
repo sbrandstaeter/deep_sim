@@ -1,3 +1,5 @@
+import time
+
 import tamaas as tm
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,6 +18,7 @@ def generate_surface_and_solve_pressure_driven_eff_area(
     L=1.0,  # Surface lateral size
     random_seed=1,
     p_target=0.1,
+    num_load_steps=10,
 ):
 
     # Grid cell area
@@ -46,7 +49,7 @@ def generate_surface_and_solve_pressure_driven_eff_area(
     surface /= rms_slope
 
     # Should be equal to 1 if normalized
-    rms_slope = tm.Statistics2D.computeSpectralRMSSlope(surface)
+    rms_slope_check = tm.Statistics2D.computeSpectralRMSSlope(surface)
 
     # Creates the model
     model = tm.ModelFactory.createModel(tm.model_type.basic_2d, [L, L], [n, n])
@@ -65,7 +68,7 @@ def generate_surface_and_solve_pressure_driven_eff_area(
 
     # Define load steps:
 
-    loads = np.linspace(p_target / 10, p_target, 10)
+    loads = np.linspace(p_target / 10, p_target, num_load_steps)
 
     # Solve for given load path:
     A_raw = np.empty((len(loads),))
@@ -74,9 +77,10 @@ def generate_surface_and_solve_pressure_driven_eff_area(
     Dmax = []
     Dmin = []
     Dmean = []
+    run_times = []
     for i, model in enumerate(load_path(solver, loads)):
 
-        print(i)
+        start_time = time.time()
         solver.solve(loads[i])
 
         # To compute the true displacement (for non-periodic problem), one needs to re-evaluate the displacement
@@ -93,13 +97,14 @@ def generate_surface_and_solve_pressure_driven_eff_area(
         Dmin.append(np.min(model.displacement))
         Dmean.append(np.mean(model.displacement))
         Dmax.append(np.max(model.displacement))
+        run_times.append(time.time() - start_time)
 
-    return surface, A_raw, A_cor, loads, rms_slope, Dmin, Dmean, Dmax
+    return surface, A_raw, A_cor, loads, rms_slope, Dmin, Dmean, Dmax, run_times
 
 
 if __name__ == "__main__":
 
-    surface, A_raw, A_cor, loads, rms_slope, Dmin, Dmean, Dmax = (
+    surface, A_raw, A_cor, loads, rms_slope, Dmin, Dmean, Dmax, run_times = (
         generate_surface_and_solve_pressure_driven_eff_area()
     )
     A_ab = np.sqrt(2 * np.pi) * loads / rms_slope

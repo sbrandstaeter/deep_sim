@@ -16,4 +16,5 @@ TAMAAS_ROUGH_SURFACE_PARAMETERS = Parameters(
     hurst=HURST,
     q1=Q1,
     q2=Q2,
+    random_seed=RANDOM_SEED,
 )
