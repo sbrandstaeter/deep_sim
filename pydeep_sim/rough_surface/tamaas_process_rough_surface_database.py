@@ -13,7 +13,7 @@ from scipy.optimize import curve_fit
 
 if __name__ == "__main__":
 
-    experiment_name = "tamaas_points_2"
+    experiment_name = "tamaas_points_4"
     output_dir = "./"
     result_file = Path(output_dir) / (experiment_name + ".pickle")
 
@@ -84,8 +84,8 @@ if __name__ == "__main__":
             "hurst": hursts,
             "q1": q1s,
             "q2": q2s,
-            "dmean": dmean,
-            "effective_contact_area_fraction": effective_contact_area_fractions,
+            "dmax": dmax,
+            "eff_area": effective_contact_area_fractions,
             "pressure": pressure,
             "run_times": run_times,
         }
@@ -97,12 +97,28 @@ if __name__ == "__main__":
 
     combined_data_df.to_csv(f"{experiment_name}.csv")
 
-    fig = px.scatter_matrix(input_output_df, color="effective_contact_area_fraction")
+    fig = px.scatter_matrix(input_output_df, color="eff_area")
     fig.show()
     fig.write_html(f"{experiment_name}_scatter_matrix.html")
 
-    fig2 = px.parallel_coordinates(
-        input_output_df, color="effective_contact_area_fraction"
+    fig = px.scatter(
+        input_output_df,
+        x="pressure",
+        y="eff_area",
+        title="Eff area over pressure",  # columns to plot as lines
     )
+    fig.show()
+    fig.write_html(f"{experiment_name}_scatter_pressure_eff_area.html")
+
+    fig = px.scatter(
+        input_output_df,
+        x="dmax",
+        y="eff_area",
+        title="Eff area over dmax",  # columns to plot as lines
+    )
+    fig.show()
+    fig.write_html(f"{experiment_name}_scatter_dmax_eff_area.html")
+
+    fig2 = px.parallel_coordinates(input_output_df, color="eff_area")
     fig2.show()
     fig2.write_html(f"{experiment_name}_parallel_coordinates.html")

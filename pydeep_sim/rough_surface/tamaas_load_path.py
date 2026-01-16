@@ -19,6 +19,7 @@ def generate_surface_and_solve_pressure_driven_eff_area(
     random_seed=1,
     p_target=0.1,
     num_load_steps=10,
+    periodic=False,
 ):
 
     # Grid cell area
@@ -55,7 +56,8 @@ def generate_surface_and_solve_pressure_driven_eff_area(
     model = tm.ModelFactory.createModel(tm.model_type.basic_2d, [L, L], [n, n])
 
     # Uncomment to solve equivalent non-periodic problem:
-    # tm.ModelFactory.registerNonPeriodic(model, 'dcfft')
+    if not periodic:
+        tm.ModelFactory.registerNonPeriodic(model, "dcfft")
 
     # Mechanical parameters
     model.E = 1.0
@@ -64,11 +66,13 @@ def generate_surface_and_solve_pressure_driven_eff_area(
     solver = tm.PolonskyKeerRey(model, surface, 1e-11)
 
     # Uncomment to solve equivalent non-periodic problem:
-    # solver.setIntegralOperator('dcfft')
+    if not periodic:
+        solver.setIntegralOperator("dcfft")
 
     # Define load steps:
 
-    loads = np.linspace(p_target / 10, p_target, num_load_steps)
+    loads = np.linspace(0, p_target, num_load_steps + 1)
+    loads = loads[1:]
 
     # Solve for given load path:
     A_raw = np.empty((len(loads),))
@@ -84,7 +88,8 @@ def generate_surface_and_solve_pressure_driven_eff_area(
         solver.solve(loads[i])
 
         # To compute the true displacement (for non-periodic problem), one needs to re-evaluate the displacement
-        # model.operators['dcfft'](model.traction, model.displacement)
+        if not periodic:
+            model.operators["dcfft"](model.traction, model.displacement)
 
         # Effective contact area (uncorrected)
         A_raw[i] = dA * len(model.traction[model.traction > 0.0])

@@ -2,7 +2,7 @@ import numpy as np
 
 from queens.global_settings import GlobalSettings
 
-experiment_name = "tamaas_points_3"
+experiment_name = "tamaas_points_4"
 output_dir = "./"
 global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
 
