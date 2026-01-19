@@ -2,7 +2,7 @@ import numpy as np
 
 from queens.global_settings import GlobalSettings
 
-experiment_name = "tamaas_points_4"
+experiment_name = "tamaas_points_13"
 output_dir = "./"
 global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     scheduler = Local(
         experiment_name=global_settings.experiment_name,
-        num_jobs=20,
+        num_jobs=60,
         num_procs=1,
         restart_workers=False,
         verbose=True,

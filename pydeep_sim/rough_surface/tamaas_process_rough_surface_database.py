@@ -13,7 +13,7 @@ from scipy.optimize import curve_fit
 
 if __name__ == "__main__":
 
-    experiment_name = "tamaas_points_4"
+    experiment_name = "tamaas_points_13"
     output_dir = "./"
     result_file = Path(output_dir) / (experiment_name + ".pickle")
 
@@ -28,6 +28,7 @@ if __name__ == "__main__":
     q1s = samples["q1"]
     q2s = samples["q2"]
     random_seeds = samples["random_seed"]
+    num_param_combinations = len(q1s)
 
     statistics_names = [
         "mean_z_peaks",
@@ -60,6 +61,11 @@ if __name__ == "__main__":
     num_pressure_steps_per_surface = np.count_nonzero(qoi[0, :] == qoi[0, 0])
 
     hursts = np.repeat(hursts, num_pressure_steps_per_surface, axis=0)
+    ids = np.repeat(
+        np.arange(0, num_param_combinations),
+        num_pressure_steps_per_surface,
+        axis=0,
+    )
     q1s = np.repeat(q1s, num_pressure_steps_per_surface, axis=0)
     q2s = np.repeat(q2s, num_pressure_steps_per_surface, axis=0)
     random_seeds = np.repeat(random_seeds, num_pressure_steps_per_surface, axis=0)
@@ -81,6 +87,7 @@ if __name__ == "__main__":
 
     input_output_df = pd.DataFrame(
         {
+            "ids": ids,
             "hurst": hursts,
             "q1": q1s,
             "q2": q2s,
@@ -105,6 +112,8 @@ if __name__ == "__main__":
         input_output_df,
         x="pressure",
         y="eff_area",
+        color="ids",
+        color_discrete_sequence=px.colors.qualitative.Set2,
         title="Eff area over pressure",  # columns to plot as lines
     )
     fig.show()
@@ -114,6 +123,8 @@ if __name__ == "__main__":
         input_output_df,
         x="dmax",
         y="eff_area",
+        color="ids",
+        color_discrete_sequence=px.colors.qualitative.Set2,
         title="Eff area over dmax",  # columns to plot as lines
     )
     fig.show()

@@ -35,6 +35,7 @@ class Tamaas(Jobscript):
         plot_surface=False,
         num_grid_points_per_side=512,
         target_pressure=0.1,
+        solver_tolerance=1e-09,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -43,6 +44,7 @@ class Tamaas(Jobscript):
         self.plot_surface = plot_surface
         self.num_grid_points_per_side = num_grid_points_per_side
         self.target_pressure = target_pressure
+        self.solver_tolerance = solver_tolerance
 
     def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
@@ -90,6 +92,7 @@ class Tamaas(Jobscript):
                 random_seed=int(sample_dict["random_seed"]),
                 p_target=self.target_pressure,
                 num_load_steps=self.num_pressure_steps,
+                solver_tolerance=self.solver_tolerance,
             )
             np.savetxt(
                 surface_path,
@@ -123,7 +126,7 @@ class Tamaas(Jobscript):
                 rough_surface=rough_surface, lateral_length=self.lateral_length
             )
             # overwrite with original rms_slope prior to scaling the surface
-            statistical_properties["rms_slope_peaks"] = rms_slope
+            statistical_properties["rms_slope"] = rms_slope
 
             statistical_properties_results = np.array(
                 list(statistical_properties.values())
@@ -167,6 +170,7 @@ TAMAAS_DRIVER = Tamaas(
     lateral_length=1.0,
     plot_surface=True,
     num_grid_points_per_side=512,
-    target_pressure=0.1,
+    target_pressure=0.40,
     num_pressure_steps=50,
+    solver_tolerance=1e-09,
 )
