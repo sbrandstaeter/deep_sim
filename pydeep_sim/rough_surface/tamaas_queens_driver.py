@@ -36,6 +36,7 @@ class Tamaas(Jobscript):
         num_grid_points_per_side=512,
         target_pressure=0.1,
         solver_tolerance=1e-09,
+        periodic=False,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -45,6 +46,7 @@ class Tamaas(Jobscript):
         self.num_grid_points_per_side = num_grid_points_per_side
         self.target_pressure = target_pressure
         self.solver_tolerance = solver_tolerance
+        self.periodic = periodic
 
     def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
@@ -93,6 +95,7 @@ class Tamaas(Jobscript):
                 p_target=self.target_pressure,
                 num_load_steps=self.num_pressure_steps,
                 solver_tolerance=self.solver_tolerance,
+                periodic=self.periodic,
             )
             np.savetxt(
                 surface_path,
@@ -173,4 +176,5 @@ TAMAAS_DRIVER = Tamaas(
     target_pressure=0.40,
     num_pressure_steps=50,
     solver_tolerance=1e-09,
+    periodic=True,
 )
