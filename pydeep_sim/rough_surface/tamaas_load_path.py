@@ -48,7 +48,7 @@ def generate_surface_and_solve_pressure_driven_eff_area(
 
     rms_slope = tm.Statistics2D.computeSpectralRMSSlope(surface)
     # Comment not to normalize the RMSSLope
-    surface /= rms_slope
+    # surface /= rms_slope
 
     # Should be equal to 1 if normalized
     rms_slope_check = tm.Statistics2D.computeSpectralRMSSlope(surface)
