@@ -37,6 +37,8 @@ class Tamaas(Jobscript):
         target_pressure=0.1,
         solver_tolerance=1e-09,
         periodic=False,
+        scale_surface=False,
+        solve_contact_problem=True,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -47,6 +49,8 @@ class Tamaas(Jobscript):
         self.target_pressure = target_pressure
         self.solver_tolerance = solver_tolerance
         self.periodic = periodic
+        self.scale_surface = scale_surface
+        self.solve_contact_problem = solve_contact_problem
 
     def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
@@ -74,6 +78,31 @@ class Tamaas(Jobscript):
         with metadata.time_code("create_surface_and_solve_contact_problem"):
             final_surface_name = "topology_RMD_aggregated.dat"
             surface_path = job_dir / final_surface_name
+            q1 = int(sample_dict["q1"])
+            q2 = int(sample_dict["q2"])
+
+            scales = [
+                55.12229037844432,
+                69.86908217092252,
+                87.14220958058162,
+                518.344463910421,
+                680.1532036436737,
+                872.7045726294955,
+                3751.4321198525017,
+                5944.4843376218405,
+                8232.078271477685,
+            ]
+
+            scale_idx_mapping = {
+                1: {32: 0, 64: 1, 128: 2},
+                4: {32: 3, 64: 4, 128: 5},
+                16: {32: 6, 64: 7, 128: 8},
+            }
+
+            if self.scale_surface:
+                scale_factor_surface = scales[scale_idx_mapping[q1][q2]]
+            else:
+                scale_factor_surface = 1.0
 
             (
                 rough_surface,
@@ -87,8 +116,8 @@ class Tamaas(Jobscript):
                 run_times,
             ) = generate_surface_and_solve_pressure_driven_eff_area(
                 hurst=sample_dict["hurst"],
-                q1=int(sample_dict["q1"]),
-                q2=int(sample_dict["q2"]),
+                q1=q1,
+                q2=q2,
                 n=self.num_grid_points_per_side,
                 L=self.lateral_length,
                 random_seed=int(sample_dict["random_seed"]),
@@ -96,6 +125,8 @@ class Tamaas(Jobscript):
                 num_load_steps=self.num_pressure_steps,
                 solver_tolerance=self.solver_tolerance,
                 periodic=self.periodic,
+                scale_factor_surface=scale_factor_surface,
+                solve_contact_problem=self.solve_contact_problem,
             )
             np.savetxt(
                 surface_path,
@@ -115,12 +146,12 @@ class Tamaas(Jobscript):
                 )
                 plot_probability_density(
                     rough_surface,
-                    num_patches=sample_dict["q1"],
+                    num_patches=q1,
                     path_to_figure=output_dir / f"pdf.png",
                 )
                 plot_cumulative_distribution(
                     rough_surface,
-                    num_patches=sample_dict["q1"],
+                    num_patches=q1,
                     path_to_figure=output_dir / f"cdf.png",
                     probability=np.max(A_cor),
                 )
@@ -162,19 +193,3 @@ class Tamaas(Jobscript):
             metadata.outputs = overall_result, gradient
 
         return overall_result, gradient
-
-
-# Setup iterator
-TAMAAS_DRIVER = Tamaas(
-    parameters=TAMAAS_ROUGH_SURFACE_PARAMETERS,
-    input_templates="",
-    jobscript_template="",
-    executable=None,
-    lateral_length=1.0,
-    plot_surface=True,
-    num_grid_points_per_side=512,
-    target_pressure=0.40,
-    num_pressure_steps=50,
-    solver_tolerance=1e-09,
-    periodic=True,
-)

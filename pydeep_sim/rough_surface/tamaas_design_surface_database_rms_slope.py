@@ -13,9 +13,9 @@ from scipy.optimize import curve_fit
 
 if __name__ == "__main__":
 
-    experiment_name = "tamaas_points_nonperiodic_3"
-    # experiment_name = "tamaas_points_14"
-    # experiment_name = "tamaas_points_periodic_1"
+    experiment_name = "tamaas_points_nonperiodic_1"
+    experiment_name = "tamaas_points_surfaces_not_scaled"
+    experiment_name = "tamaas_points_surfaces_scaled"
     output_dir = "./"
     result_file = Path(output_dir) / (experiment_name + ".pickle")
 
@@ -78,6 +78,8 @@ if __name__ == "__main__":
     )
 
     surface_statistics = qoi[:, :num_statistics]
+    # mean_rms_slope = np.mean(surface_statistics[:, 2])
+    # surface_statistics[:, 2] /= mean_rms_slope
     pressure = qoi[:, num_statistics : num_statistics + 1].ravel()
     effective_contact_area_fractions = qoi[
         :, num_statistics + 1 : num_statistics + 2
@@ -104,37 +106,24 @@ if __name__ == "__main__":
 
     combined_data_df = pd.concat([input_output_df, surface_statistics_df], axis=1)
 
-    combined_data_df.to_csv(f"{experiment_name}.csv")
-
-    fig = px.scatter_matrix(input_output_df, color="eff_area")
-    fig.show()
-    fig.write_html(f"{experiment_name}_scatter_matrix.html")
-
     fig = px.scatter(
-        input_output_df,
-        x="pressure",
-        y="eff_area",
-        color="ids",
-        color_discrete_sequence=px.colors.qualitative.Set2,
-        title="Eff area over pressure",  # columns to plot as lines
+        combined_data_df,
+        x="q1",
+        y="rms_slope",
+        # color="ids",
+        # color_discrete_sequence=px.colors.qualitative.Set2,
+        title="RMS slope over q1",  # columns to plot as lines
     )
     fig.show()
-    fig.write_html(f"{experiment_name}_scatter_pressure_eff_area.html")
+    fig.write_html(f"{experiment_name}_scatter_q1_rms_slope.html")
 
-    fig = px.scatter(
-        input_output_df,
-        x="dmax",
-        y="eff_area",
-        color="ids",
-        color_discrete_sequence=px.colors.qualitative.Set2,
-        title="Eff area over dmax",  # columns to plot as lines
+    fig2 = px.parallel_coordinates(
+        combined_data_df,
+        dimensions=["hurst", "q1", "q2", "rms_slope"],
+        color="rms_slope",
     )
-    fig.show()
-    fig.write_html(f"{experiment_name}_scatter_dmax_eff_area.html")
-
-    fig2 = px.parallel_coordinates(input_output_df, color="eff_area")
     fig2.show()
-    fig2.write_html(f"{experiment_name}_parallel_coordinates.html")
+    fig2.write_html(f"{experiment_name}_parallel_coordinates_rms_slope.html")
 
     fig4 = px.histogram(
         np.unique(combined_data_df["rms_slope"]),
@@ -144,3 +133,18 @@ if __name__ == "__main__":
 
     fig4.show()
     fig4.write_html(f"{experiment_name}_histrogram_rms_slope.html")
+
+    mean_rms_slopes = []
+
+    for q1 in [1, 4, 16]:
+        for q2 in [32, 64, 128]:
+            mean_rms_slopes.append(
+                np.mean(
+                    combined_data_df.loc[
+                        (combined_data_df["q1"] == q1) & (combined_data_df["q2"] == q2),
+                        "rms_slope",
+                    ]
+                )
+            )
+
+    print(mean_rms_slopes)

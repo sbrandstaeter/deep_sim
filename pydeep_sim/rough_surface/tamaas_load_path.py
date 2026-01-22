@@ -21,6 +21,8 @@ def generate_surface_and_solve_pressure_driven_eff_area(
     num_load_steps=10,
     periodic=False,
     solver_tolerance=1e-09,  # solver tolerance, usually around 1e-9 adhesion-less contact (see https://gitlab.com/tamaas/tutorials/-/blob/master/elastic_contact.ipynb)
+    scale_factor_surface=1.0,
+    solve_contact_problem=True,
 ):
 
     # Grid cell area
@@ -46,9 +48,10 @@ def generate_surface_and_solve_pressure_driven_eff_area(
     # Generates the surface given the spectrum
     surface = sg.buildSurface()
 
-    rms_slope = tm.Statistics2D.computeSpectralRMSSlope(surface)
     # Comment not to normalize the RMSSLope
-    # surface /= rms_slope
+    surface /= scale_factor_surface
+
+    rms_slope = tm.Statistics2D.computeSpectralRMSSlope(surface)
 
     # Should be equal to 1 if normalized
     rms_slope_check = tm.Statistics2D.computeSpectralRMSSlope(surface)
@@ -83,33 +86,39 @@ def generate_surface_and_solve_pressure_driven_eff_area(
     Dmin = np.zeros_like(A_raw)
     Dmean = np.zeros_like(A_raw)
     run_times = np.zeros_like(A_raw)
-    try:
-        for i, model in enumerate(load_path(solver, loads)):
 
-            start_time = time.time()
+    run_times_intermediate = np.zeros((len(loads) + 1,))
 
-            solver.solve(loads[i])
+    if solve_contact_problem:
+        start_time = time.time()
+        run_times_intermediate[0] = start_time
+        try:
+            for i, model in enumerate(load_path(solver, loads)):
 
-            # To compute the true displacement (for non-periodic problem), one needs to re-evaluate the displacement
-            if not periodic:
-                model.operators["dcfft"](model.traction, model.displacement)
+                solver.solve(loads[i])
 
-            # Effective contact area (uncorrected)
-            A_raw[i] = dA * len(model.traction[model.traction > 0.0])
+                # To compute the true displacement (for non-periodic problem), one needs to re-evaluate the displacement
+                if not periodic:
+                    model.operators["dcfft"](model.traction, model.displacement)
 
-            # Perform correction of the area according to Yastrebov:
-            M = count_switches(model.traction)
-            Sd = M * dx
-            A_cor[i] = A_raw[i] - (np.pi - 1 + np.log(2)) / 24 * Sd * dx
+                # Effective contact area (uncorrected)
+                A_raw[i] = dA * len(model.traction[model.traction > 0.0])
 
-            Dmin[i] = np.min(model.displacement)
-            Dmean[i] = np.mean(model.displacement)
-            Dmax[i] = np.max(model.displacement)
-            run_times[i] = time.time() - start_time
+                # Perform correction of the area according to Yastrebov:
+                M = count_switches(model.traction)
+                Sd = M * dx
+                A_cor[i] = A_raw[i] - (np.pi - 1 + np.log(2)) / 24 * Sd * dx
 
-    except Exception as e:
-        print(f"Error in surface with q1:{q1}, q2:{q2}, hurst:{hurst}")
-        print("Exception message:", e)
+                Dmin[i] = np.min(model.displacement)
+                Dmean[i] = np.mean(model.displacement)
+                Dmax[i] = np.max(model.displacement)
+                run_times_intermediate[i + 1] = time.time()
+
+            run_times = np.diff(run_times_intermediate)
+
+        except Exception as e:
+            print(f"Error in surface with q1:{q1}, q2:{q2}, hurst:{hurst}")
+            print("Exception message:", e)
 
     return surface, A_raw, A_cor, loads, rms_slope, Dmin, Dmean, Dmax, run_times
 
