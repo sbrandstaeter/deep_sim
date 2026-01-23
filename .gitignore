@@ -55,3 +55,5 @@ pydeep_sim/rough_surface/surface_patches
 *.npz
 *.npy
 *.parquet
+*.svg
+
