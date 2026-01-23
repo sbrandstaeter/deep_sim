@@ -17,10 +17,7 @@ from pydeep_sim.rough_surface.patches_generation import (
     plot_probability_density,
 )
 from pydeep_sim.rough_surface.tamaas_load_path import (
-    generate_surface_and_solve_pressure_driven_eff_area,
-)
-from pydeep_sim.rough_surface.rough_surface_parameters import (
-    TAMAAS_ROUGH_SURFACE_PARAMETERS,
+    generate_surface_and_solve_pressure_driven_eff_area_load_path,
 )
 
 
@@ -114,7 +111,7 @@ class Tamaas(Jobscript):
                 Dmean,
                 Dmax,
                 run_times,
-            ) = generate_surface_and_solve_pressure_driven_eff_area(
+            ) = generate_surface_and_solve_pressure_driven_eff_area_load_path(
                 hurst=sample_dict["hurst"],
                 q1=q1,
                 q2=q2,

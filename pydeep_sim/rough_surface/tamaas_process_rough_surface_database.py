@@ -106,41 +106,8 @@ if __name__ == "__main__":
 
     combined_data_df.to_csv(f"{experiment_name}.csv")
 
-    fig = px.scatter_matrix(input_output_df, color="eff_area")
-    fig.show()
-    fig.write_html(f"{experiment_name}_scatter_matrix.html")
-
-    fig = px.scatter(
-        input_output_df,
-        x="pressure",
-        y="eff_area",
-        color="ids",
-        color_discrete_sequence=px.colors.qualitative.Set2,
-        title="Eff area over pressure",  # columns to plot as lines
+    combined_data_df.to_parquet(
+        f"{experiment_name}.parquet",
+        engine="pyarrow",  # fastest & most mature
+        compression="zstd",  # best compression/speed tradeoff
     )
-    fig.show()
-    fig.write_html(f"{experiment_name}_scatter_pressure_eff_area.html")
-
-    fig = px.scatter(
-        input_output_df,
-        x="dmax",
-        y="eff_area",
-        color="ids",
-        color_discrete_sequence=px.colors.qualitative.Set2,
-        title="Eff area over dmax",  # columns to plot as lines
-    )
-    fig.show()
-    fig.write_html(f"{experiment_name}_scatter_dmax_eff_area.html")
-
-    fig2 = px.parallel_coordinates(input_output_df, color="eff_area")
-    fig2.show()
-    fig2.write_html(f"{experiment_name}_parallel_coordinates.html")
-
-    fig4 = px.histogram(
-        np.unique(combined_data_df["rms_slope"]),
-        nbins=20,  # optional
-        title="Distribution of rms_slope",
-    )
-
-    fig4.show()
-    fig4.write_html(f"{experiment_name}_histrogram_rms_slope.html")

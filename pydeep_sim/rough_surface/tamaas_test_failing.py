@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import plotly.colors as pc
 
 from pydeep_sim.rough_surface.tamaas_load_path import (
-    generate_surface_and_solve_pressure_driven_eff_area,
+    generate_surface_and_solve_pressure_driven_eff_area_load_path,
 )
 
 experiment_name = "tamaas_points_7"
@@ -44,7 +44,7 @@ for solver_tolerance in solver_tolerances:
         Dmean,
         Dmax,
         run_time,
-    ) = generate_surface_and_solve_pressure_driven_eff_area(
+    ) = generate_surface_and_solve_pressure_driven_eff_area_load_path(
         q1=int(q1),
         q2=int(q2),
         hurst=hurst,

@@ -51,3 +51,7 @@ pydeep_sim/rough_surface/surface_patches
 
 # ignore .csv files
 *.csv
+
+*.npz
+*.npy
+*.parquet
