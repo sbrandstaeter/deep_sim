@@ -3,7 +3,7 @@ import numpy as np
 from queens.global_settings import GlobalSettings
 
 # experiment_name = "tamaas_points_surfaces_scaled"
-experiment_name = "tamaas_points_nonperiodic_3"
+experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
 # experiment_name = "tamaas_points_nonperiodic_3"
 # experiment_name = "tamaas_points_periodic_2"
 output_dir = "./"
@@ -18,6 +18,10 @@ from queens.utils.io import load_result
 from pydeep_sim.rough_surface.tamaas_queens_driver import Tamaas
 from pydeep_sim.rough_surface.rough_surface_parameters import (
     TAMAAS_ROUGH_SURFACE_PARAMETERS,
+)
+from pydeep_sim.rough_surface.tamaas_load_path import (
+    generate_surface_and_solve_pressure_driven_eff_area_load_path,
+    generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps,
 )
 
 master_seed = 931990
@@ -62,6 +66,7 @@ if __name__ == "__main__":
         periodic=False,
         scale_surface=True,
         solve_contact_problem=True,
+        generate_surface_and_solve_pressure_driven_eff_area=generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps,
     )
     scheduler = Local(
         experiment_name=global_settings.experiment_name,

@@ -1,6 +1,11 @@
 import time
 
 import tamaas as tm
+from tamaas._tamaas import (
+    LogLevel,
+)
+from tamaas.utils import log_context
+
 import matplotlib.pyplot as plt
 import numpy as np
 from tamaas.utils import load_path
@@ -180,66 +185,72 @@ def generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps(
 
     run_times_intermediate = np.zeros((len(loads) + 1,))
     if solve_contact_problem:
-        start_time = time.time()
-        run_times_intermediate[0] = start_time
-        try:
-            for i, load in enumerate(loads):
+        verbose = False
+        log_level = LogLevel.info if verbose else LogLevel.warning
 
-                start_setup_time = time.time()
-                # Grid cell area
-                dx = L / n
-                dA = dx**2
+        with log_context(log_level):
+            start_time = time.time()
+            run_times_intermediate[0] = start_time
+            try:
+                for i, load in enumerate(loads):
 
-                # Creates the model
-                model = tm.ModelFactory.createModel(
-                    tm.model_type.basic_2d, [L, L], [n, n]
-                )
+                    start_setup_time = time.time()
+                    # Grid cell area
+                    dx = L / n
+                    dA = dx**2
 
-                # Uncomment to solve equivalent non-periodic problem:
-                if not periodic:
-                    tm.ModelFactory.registerNonPeriodic(model, "dcfft")
-
-                # Mechanical parameters
-                model.E = 1.0
-
-                # Initialize the solver
-                solver = tm.PolonskyKeerRey(model, surface, tolerance=solver_tolerance)
-
-                # Uncomment to solve equivalent non-periodic problem:
-                if not periodic:
-                    solver.setIntegralOperator("dcfft")
-
-                setup_times[i] = time.time() - start_setup_time
-
-                solver.solve(load)
-
-                current_model = solver.model
-
-                # To compute the true displacement (for non-periodic problem), one needs to re-evaluate the displacement
-                if not periodic:
-                    current_model.operators["dcfft"](
-                        current_model.traction, current_model.displacement
+                    # Creates the model
+                    model = tm.ModelFactory.createModel(
+                        tm.model_type.basic_2d, [L, L], [n, n]
                     )
 
-                # Effective contact area (uncorrected)
-                A_raw[i] = dA * len(
-                    current_model.traction[current_model.traction > 0.0]
-                )
+                    # Uncomment to solve equivalent non-periodic problem:
+                    if not periodic:
+                        tm.ModelFactory.registerNonPeriodic(model, "dcfft")
 
-                # Perform correction of the area according to Yastrebov:
-                M = count_switches(current_model.traction)
-                Sd = M * dx
-                A_cor[i] = A_raw[i] - (np.pi - 1 + np.log(2)) / 24 * Sd * dx
+                    # Mechanical parameters
+                    model.E = 1.0
 
-                Dmin[i] = np.min(current_model.displacement)
-                Dmean[i] = np.mean(current_model.displacement)
-                Dmax[i] = np.max(current_model.displacement)
-                run_times_intermediate[i + 1] = time.time()
+                    # Initialize the solver
+                    solver = tm.PolonskyKeerRey(
+                        model, surface, tolerance=solver_tolerance
+                    )
 
-            run_times = np.diff(run_times_intermediate)
+                    # Uncomment to solve equivalent non-periodic problem:
+                    if not periodic:
+                        solver.setIntegralOperator("dcfft")
 
-        except Exception as e:
-            print("Exception message:", e)
+                    setup_times[i] = time.time() - start_setup_time
+
+                    solver.solve(load)
+
+                    current_model = solver.model
+
+                    # To compute the true displacement (for non-periodic problem), one needs to re-evaluate the displacement
+                    if not periodic:
+                        current_model.operators["dcfft"](
+                            current_model.traction, current_model.displacement
+                        )
+
+                    # Effective contact area (uncorrected)
+                    A_raw[i] = dA * len(
+                        current_model.traction[current_model.traction > 0.0]
+                    )
+
+                    # Perform correction of the area according to Yastrebov:
+                    M = count_switches(current_model.traction)
+                    Sd = M * dx
+                    A_cor[i] = A_raw[i] - (np.pi - 1 + np.log(2)) / 24 * Sd * dx
+
+                    Dmin[i] = np.min(current_model.displacement)
+                    Dmean[i] = np.mean(current_model.displacement)
+                    Dmax[i] = np.max(current_model.displacement)
+                    run_times_intermediate[i + 1] = time.time()
+
+                run_times = np.diff(run_times_intermediate)
+
+            except Exception as e:
+                print("Exception message:", e)
 
     return surface, A_raw, A_cor, loads, rms_slope, Dmin, Dmean, Dmax, run_times
 

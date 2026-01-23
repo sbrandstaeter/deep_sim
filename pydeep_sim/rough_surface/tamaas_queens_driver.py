@@ -36,6 +36,7 @@ class Tamaas(Jobscript):
         periodic=False,
         scale_surface=False,
         solve_contact_problem=True,
+        generate_surface_and_solve_pressure_driven_eff_area=generate_surface_and_solve_pressure_driven_eff_area_load_path,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -48,6 +49,9 @@ class Tamaas(Jobscript):
         self.periodic = periodic
         self.scale_surface = scale_surface
         self.solve_contact_problem = solve_contact_problem
+        self.generate_surface_and_solve_pressure_driven_eff_area = (
+            generate_surface_and_solve_pressure_driven_eff_area
+        )
 
     def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
@@ -111,7 +115,7 @@ class Tamaas(Jobscript):
                 Dmean,
                 Dmax,
                 run_times,
-            ) = generate_surface_and_solve_pressure_driven_eff_area_load_path(
+            ) = self.generate_surface_and_solve_pressure_driven_eff_area(
                 hurst=sample_dict["hurst"],
                 q1=q1,
                 q2=q2,

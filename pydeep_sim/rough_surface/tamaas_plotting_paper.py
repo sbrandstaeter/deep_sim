@@ -1,40 +1,34 @@
-from pathlib import Path
-
-import numpy as np
 import pandas as pd
-import plotly.express as px
-
-from queens.utils.io import load_result
-
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
+import matplotlib.cm as cm
 
 experiment_name = "tamaas_points_nonperiodic_3"
 
 combined_data_df = pd.read_parquet(f"{experiment_name}.parquet", engine="pyarrow")
 
-fig1 = px.scatter(
-    combined_data_df,
-    x="eff_area",
-    y="run_times",
-    color="ids",
-    color_discrete_sequence=px.colors.qualitative.Set2,
-    title="Eff area over pressure",  # columns to plot as lines
-)
-fig1.show()
-fig1.write_html(f"{experiment_name}_scatter_eff_area_run_time.html")
+surfaces_mean_std = np.load(f"{experiment_name}_surfaces_stds_mean.npy")
 
-fig1 = px.scatter(
-    combined_data_df,
-    x="dmax",
-    y="run_times",
-    color="ids",
-    color_discrete_sequence=px.colors.qualitative.Set2,
-    labels={
-        "dmax": r"$\Delta$",
-        "run_times": "Wall clock time [s]",
-    },
-)
-fig1.show()
-fig1.write_html(f"{experiment_name}_scatter_dmax_run_time.html")
+# Get unique categories
+ids = combined_data_df["ids"].unique()
+colors = cm.Set2.colors  # same palette as Plotly Set2
+
+plt.figure(figsize=(8, 6))
+
+for i, id_val in enumerate(ids):
+    subset = combined_data_df[combined_data_df["ids"] == id_val]
+    plt.scatter(
+        subset["dmax"],
+        subset["run_times"],
+        label=id_val,
+        color=colors[i % len(colors)],
+        alpha=0.8,
+    )
+
+plt.xlabel(r"$\Delta$")
+plt.ylabel("Wall clock time [s]")
+plt.legend(title="ids")
+plt.tight_layout()
+
+plt.show()
+plt.savefig(f"{experiment_name}_scatter_dmax_run_time.png", dpi=300)
