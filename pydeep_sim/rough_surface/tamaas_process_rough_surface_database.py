@@ -14,6 +14,7 @@ from scipy.optimize import curve_fit
 if __name__ == "__main__":
 
     experiment_name = "tamaas_points_nonperiodic_3"
+    experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
     # experiment_name = "tamaas_points_14"
     # experiment_name = "tamaas_points_periodic_1"
     output_dir = "./"
