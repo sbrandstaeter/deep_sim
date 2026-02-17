@@ -30,3 +30,9 @@ pydeep_sim/rough_surface/surface_patches
 
 # ignore .pdf files
 *.pdf
+
+# ignore potentially large files
+*.dat
+*.txt
+*.png
+*.csv
