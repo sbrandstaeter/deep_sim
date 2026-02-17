@@ -1,47 +1,44 @@
-import numpy as np
-
 from queens.global_settings import GlobalSettings
-
-experiment_name = "rough_surface_points_16"
-output_dir = "./"
-global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
-
-from queens.iterators import Points
+from queens.iterators import Grid
 from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.schedulers import Local
 from queens.utils.io import load_result
 
 from pydeep_sim.rough_surface.mirco_queens_driver import MIRCO_DRIVER
-from pydeep_sim.rough_surface.rough_surface_parameters import ROUGH_SURFACE_PARAMETERS
+from pydeep_sim.rough_surface.rough_surface_parameters import (
+    MIRCO_ROUGH_SURFACE_PARAMETERS,
+)
 
 
-# hurst_values = np.array([0.5, 0.6, 0.7, 0.8])
-hurst_values = np.linspace(0.6, 0.8, 50)
-num_patches_values = np.array([1, 4, 16, 64])
+experiment_name = "queens_rough_surface_grid"
+output_dir = "./"
 
-hurst_grid, num_patches_grid = np.meshgrid(hurst_values, num_patches_values)
+global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
 
-points = {"hurst": np.ravel(hurst_grid), "num_patches": np.ravel(num_patches_grid)}
-
+grid_design = {
+    "hurst": {"num_grid_points": 3, "axis_type": "lin", "data_type": "FLOAT"},
+    "far_field_displacement": {
+        "num_grid_points": 3,
+        "axis_type": "lin",
+        "data_type": "FLOAT",
+    },
+}
 
 if __name__ == "__main__":
-
-    print(points)
-
     scheduler = Local(
         experiment_name=global_settings.experiment_name,
-        num_jobs=20,
+        num_jobs=1,
         num_procs=1,
         restart_workers=False,
         verbose=True,
     )
     model = Simulation(scheduler=scheduler, driver=MIRCO_DRIVER)
-    iterator = Points(
-        points=points,
+    iterator = Grid(
+        grid_design=grid_design,
         result_description={"write_results": True},
         model=model,
-        parameters=ROUGH_SURFACE_PARAMETERS,
+        parameters=MIRCO_ROUGH_SURFACE_PARAMETERS,
         global_settings=global_settings,
     )
 

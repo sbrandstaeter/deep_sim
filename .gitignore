@@ -10,6 +10,9 @@ deepsim.egg-info/
 # vscode config files
 .vscode/
 
+# pycharm config files
+.idea/
+
 #.egg-info/
 .pytest_cache/
 
@@ -20,6 +23,9 @@ dummy_files/
 
 # ignore cubitpy
 #cubitpy
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
 
 # ignore the env file
 debug.env

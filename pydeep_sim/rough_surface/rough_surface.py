@@ -36,8 +36,7 @@ class RoughSurface:
         N = 2**self.Resolution
         z = np.zeros([N + 1, N + 1])
 
-        alpha = self.InitialTopologyStdDeviation / \
-            np.power(np.sqrt(2), self.Hurst)
+        alpha = self.InitialTopologyStdDeviation / np.power(np.sqrt(2), self.Hurst)
 
         D = N
         d = N // 2
@@ -91,8 +90,7 @@ class RoughSurface:
 
         # z = self.g0*(z-np.min(z))/(np.max(z)-np.min(z)); # (scaling between 0 and g0)
 
-        full_path = Path(self.output_dir) / \
-            ("topology_" + self.file_tail + ".dat")
+        full_path = Path(self.output_dir) / ("topology_" + self.file_tail + ".dat")
         np.savetxt(full_path, z, delimiter=";", fmt="%15.5e")
 
         return full_path
@@ -113,8 +111,7 @@ def random_postprocess(rough_surface, lateral_length):
     # -------------------------------------------------------------------
 
     # calculate the slopes of each height
-    slope_x, slope_y = np.gradient(
-        z, ele_length, ele_length, axis=[0, 1], edge_order=1)
+    slope_x, slope_y = np.gradient(z, ele_length, ele_length, axis=[0, 1], edge_order=1)
 
     var_slope_x = np.var(np.ravel(slope_x))
     var_slope_y = np.var(np.ravel(slope_y))
@@ -144,10 +141,11 @@ def random_postprocess(rough_surface, lateral_length):
     # print(np.sqrt(np.mean(slope_x_boudary**2 + slope_y_boudary**2)))
 
     import tamaas as tm
+
     print(rms_slope_fd)
     print(tm.Statistics2D.computeFDRMSSlope(z))
     print(tm.Statistics2D.computeSpectralRMSSlope(z))
-    print('###################################################################')
+    print("###################################################################")
 
     # evaluate the 2D maxima (peaks) curvatures
     n_peaks = 0
@@ -270,7 +268,7 @@ def random_postprocess(rough_surface, lateral_length):
     statistical_properties["mean_z_peaks"] = mean_z_peaks  # mean
     # root_mean_squared peaks
     statistical_properties["rms_z_peaks"] = rms_z_peaks
-    statistical_properties["rms_slope_peaks"] = (  # TODO what does this mean?
+    statistical_properties["rms_slope"] = (
         # root_mean_squared slope (rms surface gradient) peaks
         rms_slope_fd
     )
@@ -311,8 +309,7 @@ def plot_surface(rough_surface, lateral_length, output_dir):
     X, Y = np.meshgrid(x, y)
 
     # Make 3D surface plot
-    fig = go.Figure(
-        data=[go.Surface(z=rough_surface, x=X, y=Y, colorscale="Viridis")])
+    fig = go.Figure(data=[go.Surface(z=rough_surface, x=X, y=Y, colorscale="Viridis")])
 
     fig.update_layout(
         scene=dict(
