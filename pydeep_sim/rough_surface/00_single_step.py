@@ -35,6 +35,7 @@ sg.spectrum.hurst = 0.8
 surface = sg.buildSurface()
 
 rms_slope = tm.Statistics2D.computeSpectralRMSSlope(surface)
+
 # Comment not to normalize the RMSSLope
 surface /= rms_slope
 
@@ -45,16 +46,16 @@ rms_slope = tm.Statistics2D.computeSpectralRMSSlope(surface)
 model = tm.ModelFactory.createModel(tm.model_type.basic_2d, [L, L], [n, n])
 
 # Uncomment to solve equivalent non-periodic problem:
-# tm.ModelFactory.registerNonPeriodic(model, 'dcfft')
+tm.ModelFactory.registerNonPeriodic(model, 'dcfft')
 
 # Mechanical parameters
 model.E = 1.0
 
 # Initialize the solver
-solver = tm.PolonskyKeerRey(model, surface, 1e-11)
+solver = tm.PolonskyKeerRey(model, surface, 1e-10)
 
 # Uncomment to solve equivalent non-periodic problem:
-# solver.setIntegralOperator('dcfft')
+solver.setIntegralOperator('dcfft')
 
 # Define load steps:
 p_target = 0.1
@@ -63,7 +64,7 @@ p_target = 0.1
 solver.solve(p_target)
 
 # To compute the true displacement (for non-periodic problem), one needs to re-evaluate the displacement
-# model.operators['dcfft'](model.traction, model.displacement)
+model.operators['dcfft'](model.traction, model.displacement)
 
 # Effective contact area (uncorrected)
 A_raw = dA*len(model.traction[model.traction > 0.0])
@@ -83,6 +84,6 @@ Dmax = np.max(model.displacement)
 
 # Reference datum for displacement is set in correspondence of mean elevation of the surface,
 # so that only relative displacements can be evaluated for periodic problems
-print(A_pr, A_cor,  A_raw, A_ab)
+#print(A_pr, A_cor,  A_raw, A_ab)
 print(Dmin, Dmax)
 print(np.min(surface), np.mean(surface), np.max(surface))
