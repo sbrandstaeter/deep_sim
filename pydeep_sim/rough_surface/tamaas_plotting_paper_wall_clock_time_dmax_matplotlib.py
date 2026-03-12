@@ -12,7 +12,7 @@ combined_data_df = pd.read_parquet(f"{experiment_name}.parquet", engine="pyarrow
 # Unused in your plotly snippet (kept here because you load it)
 surfaces_mean_std = np.load(f"{experiment_name}_surfaces_stds_mean.npy")
 
-x = combined_data_df["eff_area"].to_numpy() * 100
+x = combined_data_df["dmax"].to_numpy() / surfaces_mean_std
 y = combined_data_df["run_times"].to_numpy()
 
 # -------------------------
@@ -76,14 +76,14 @@ ax.scatter(
 )
 
 # Labels (your plotly labels)
-ax.set_xlabel(r"$A_e$ [%]", labelpad=12)
+ax.set_xlabel(r"${\Delta}/{\bar{\sigma}}$ [-]", labelpad=12)
 ax.set_ylabel("Wall clock time [s]", labelpad=12)
 
 # Axis ranges/ticks to match your plotly settings
-ax.set_xlim(0, 0.45)
+ax.set_xlim(0, 14)
 ax.set_ylim(0, 100)
 
-ax.set_xticks(np.arange(0, 45 + 1e-9, 5))
+ax.set_xticks(np.arange(0, 14 + 1e-9, 1))
 ax.set_yticks(np.arange(0, 100 + 1e-9, 10))
 
 # Mirror spines (Plotly mirror=True)
@@ -102,7 +102,7 @@ ax.tick_params(which="both", top=True, right=True)
 # -------------------------
 # Save: vector outputs (publish-ready)
 # -------------------------
-out_base = f"{experiment_name}_scatter_eff_area_run_time_mpl"
+out_base = f"{experiment_name}_scatter_dmax_run_time_mpl"
 fig.savefig(out_base + ".pdf")  # vector PDF
 fig.savefig(out_base + ".svg")  # vector SVG
 

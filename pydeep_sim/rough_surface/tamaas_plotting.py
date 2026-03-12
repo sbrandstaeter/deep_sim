@@ -14,6 +14,8 @@ experiment_name = "tamaas_points_nonperiodic_3"
 
 experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
 
+experiment_name = "tamaas_points_nonperiodic_3_coarse_scale"
+
 combined_data_df = pd.read_parquet(f"{experiment_name}.parquet", engine="pyarrow")
 
 fig = px.scatter_matrix(combined_data_df, color="eff_area")

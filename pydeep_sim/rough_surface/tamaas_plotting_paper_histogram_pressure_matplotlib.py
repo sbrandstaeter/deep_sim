@@ -9,11 +9,8 @@ import matplotlib.pyplot as plt
 experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
 combined_data_df = pd.read_parquet(f"{experiment_name}.parquet", engine="pyarrow")
 
-# Unused in your plotly snippet (kept here because you load it)
-surfaces_mean_std = np.load(f"{experiment_name}_surfaces_stds_mean.npy")
-
-x = combined_data_df["eff_area"].to_numpy() * 100
-y = combined_data_df["run_times"].to_numpy()
+x = combined_data_df["pressure"].to_numpy()
+y = combined_data_df["eff_area"].to_numpy() * 100
 
 # -------------------------
 # Matplotlib "print-ready" style to mirror Plotly setup
@@ -63,28 +60,25 @@ mpl.rcParams.update(
 # -------------------------
 fig, ax = plt.subplots(figsize=(9, 6))
 
-# Marker style matching Plotly:
-# size=9 in plotly is "px-ish"; matplotlib uses points^2 for s.
-# 9 px ~ about 6-7 pt visually; tune as needed. We'll pick s=60.
-ax.scatter(
+bins = np.linspace(0, 0.4, 51)
+
+ax.hist(
     x,
-    y,
-    s=60,
+    bins=bins,
+    density=False,  # set True if you want probability density
     alpha=0.85,
-    linewidths=0.6,
-    edgecolors=(0, 0, 0, 0.35),
+    edgecolor=(0, 0, 0, 0.35),
+    linewidth=0.8,
 )
 
-# Labels (your plotly labels)
-ax.set_xlabel(r"$A_e$ [%]", labelpad=12)
-ax.set_ylabel("Wall clock time [s]", labelpad=12)
+# Labels
+ax.set_xlabel(r"$p$ [-]", labelpad=12)
+ax.set_ylabel("Number of samples [-]", labelpad=12)
 
-# Axis ranges/ticks to match your plotly settings
-ax.set_xlim(0, 0.45)
-ax.set_ylim(0, 100)
+# Axis ranges/ticks (match your scatter on x; y is data-dependent)
+ax.set_xlim(0, 0.4)
+ax.set_xticks(np.arange(0, 0.4 + 1e-9, 0.05))
 
-ax.set_xticks(np.arange(0, 45 + 1e-9, 5))
-ax.set_yticks(np.arange(0, 100 + 1e-9, 10))
 
 # Mirror spines (Plotly mirror=True)
 ax.spines["top"].set_visible(True)
@@ -102,7 +96,7 @@ ax.tick_params(which="both", top=True, right=True)
 # -------------------------
 # Save: vector outputs (publish-ready)
 # -------------------------
-out_base = f"{experiment_name}_scatter_eff_area_run_time_mpl"
+out_base = f"{experiment_name}_hist_pressure_mpl"
 fig.savefig(out_base + ".pdf")  # vector PDF
 fig.savefig(out_base + ".svg")  # vector SVG
 
