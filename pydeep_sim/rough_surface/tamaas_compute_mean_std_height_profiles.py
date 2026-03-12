@@ -37,6 +37,7 @@ def compute_std_per_subdir(
 
 if __name__ == "__main__":
     experiment_name = "tamaas_points_nonperiodic_3"
+    experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
     home = Path.home()
     root_path = home / Path(f"queens-experiments/{experiment_name}")
     filename = "topology_RMD_aggregated.dat"

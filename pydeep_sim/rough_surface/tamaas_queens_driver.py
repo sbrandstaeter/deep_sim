@@ -58,6 +58,7 @@ class Tamaas(Jobscript):
         periodic=False,
         scale_surface=False,
         solve_contact_problem=True,
+        random_load_steps=False,
         generate_surface_and_solve_pressure_driven_eff_area=generate_surface_and_solve_pressure_driven_eff_area_load_path,
         **kwargs,
     ):
@@ -71,6 +72,7 @@ class Tamaas(Jobscript):
         self.periodic = periodic
         self.scale_surface = scale_surface
         self.solve_contact_problem = solve_contact_problem
+        self.random_load_steps = random_load_steps
         self.generate_surface_and_solve_pressure_driven_eff_area = (
             generate_surface_and_solve_pressure_driven_eff_area
         )
@@ -132,6 +134,7 @@ class Tamaas(Jobscript):
                 periodic=self.periodic,
                 scale_factor_surface=scale_factor_surface,
                 solve_contact_problem=self.solve_contact_problem,
+                random_load_steps=self.random_load_steps,
             )
             np.savetxt(
                 surface_path,
