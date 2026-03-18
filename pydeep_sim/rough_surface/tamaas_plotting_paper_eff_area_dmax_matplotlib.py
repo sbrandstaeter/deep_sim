@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 # Data
 # -------------------------
 experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
+experiment_name = "tamaas_points_nonperiodic_3_test_data"
 combined_data_df = pd.read_parquet(f"{experiment_name}.parquet", engine="pyarrow")
 
 # Unused in your plotly snippet (kept here because you load it)
