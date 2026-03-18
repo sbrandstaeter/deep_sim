@@ -1,6 +1,8 @@
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
 
+MY_BLUE = "#4c72b0"
+
 
 def apply_plot_style():
     fontsize = 7  # pt
@@ -46,6 +48,8 @@ def style_axes(ax):
     ax.set_facecolor("#EBEBEB")
     for spine in ax.spines.values():
         spine.set_visible(False)
+
+    ax.set_axisbelow(True)
     ax.grid(color="white")
     ax.xaxis.set_ticks_position("none")
     ax.yaxis.set_ticks_position("none")

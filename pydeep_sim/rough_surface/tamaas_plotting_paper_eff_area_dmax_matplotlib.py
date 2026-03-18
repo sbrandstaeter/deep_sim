@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from figures_generation.plot_style import make_styled_figure
+from figures_generation.plot_style import make_styled_figure, MY_BLUE
 
 # -------------------------
 # Data
@@ -26,6 +26,9 @@ ax.plot(
     y,
     marker="o",
     linestyle="",
+    markerfacecolor=MY_BLUE,
+    markeredgecolor="black",
+    markersize=3.0,
     label="Data",
 )
 
