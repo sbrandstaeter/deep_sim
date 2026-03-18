@@ -26,13 +26,14 @@ from pydeep_sim.rough_surface.tamaas_load_path import (
 
 master_seed = 931990
 # master_seed = 260124
+num_grid_points_per_side = 512
+num_pressure_steps = 50
 master_rng = np.random.default_rng(master_seed)
 
 # hurst_values = np.array([0.5, 0.6, 0.7, 0.8])
 hurst_values = np.linspace(0.6, 0.8, 50)
 q1_values = np.array([1, 4, 16])
 q2_values = np.array([32, 64, 128])
-
 
 hurst_grid, q1_grid, q2_grid = np.meshgrid(hurst_values, q1_values, q2_values)
 
@@ -59,13 +60,14 @@ if __name__ == "__main__":
         executable=None,
         lateral_length=1.0,
         plot_surface=True,
-        num_grid_points_per_side=512,
+        num_grid_points_per_side=num_grid_points_per_side,
         target_pressure=0.40,
-        num_pressure_steps=50,
+        num_pressure_steps=num_pressure_steps,
         solver_tolerance=1e-09,
         periodic=False,
         scale_surface=True,
         solve_contact_problem=True,
+        random_load_steps=False,
         generate_surface_and_solve_pressure_driven_eff_area=generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps,
     )
     scheduler = Local(

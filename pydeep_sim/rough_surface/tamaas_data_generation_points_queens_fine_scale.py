@@ -21,10 +21,10 @@ from pydeep_sim.rough_surface.tamaas_load_path import (
     generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps,
 )
 
-# master_seed = 2601291
-# n = 256
+num_grid_points_per_side = 1024
+num_pressure_steps = 1
+
 master_seed = 260129
-n = 1024
 master_rng = np.random.default_rng(master_seed)
 
 hurst_values = np.sort(np.random.uniform(0.6, 0.8, 10))
@@ -56,9 +56,9 @@ if __name__ == "__main__":
         executable=None,
         lateral_length=1.0,
         plot_surface=True,
-        num_grid_points_per_side=n,
+        num_grid_points_per_side=num_grid_points_per_side,
         target_pressure=0.40,
-        num_pressure_steps=10,
+        num_pressure_steps=num_pressure_steps,
         solver_tolerance=1e-09,
         periodic=False,
         scale_surface=True,
