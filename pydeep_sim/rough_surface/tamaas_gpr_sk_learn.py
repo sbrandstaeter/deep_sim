@@ -15,8 +15,9 @@ Notes:
 - Reports metrics on the original target scale.
 """
 
-import argparse
 import json
+import os
+import time
 from pathlib import Path
 
 import joblib
@@ -39,7 +40,6 @@ def rmsle(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     y_true = np.asarray(y_true)
     y_pred = np.asarray(y_pred)
     y_pred = np.clip(y_pred, 0.0, None)
-
     return float(np.sqrt(np.mean((np.log1p(y_true) - np.log1p(y_pred)) ** 2)))
 
 
@@ -49,14 +49,17 @@ def main() -> None:
     rng = np.random.default_rng(random_state)
     drop_na = False
 
-    experiment_name = "tamaas_points_nonperiodic_3"
-    model_path = Path(f"{experiment_name}_gpr_model.joblib")
-    output_path = Path(f"{experiment_name}_gpr_model_metrix.json")
+    experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
+
+    base_name = f"{experiment_name}_gpr_scikit_1"
+
+    model_path = Path(f"{base_name}_model.joblib")
+    output_path = Path(f"{base_name}_metrics.json")
 
     train_data_path = Path(f"{experiment_name}.parquet")
     train_data_df_raw = pd.read_parquet(train_data_path)
 
-    test_data_path = Path(f"{experiment_name}_test_data.parquet")
+    test_data_path = Path("tamaas_points_nonperiodic_3_test_data.parquet")
     test_data_df_raw = pd.read_parquet(test_data_path)
 
     target = "eff_area"
@@ -87,9 +90,12 @@ def main() -> None:
         "dmax",
     ]
 
-    for df in [test_data_df_raw, train_data_df_raw]:
+    num_features = len(features)
+    feature_cols = None
+
+    for df_name, df in [("test", test_data_df_raw), ("train", train_data_df_raw)]:
         if target not in df.columns:
-            raise ValueError(f"Target column '{target}' not found in data {df}.")
+            raise ValueError(f"Target column '{target}' not found in {df_name} data.")
 
         if features is None or len(features) == 0:
             feature_cols = [c for c in df.columns if c != target]
@@ -97,7 +103,7 @@ def main() -> None:
             missing_features = [c for c in features if c not in df.columns]
             if missing_features:
                 raise ValueError(
-                    f"In data {df}, the following feature columns were not found: {missing_features}"
+                    f"In {df_name} data, the following feature columns were not found: {missing_features}"
                 )
             feature_cols = features
 
@@ -105,14 +111,16 @@ def main() -> None:
     train_data_df = train_data_df_raw[selected_cols].copy()
     test_data_df = test_data_df_raw[selected_cols].copy()
 
-    for df in [train_data_df, test_data_df]:
+    cleaned_dfs = []
+    for df_name, df in [("train", train_data_df), ("test", test_data_df)]:
         if drop_na:
             df = df.dropna()
         else:
             if df.isna().any().any():
                 na_counts = df.isna().sum()
                 raise ValueError(
-                    f"Missing values detected in {df}. Either clean the data first or rerun with --drop-na.\n"
+                    f"Missing values detected in {df_name} data. "
+                    "Either clean the data first or rerun with drop_na=True.\n"
                     f"Missing counts:\n{na_counts[na_counts > 0]}"
                 )
 
@@ -121,16 +129,20 @@ def main() -> None:
         ]
         if non_numeric_features:
             raise TypeError(
-                f"GaussianProcessRegressor requires numeric features. "
-                f"Non-numeric feature columns found in {df}: {non_numeric_features}"
+                "GP regression requires numeric features. "
+                f"Non-numeric feature columns found in {df_name} data: {non_numeric_features}"
             )
 
         y_all = df[target].to_numpy()
         if np.any(y_all < 0):
             raise ValueError(
-                f"Target column '{target}' contains negative values in {df}. "
+                f"Target column '{target}' contains negative values in {df_name} data. "
                 "log1p target transform requires y >= 0."
             )
+
+        cleaned_dfs.append(df)
+
+    train_data_df, test_data_df = cleaned_dfs
 
     X_train = train_data_df[feature_cols].to_numpy()
     y_train = train_data_df[target].to_numpy()
@@ -138,30 +150,27 @@ def main() -> None:
     num_train_data = len(y_train)
 
     test_size = 0.2
-    train_size = 1 - test_size
-
+    train_size = 1.0 - test_size
     num_test_data = int(num_train_data / train_size * test_size)
 
     X_test_all = test_data_df[feature_cols].to_numpy()
     y_test_all = test_data_df[target].to_numpy()
 
-    # choose 3 random indices without replacement
     idx_chosen_test_data = rng.choice(
         len(y_test_all), size=num_test_data, replace=False
     )
 
     X_test = X_test_all[idx_chosen_test_data, :]
     y_test = y_test_all[idx_chosen_test_data]
-    # X_train, X_test, y_train, y_test = train_test_split(
-    #    X,
-    #    y,
-    #    test_size=test_size,
-    #    random_state=random_state,
-    # )
 
-    kernel = ConstantKernel(1.0, (1e-3, 1e3)) * RBF(
-        length_scale=1.0, length_scale_bounds=(1e-3, 1e3)
-    ) + WhiteKernel(noise_level=1e-5, noise_level_bounds=(1e-8, 1e1))
+    # kernel = ConstantKernel(1.0, (1e-3, 1e3)) * RBF(
+    #    length_scale=1.0, length_scale_bounds=(1e-3, 1e3)
+    # ) + WhiteKernel(noise_level=1e-5, noise_level_bounds=(1e-8, 1e1))
+    num_features = len(feature_cols)
+    kernel = ConstantKernel(1.0 * num_features, (1e-3, 1e3)) * RBF(
+        length_scale=[1.0] * num_features,
+        length_scale_bounds=[(1e-3, 1e3)] * num_features,
+    )
 
     gpr_pipeline = Pipeline(
         steps=[
@@ -170,7 +179,7 @@ def main() -> None:
                 "gpr",
                 GaussianProcessRegressor(
                     kernel=kernel,
-                    alpha=0.0,
+                    alpha=1e-10,
                     normalize_y=False,
                     n_restarts_optimizer=3,
                     random_state=random_state,
@@ -185,8 +194,11 @@ def main() -> None:
         inverse_func=np.expm1,
         check_inverse=True,
     )
-
+    start_time = time.time()
     model.fit(X_train, y_train)
+    print("Training finished.")
+    optimization_time = time.time() - start_time
+    print(f"Training took {optimization_time}")
 
     joblib.dump(model, model_path)
     print(f"Saved model to: {model_path.resolve()}")
@@ -200,9 +212,11 @@ def main() -> None:
     test_rmsle = rmsle(y_test, y_pred)
 
     metrics = {
-        "n_samples_total": int(len(df)),
+        "n_samples_total_train_df": int(len(train_data_df)),
+        "n_samples_total_test_df": int(len(test_data_df)),
         "n_train": int(len(X_train)),
         "n_test": int(len(X_test)),
+        "train_time": optimization_time,
         "target": target,
         "features": feature_cols,
         "test_size": test_size,
@@ -216,7 +230,7 @@ def main() -> None:
     print("Evaluation metrics:")
     print(json.dumps(metrics, indent=2))
 
-    output_path.write_text(json.dumps(metrics, indent="2"), encoding="utf-8")
+    output_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     print(f"\nSaved metrics to: {output_path.resolve()}")
 
     trained_gpr = model.regressor_.named_steps["gpr"]
