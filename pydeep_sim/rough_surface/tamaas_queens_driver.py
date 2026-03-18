@@ -63,6 +63,13 @@ class Tamaas(Jobscript):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        # Overwrite: force "no copy" while keeping the interface unchanged in the
+        # Jobscript driver. Setting something like input_template="" is dangerous
+        # because Path("") resolves to ".", which would cause rsync to copy the
+        # current working directory. Instead we explicitly set the list of files
+        # to copy to empty so that no rsync command is executed.
+        self.files_to_copy = []
+
         self.lateral_length = lateral_length
         self.num_pressure_steps = num_pressure_steps
         self.plot_surface = plot_surface
@@ -105,6 +112,7 @@ class Tamaas(Jobscript):
             surface_path = job_dir / final_surface_name
             q1 = int(sample_dict["q1"])
             q2 = int(sample_dict["q2"])
+            target_pressure = sample_dict.get("target_pressure", self.target_pressure)
 
             if self.scale_surface:
                 scale_factor_surface = scale_factor(q1, q2)
@@ -128,7 +136,7 @@ class Tamaas(Jobscript):
                 n=self.num_grid_points_per_side,
                 L=self.lateral_length,
                 random_seed=int(sample_dict["random_seed"]),
-                p_target=self.target_pressure,
+                p_target=target_pressure,
                 num_load_steps=self.num_pressure_steps,
                 solver_tolerance=self.solver_tolerance,
                 periodic=self.periodic,
