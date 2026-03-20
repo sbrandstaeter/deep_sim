@@ -22,152 +22,152 @@ import pandas as pd
 ROWS: List[Dict[str, Any]] = [
     {
         "type": "Load",
-        "name": r"Far-field displacement (\displacementUnit)",
+        "name": r"Far-field displacement",
         "symbol": r"$\Delta$",
         "column": "dmax",
     },
     {
         "type": r"\begin{tabular}[c]{c}Statistical \\ parameters\end{tabular}",
-        "name": r"Mean of peaks (\displacementUnit)",
+        "name": r"Mean of peaks",
         "symbol": r"$\bar{z}_{\text{p}}$",
         "column": "mean_z_peaks",
     },
     {
         "type": None,
-        "name": r"Root mean square of peaks (\displacementUnit)",
+        "name": r"Root mean square of peaks",
         "symbol": r"$\text{RMS}[z_{\text{p}}]$",
         "column": "rms_z_peaks",
     },
     {
         "type": None,
-        "name": r"Kurtosis of peaks (-)",
+        "name": r"Kurtosis of peaks",
         "symbol": r"$\text{K}[z_{\text{p}}]$",
         "column": "ks_z_peaks",
     },
     {
         "type": None,
-        "name": r"Skewness of peaks (-)",
+        "name": r"Skewness of peaks",
         "symbol": r"$\text{Sk}[z_{\text{p}}]$",
         "column": "sk_z_peaks",
     },
     {
         "type": None,
-        "name": r"Density of peaks (-)",
+        "name": r"Density of peaks",
         "symbol": r"$\rho_{\text{p}}$",
         "column": "dn_peaks",
     },
     {
         "type": None,
-        "name": r"Mean of curvature of peaks (\InversedisplacementUnit)",
+        "name": r"Mean of curvature of peaks",
         "symbol": r"$\bar{\kappa}_{\text{p}}$",
         "column": "mean_curv_peaks",
     },
     {
         "type": None,
-        "name": r"Kurtosis of curvature of peaks (-)",
+        "name": r"Kurtosis of curvature of peaks",
         "symbol": r"$\text{K}[\kappa_{\text{p}}]$",
         "column": "ks_curv_peaks",
     },
     {
         "type": None,
-        "name": r"Skewness of curvature of peaks (-)",
+        "name": r"Skewness of curvature of peaks",
         "symbol": r"$\text{Sk}[\kappa_{\text{p}}]$",
         "column": "sk_curv_peaks",
     },
     {
         "type": None,
-        "name": r"Bandwidth parameter in x direction (-)",
+        "name": r"Bandwidth parameter in x direction",
         "symbol": r"$\alpha_x$",
         "column": "alfa_x",
     },
     {
         "type": None,
-        "name": r"Bandwidth parameter in y direction (-)",
+        "name": r"Bandwidth parameter in y direction",
         "symbol": r"$\alpha_y$",
         "column": "alfa_y",
     },
     {
         "type": None,
-        "name": r"Mean of asperities (\displacementUnit)",
+        "name": r"Mean of asperities",
         "symbol": r"$\bar{z}_{\text{a}}$",
         "column": "mean_z_asp",
     },
     {
         "type": None,
-        "name": r"Root mean square of asperities (\displacementUnit)",
+        "name": r"Root mean square of asperities",
         "symbol": r"$\text{RMS}[z_{\text{a}}]$",
         "column": "rms_z_asp",
     },
     {
         "type": None,
-        "name": r"Kurtosis of asperities (-)",
+        "name": r"Kurtosis of asperities",
         "symbol": r"$\text{K}[z_{\text{a}}]$",
         "column": "ks_z_asp",
     },
     {
         "type": None,
-        "name": r"Skewness of asperities (-)",
+        "name": r"Skewness of asperities",
         "symbol": r"$\text{Sk}[z_{\text{a}}]$",
         "column": "sk_z_asp",
     },
     {
         "type": None,
-        "name": r"Density of asperities (-)",
+        "name": r"Density of asperities",
         "symbol": r"$\rho_{\text{a}}$",
         "column": "dns_asp",
     },
     {
         "type": None,
-        "name": r"Mean of curvature of asperities (\InversedisplacementUnit)",
+        "name": r"Mean of curvature of asperities",
         "symbol": r"$\bar{\kappa}_{\text{a}}$",
         "column": "mean_curv_asp",
     },
     {
         "type": None,
-        "name": r"Root mean square of curvature of asperities (\InversedisplacementUnit)",
+        "name": r"Root mean square of curvature of asperities",
         "symbol": r"$\text{RMS}[\kappa_{\text{a}}]$",
         "column": "rms_curv_asp",
     },
     {
         "type": None,
-        "name": r"Kurtosis of curvature of asperities (-)",
+        "name": r"Kurtosis of curvature of asperities",
         "symbol": r"$\text{K}[\kappa_{\text{a}}]$",
         "column": "ks_curv_asp",
     },
     {
         "type": None,
-        "name": r"Skewness of curvature of asperities (-)",
+        "name": r"Skewness of curvature of asperities",
         "symbol": r"$\text{Sk}[\kappa_{\text{a}}]$",
         "column": "sk_curv_asp",
     },
+    # {
+    #     "type": None,
+    #     "name": r"Mean of surface height",
+    #     "symbol": r"$\bar{z}$",
+    #     "column": "z_mean",
+    # },
     {
         "type": None,
-        "name": r"Mean of surface height (\displacementUnit)",
-        "symbol": r"$\bar{z}$",
-        "column": "z_mean",
-    },
-    {
-        "type": None,
-        "name": r"Max.\ of surface height (\displacementUnit)",
+        "name": r"Max.\ of surface height",
         "symbol": r"$z^{\text{max}}$",
         "column": "z_max",
     },
     {
         "type": None,
-        "name": r"Root mean square of surface height (\displacementUnit)",
+        "name": r"Root mean square of surface height",
         "symbol": r"$\text{RMS}[z]$",
         "column": "z_rms",
     },
     {
         "type": None,
-        "name": r"Root mean square of slope (-)",
+        "name": r"Root mean square of slope",
         "symbol": r"$\text{RMS}[\nabla z]$",
         "column": "rms_slope",
     },
     {
         "type": "Target quantity",
-        "name": r"Effective contact area (\%)",
-        "symbol": r"$A_e$",
+        "name": r"Effective contact area",
+        "symbol": r"$\EffectArea$",
         "column": "eff_area",
     },
 ]
@@ -237,7 +237,7 @@ def generate_table(df: pd.DataFrame) -> str:
     load_min = format_sci(df[load_row["column"]].min())
     load_max = format_sci(df[load_row["column"]].max())
     lines.append(
-        row_line("Load", load_row["name"], load_row["symbol"], load_min, load_max)
+        row_line(r"\begin{tabular}[c]{c}Boundary \\ condition\end{tabular}", load_row["name"], load_row["symbol"], load_min, load_max)
     )
     lines.append(r"\midrule")
     lines.append("")
