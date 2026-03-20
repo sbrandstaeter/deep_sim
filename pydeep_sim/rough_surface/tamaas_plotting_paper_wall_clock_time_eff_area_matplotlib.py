@@ -28,7 +28,9 @@ ax.plot(
     linestyle="",
     markerfacecolor=MY_BLUE,
     markeredgecolor="black",
-    markersize=3.5,
+    markersize=3.0,
+    markeredgewidth=0.3,
+    alpha=0.8,
     label="Data",
 )
 

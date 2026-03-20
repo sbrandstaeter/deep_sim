@@ -15,6 +15,10 @@ surfaces_mean_std = np.load(f"{experiment_name}_surfaces_stds_mean.npy")
 
 x = combined_data_df["dmax"].to_numpy() / surfaces_mean_std
 y = combined_data_df["run_times"].to_numpy()
+surface_id = combined_data_df["ids"].to_numpy()
+
+mean_run_time = np.mean(y)
+print(f"Mean run time: {mean_run_time:.2f} s")
 
 # -------------------------
 # Plot
@@ -28,9 +32,12 @@ ax.plot(
     linestyle="",
     markerfacecolor=MY_BLUE,
     markeredgecolor="black",
-    markersize=3.5,
+    markersize=3.0,
+    markeredgewidth=0.3,
+    alpha=0.8,
     label="Data",
 )
+
 
 ax.set_xlabel(r"$\Delta/\bar{\sigma}$")
 ax.set_ylabel(r"Wall clock time~(s)")
