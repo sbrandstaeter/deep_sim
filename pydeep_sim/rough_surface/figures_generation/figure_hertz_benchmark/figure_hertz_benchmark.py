@@ -13,7 +13,7 @@ df = pd.read_csv('hertz_benchmark.csv')
 # print(rcParams.keys())
 
 # -SIZES----------------------------------
-fontsize = 7  # fontsize in (pt)
+fontsize = 6  # fontsize in (pt)
 rcParams['axes.labelsize'] = fontsize
 rcParams['axes.titlesize'] = fontsize
 rcParams['axes.linewidth'] = 0.5
@@ -24,21 +24,23 @@ rcParams['font.size'] = fontsize
 
 # -FONTS-----------------------------------
 rcParams['text.usetex'] = True
-rcParams['text.latex.preamble'] = r"""\usepackage{siunitx}
-       \sisetup{detect-all}
-       \usepackage{helvet}
-       \usepackage{sansmath}
-       \sansmath
-       """
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.sans-serif'] = 'Helvetica'
+rcParams['text.latex.preamble'] = \
+    r"""
+        \usepackage{siunitx}
+        \usepackage{helvet}
+        \usepackage{sfmath}
+    """
 
 # -MARKERS--------------------------------
 rcParams['lines.markeredgecolor'] = r"k"
 rcParams['lines.markeredgewidth'] = 0.75
-rcParams['lines.markerfacecolor'] = r"r"
+rcParams['lines.markerfacecolor'] = r"darkred"
 rcParams['lines.markersize'] = 5.0
 
 # -LINES--------------------------------
-rcParams['lines.linewidth'] = 1.0
+rcParams['lines.linewidth'] = 0.75
 
 # -PRINT PARAMS---------------------------
 TEXTWIDTH = 507  # Textwidth in points
@@ -54,7 +56,7 @@ ax.set_facecolor('#EBEBEB')
 ax.grid(c='white')
 ax.xaxis.set_ticks_position('none')
 ax.yaxis.set_ticks_position('none')
-ax.plot(df['Delta_an']/R, df['A_an']/L**2*100, 'b', label='Hertz')
+ax.plot(df['Delta_an']/R, df['A_an']/L**2*100, 'k', label='Hertz')
 ax.plot(df['Delta']/R, df['A']/L**2*100,
         marker='o',
         linestyle='',
@@ -72,7 +74,7 @@ ax.set_facecolor('#EBEBEB')
 ax.grid(c='white')
 ax.xaxis.set_ticks_position('none')
 ax.yaxis.set_ticks_position('none')
-ax.plot(df['Delta_an']/R, df['P_an']/(E*R**2), 'b', label='Hertz')
+ax.plot(df['Delta_an']/R, df['P_an']/(E*R**2), 'k', label='Hertz')
 ax.plot(df['Delta']/R, df['P']/(E*R**2),
         marker='o',
         linestyle='',

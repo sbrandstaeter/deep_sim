@@ -4,7 +4,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
 
-df = pd.read_csv('surface.0512x0512.xyz.csv')
+df = pd.read_csv(
+    '/home/a13ejabo/deep_sim/pydeep_sim/rough_surface/figures_generation/figure_surface_statistics/surface.0512x0512.xyz.csv')
 
 indx = np.argmin(np.abs(df['x'].unique()-40.0))
 indy = np.argmin(np.abs(df['y'].unique()-40.0))

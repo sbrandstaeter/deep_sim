@@ -12,7 +12,7 @@ df1 = pd.read_csv('rough_contact_area.csv')
 # print(df1.head())
 
 # -SIZES----------------------------------
-fontsize = 7  # fontsize in (pt)
+fontsize = 6  # fontsize in (pt)
 rcParams['axes.labelsize'] = fontsize
 rcParams['axes.titlesize'] = fontsize
 rcParams['axes.linewidth'] = 0.5
@@ -37,7 +37,7 @@ rcParams['lines.markerfacecolor'] = r"r"
 rcParams['lines.markersize'] = 5.0
 
 # -LINES--------------------------------
-rcParams['lines.linewidth'] = 1.0
+rcParams['lines.linewidth'] = 0.75
 
 # -PRINT PARAMS---------------------------
 TEXTWIDTH = 507  # Textwidth in points
