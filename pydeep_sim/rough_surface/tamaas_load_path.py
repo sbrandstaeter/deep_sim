@@ -12,28 +12,8 @@ from tamaas.utils import load_path
 import scipy
 from count_switches import count_switches
 
-# Surface resolution (points pe rside)
 
-
-def generate_surface_and_solve_pressure_driven_eff_area_load_path(
-    q1=16,
-    q2=64,
-    hurst=0.8,
-    n=512,
-    L=1.0,  # Surface lateral size
-    random_seed=1,
-    p_target=0.1,
-    num_load_steps=10,
-    periodic=False,
-    solver_tolerance=1e-09,  # solver tolerance, usually around 1e-9 adhesion-less contact (see https://gitlab.com/tamaas/tutorials/-/blob/master/elastic_contact.ipynb)
-    scale_factor_surface=1.0,
-    solve_contact_problem=True,
-):
-
-    # Grid cell area
-    dx = L / n
-    dA = dx**2
-
+def build_surface(q1, q2, hurst, n=512, random_seed=1, scale_factor_surface=1.0):
     # Surface generator
     sg = tm.SurfaceGeneratorFilter2D([n, n])
     sg.random_seed = random_seed
@@ -56,10 +36,48 @@ def generate_surface_and_solve_pressure_driven_eff_area_load_path(
     # Comment not to normalize the RMSSLope
     surface /= scale_factor_surface
 
-    rms_slope = tm.Statistics2D.computeSpectralRMSSlope(surface)
+    return surface
 
-    # Should be equal to 1 if normalized
-    rms_slope_check = tm.Statistics2D.computeSpectralRMSSlope(surface)
+
+def compute_load_steps(p_target, num_load_steps, random_load_steps=False):
+    if random_load_steps:
+        loads = np.sort(np.random.uniform(0, p_target, num_load_steps))
+    else:
+        loads = np.linspace(0, p_target, num_load_steps + 1)
+        loads = loads[1:]
+    return loads
+
+
+def generate_surface_and_solve_pressure_driven_eff_area_load_path(
+    q1=16,
+    q2=64,
+    hurst=0.8,
+    n=512,
+    L=1.0,  # Surface lateral size
+    random_seed=1,
+    p_target=0.1,
+    num_load_steps=10,
+    periodic=False,
+    solver_tolerance=1e-09,  # solver tolerance, usually around 1e-9 adhesion-less contact (see https://gitlab.com/tamaas/tutorials/-/blob/master/elastic_contact.ipynb)
+    scale_factor_surface=1.0,
+    solve_contact_problem=True,
+    random_load_steps=False,
+):
+
+    # Grid cell area
+    dx = L / n
+    dA = dx**2
+
+    surface = build_surface(
+        q1=q1,
+        q2=q2,
+        hurst=hurst,
+        n=n,
+        random_seed=random_seed,
+        scale_factor_surface=scale_factor_surface,
+    )
+
+    rms_slope = tm.Statistics2D.computeSpectralRMSSlope(surface)
 
     # Creates the model
     model = tm.ModelFactory.createModel(tm.model_type.basic_2d, [L, L], [n, n])
@@ -79,12 +97,12 @@ def generate_surface_and_solve_pressure_driven_eff_area_load_path(
         solver.setIntegralOperator("dcfft")
 
     # Define load steps:
-
-    loads = np.linspace(0, p_target, num_load_steps + 1)
-    loads = loads[1:]
+    loads = compute_load_steps(
+        p_target, num_load_steps, random_load_steps=random_load_steps
+    )
 
     # Solve for given load path:
-    A_raw = np.zeros((len(loads),))
+    A_raw = np.zeros((num_load_steps,))
     A_cor = np.zeros_like(A_raw)
 
     Dmax = np.zeros_like(A_raw)
@@ -92,7 +110,7 @@ def generate_surface_and_solve_pressure_driven_eff_area_load_path(
     Dmean = np.zeros_like(A_raw)
     run_times = np.zeros_like(A_raw)
 
-    run_times_intermediate = np.zeros((len(loads) + 1,))
+    run_times_intermediate = np.zeros((num_load_steps + 1,))
 
     if solve_contact_problem:
         start_time = time.time()
@@ -141,40 +159,29 @@ def generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps(
     solver_tolerance=1e-09,  # solver tolerance, usually around 1e-9 adhesion-less contact (see https://gitlab.com/tamaas/tutorials/-/blob/master/elastic_contact.ipynb)
     scale_factor_surface=1.0,
     solve_contact_problem=True,
+    random_load_steps=False,
 ):
     # Grid cell area
     dx = L / n
     dA = dx**2
 
-    # Surface generator
-    sg = tm.SurfaceGeneratorFilter2D([n, n])
-    sg.random_seed = random_seed
-
-    # Define spectrum
-    sg.spectrum = tm.Isopowerlaw2D()
-
-    # Roll-off wavenumber (defines ratio between lateral size of the surface and longest wavelength. if lambda_0=2*pi/q0 ~ L the surface is not Gaussian)
-    sg.spectrum.q0 = q1  # we set q0=q1 as it is not super important
-    # Lowest wavenumber (defines longest wavelength of the surface as lambda_1 = 2*pi/q1)
-    sg.spectrum.q1 = q1
-    # Highest wavenumber (defines shortest wavelength of the surface as lambda_2 = 2*pi/q2)
-    sg.spectrum.q2 = q2
-    # Defines slope of the spectrum
-    sg.spectrum.hurst = hurst
-
-    # Generates the surface given the spectrum
-    surface = sg.buildSurface()
-
-    # Comment not to normalize the RMSSLope
-    surface /= scale_factor_surface
+    surface = build_surface(
+        q1=q1,
+        q2=q2,
+        hurst=hurst,
+        n=n,
+        random_seed=random_seed,
+        scale_factor_surface=scale_factor_surface,
+    )
 
     rms_slope = tm.Statistics2D.computeSpectralRMSSlope(surface)
 
-    loads = np.linspace(0, p_target, num_load_steps + 1)
-    loads = loads[1:]
+    loads = compute_load_steps(
+        p_target, num_load_steps, random_load_steps=random_load_steps
+    )
 
     # Solve for given load path:
-    A_raw = np.zeros((len(loads),))
+    A_raw = np.zeros((num_load_steps,))
     A_cor = np.zeros_like(A_raw)
 
     Dmax = np.zeros_like(A_raw)
@@ -183,7 +190,7 @@ def generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps(
     run_times = np.zeros_like(A_raw)
     setup_times = np.zeros_like(A_raw)
 
-    run_times_intermediate = np.zeros((len(loads) + 1,))
+    run_times_intermediate = np.zeros((num_load_steps + 1,))
     if solve_contact_problem:
         verbose = False
         log_level = LogLevel.info if verbose else LogLevel.warning
@@ -195,9 +202,6 @@ def generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps(
                 for i, load in enumerate(loads):
 
                     start_setup_time = time.time()
-                    # Grid cell area
-                    dx = L / n
-                    dA = dx**2
 
                     # Creates the model
                     model = tm.ModelFactory.createModel(

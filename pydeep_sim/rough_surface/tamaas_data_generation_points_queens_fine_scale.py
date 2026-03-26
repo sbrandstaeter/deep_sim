@@ -2,10 +2,7 @@ import numpy as np
 
 from queens.global_settings import GlobalSettings
 
-# experiment_name = "tamaas_points_surfaces_scaled"
-experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
-# experiment_name = "tamaas_points_nonperiodic_3"
-# experiment_name = "tamaas_points_periodic_2"
+experiment_name = "tamaas_points_nonperiodic_3_fine_scale"
 output_dir = "./"
 global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
 
@@ -24,14 +21,13 @@ from pydeep_sim.rough_surface.tamaas_load_path import (
     generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps,
 )
 
-master_seed = 931990
-# master_seed = 260124
-num_grid_points_per_side = 512
-num_pressure_steps = 50
+num_grid_points_per_side = 1024
+num_pressure_steps = 1
+
+master_seed = 260129
 master_rng = np.random.default_rng(master_seed)
 
-# hurst_values = np.array([0.5, 0.6, 0.7, 0.8])
-hurst_values = np.linspace(0.6, 0.8, 50)
+hurst_values = np.sort(np.random.uniform(0.6, 0.8, 10))
 q1_values = np.array([1, 4, 16])
 q2_values = np.array([32, 64, 128])
 
@@ -67,7 +63,7 @@ if __name__ == "__main__":
         periodic=False,
         scale_surface=True,
         solve_contact_problem=True,
-        random_load_steps=False,
+        random_load_steps=True,
         generate_surface_and_solve_pressure_driven_eff_area=generate_surface_and_solve_pressure_driven_eff_area_individual_load_steps,
     )
     scheduler = Local(

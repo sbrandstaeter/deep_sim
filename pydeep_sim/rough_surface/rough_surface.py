@@ -142,10 +142,10 @@ def random_postprocess(rough_surface, lateral_length):
 
     import tamaas as tm
 
-    print(rms_slope_fd)
-    print(tm.Statistics2D.computeFDRMSSlope(z))
-    print(tm.Statistics2D.computeSpectralRMSSlope(z))
-    print("###################################################################")
+    # print(rms_slope_fd)
+    # print(tm.Statistics2D.computeFDRMSSlope(z))
+    # print(tm.Statistics2D.computeSpectralRMSSlope(z))
+    # print("###################################################################")
 
     # evaluate the 2D maxima (peaks) curvatures
     n_peaks = 0
