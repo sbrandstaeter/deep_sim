@@ -18,19 +18,20 @@ def apply_plot_style():
 
     # Fonts / LaTeX
     rcParams["text.usetex"] = True
+    rcParams["font.family"] = "sans-serif"
+    rcParams["font.sans-serif"] = "Helvetica"
     rcParams[
         "text.latex.preamble"
     ] = r"""\usepackage{siunitx}
        \sisetup{detect-all}
        \usepackage{helvet}
-       \usepackage{sansmath}
-       \sansmath
+       \usepackage{sfmath}
        """
 
     # Markers
     rcParams["lines.markeredgecolor"] = "k"
     rcParams["lines.markeredgewidth"] = 0.75
-    rcParams["lines.markerfacecolor"] = "r"
+    rcParams["lines.markerfacecolor"] = "darkred"
     rcParams["lines.markersize"] = 5.0
 
     # Lines
