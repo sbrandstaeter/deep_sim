@@ -23,8 +23,9 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import gpflow
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
+
+from pydeep_sim.rough_surface.tamaas_gpr_utils import RegressionMetrics
 
 
 def configure_tensorflow_device(device_preference: str = "auto") -> str:
@@ -72,17 +73,6 @@ def configure_tensorflow_device(device_preference: str = "auto") -> str:
     return "/CPU:0"
 
 
-def rmsle(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    """
-    Root Mean Squared Log Error on original-scale predictions.
-    Clips predictions at zero because RMSLE requires nonnegative values.
-    """
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
-    y_pred = np.clip(y_pred, 0.0, None)
-    return float(np.sqrt(np.mean((np.log1p(y_true) - np.log1p(y_pred)) ** 2)))
-
-
 def build_gpflow_gpr(
     X_train_scaled: np.ndarray,
     y_train_log: np.ndarray,
@@ -123,7 +113,8 @@ def build_gpflow_gpr(
 def main() -> None:
     gpflow.config.set_default_float(np.float64)
 
-    random_state = 20260903
+    # random_state = 20260903
+    random_state = 20260331
     rng = np.random.default_rng(random_state)
     drop_na = False
     train_model = True
@@ -133,7 +124,7 @@ def main() -> None:
 
     experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
 
-    base_name = f"{experiment_name}_gpr_gpflow_2"
+    base_name = f"{experiment_name}_gpr_gpflow_4"
 
     checkpoint_dir = Path(f"{base_name}_ckpt")
     checkpoint_prefix = str(checkpoint_dir / "ckpt")
@@ -246,6 +237,22 @@ def main() -> None:
         len(y_test_all), size=num_test_data, replace=False
     )
 
+    # Save the full randomly selected test rows from the original test dataframe
+    # (all columns, not only features + target)
+    selected_test_rows_path = Path(f"{base_name}_selected_test_rows")
+    selected_test_df_full = test_data_df_raw.iloc[idx_chosen_test_data].copy()
+    # selected_test_df_full.to_csv(
+    #     selected_test_rows_path.with_suffix(".csv"), index=False
+    # )
+    selected_test_df_full.to_parquet(
+        selected_test_rows_path.with_suffix(".parquet"),
+        engine="pyarrow",
+        compression="zstd",
+    )
+    print(
+        f"Saved selected test data to: {selected_test_rows_path.with_suffix('.parquet')}"
+    )
+
     X_test = X_test_all[idx_chosen_test_data, :]
     y_test = y_test_all[idx_chosen_test_data]
 
@@ -264,6 +271,7 @@ def main() -> None:
 
         checkpoint = tf.train.Checkpoint(model=model)
 
+        optimization_time = 0.0
         if train_model:
             start_time = time.time()
             optimizer = gpflow.optimizers.Scipy()
@@ -294,16 +302,19 @@ def main() -> None:
             print(f"Restored GPflow checkpoint from: {latest_ckpt}")
             optimizer_message = None
 
-        mean_f, var_f = model.predict_f(X_test_scaled)
+        mean_f_test, var_f_test = model.predict_f(X_test_scaled)
+        mean_f_train, var_f_train = model.predict_f(X_train_scaled)
 
-    y_pred_log = mean_f.numpy().reshape(-1)
-    y_pred = np.expm1(y_pred_log)
-    y_pred = np.clip(y_pred, 0.0, None)
+    y_test_pred_log = mean_f_test.numpy().reshape(-1)
+    y_test_pred = np.expm1(y_test_pred_log)
+    y_test_pred = np.clip(y_test_pred, 0.0, None)
 
-    rmse = float(np.sqrt(mean_squared_error(y_test, y_pred)))
-    mae = float(mean_absolute_error(y_test, y_pred))
-    r2 = float(r2_score(y_test, y_pred))
-    test_rmsle = rmsle(y_test, y_pred)
+    y_train_pred_log = mean_f_train.numpy().reshape(-1)
+    y_train_pred = np.expm1(y_train_pred_log)
+    y_train_pred = np.clip(y_train_pred, 0.0, None)
+
+    regression_metrics_test_data = RegressionMetrics(y_test, y_test_pred)
+    regression_metrics_train_data = RegressionMetrics(y_train, y_train_pred)
 
     metrics = {
         "device_preference": device_preference,
@@ -319,14 +330,19 @@ def main() -> None:
         "features": feature_cols,
         "test_size": test_size,
         "random_state": random_state,
-        "rmse": rmse,
-        "mae": mae,
-        "r2": r2,
-        "rmsle": test_rmsle,
+        "test_data_metrics": regression_metrics_test_data.to_dict(),
+        "train_data_metrics": regression_metrics_train_data.to_dict(),
     }
 
     if optimizer_message is not None:
         metrics["optimizer_message"] = optimizer_message
+
+    print("#" * 20)
+    print("Recommended metrics on train data:")
+    regression_metrics_train_data.print_recommended_table()
+    print("Recommended metrics on test data:")
+    regression_metrics_test_data.print_recommended_table()
+    print("#" * 20)
 
     print("Evaluation metrics:")
     print(json.dumps(metrics, indent=2))
