@@ -2,7 +2,7 @@ import numpy as np
 
 from queens.global_settings import GlobalSettings
 
-experiment_name = "tamaas_points_nonperiodic_3_validation_data"
+experiment_name = "tamaas_points_nonperiodic_3_physical_validation_data"
 output_dir = "./"
 global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
 
@@ -14,7 +14,7 @@ from queens.utils.io import load_result
 
 from pydeep_sim.rough_surface.tamaas_queens_driver import Tamaas
 from pydeep_sim.rough_surface.rough_surface_parameters import (
-    TAMAAS_ROUGH_SURFACE_PARAMETERS_PRESSURE,
+    TAMAAS_ROUGH_SURFACE_PARAMETERS,
 )
 from pydeep_sim.rough_surface.tamaas_load_path import (
     generate_surface_and_solve_pressure_driven_eff_area_load_path,
@@ -22,24 +22,22 @@ from pydeep_sim.rough_surface.tamaas_load_path import (
 )
 
 num_grid_points_per_side = 512
-num_pressure_steps = 1
+num_pressure_steps = 50
 
 master_seed = 260331
 master_rng = np.random.default_rng(master_seed)
 
-num_samples = 28125  # 5x 5625
+num_samples = 100
 hurst_values = np.random.uniform(0.6, 0.8, num_samples)
 q1_values = np.random.choice(np.array([1, 4, 16]), size=num_samples)
 q2_values = np.random.choice(np.array([32, 64, 128]), size=num_samples)
 random_seeds = master_rng.integers(1, 2**31, size=num_samples, dtype=np.int32)
-target_pressure = np.random.uniform(0.0, 0.4, num_samples)
 
 points = {
     "hurst": np.ravel(hurst_values),
     "q1": np.ravel(q1_values),
     "q2": np.ravel(q2_values),
     "random_seed": random_seeds,
-    "target_pressure": np.ravel(target_pressure),
 }
 
 if __name__ == "__main__":
@@ -48,7 +46,7 @@ if __name__ == "__main__":
 
     # Setup iterator
     tamaas_driver = Tamaas(
-        parameters=TAMAAS_ROUGH_SURFACE_PARAMETERS_PRESSURE,
+        parameters=TAMAAS_ROUGH_SURFACE_PARAMETERS,
         input_templates="",
         jobscript_template="",
         executable=None,
@@ -78,7 +76,7 @@ if __name__ == "__main__":
         points=points,
         result_description={"write_results": True},
         model=model,
-        parameters=TAMAAS_ROUGH_SURFACE_PARAMETERS_PRESSURE,
+        parameters=TAMAAS_ROUGH_SURFACE_PARAMETERS,
         global_settings=global_settings,
     )
 

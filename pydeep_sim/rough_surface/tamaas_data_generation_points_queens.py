@@ -6,6 +6,7 @@ from queens.global_settings import GlobalSettings
 experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
 # experiment_name = "tamaas_points_nonperiodic_3"
 # experiment_name = "tamaas_points_periodic_2"
+experiment_name = "tamaas_points_nonperiodic_4_indiv_load_steps"
 output_dir = "./"
 global_settings = GlobalSettings(experiment_name=experiment_name, output_dir=output_dir)
 
@@ -27,11 +28,11 @@ from pydeep_sim.rough_surface.tamaas_load_path import (
 master_seed = 931990
 # master_seed = 260124
 num_grid_points_per_side = 512
-num_pressure_steps = 50
+num_pressure_steps = 25
 master_rng = np.random.default_rng(master_seed)
 
 # hurst_values = np.array([0.5, 0.6, 0.7, 0.8])
-hurst_values = np.linspace(0.6, 0.8, 50)
+hurst_values = np.linspace(0.6, 0.8, 25)
 q1_values = np.array([1, 4, 16])
 q2_values = np.array([32, 64, 128])
 
