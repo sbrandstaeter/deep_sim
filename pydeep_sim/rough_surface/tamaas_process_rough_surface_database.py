@@ -18,8 +18,9 @@ if __name__ == "__main__":
     experiment_name = "tamaas_points_nonperiodic_3_coarse_scale"
     experiment_name = "tamaas_points_nonperiodic_3_test_data"
     experiment_name = "tamaas_points_nonperiodic_4_indiv_load_steps"
-    # experiment_name = "tamaas_points_14"
-    # experiment_name = "tamaas_points_periodic_1"
+    experiment_name = "tamaas_points_nonperiodic_3_physical_validation_data"
+    experiment_name = "tamaas_points_nonperiodic_3_validation_data_coarse"
+
     output_dir = "./"
     result_file = Path(output_dir) / (experiment_name + ".pickle")
 

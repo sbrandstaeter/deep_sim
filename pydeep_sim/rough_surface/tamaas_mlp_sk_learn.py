@@ -1,58 +1,38 @@
 #!/usr/bin/env python3
 """
-Train and evaluate a GPflow Gaussian Process Regressor on data stored in Parquet format.
+Train and evaluate an MLP Regressor on data stored in Parquet format.
 
 Notes:
 - Assumes numeric features.
 - Uses log1p/expm1 transform on the target, so target values must be >= 0.
 - Reports metrics on the original target scale.
-- Saves:
-    - GPflow model parameters via TensorFlow checkpoint
-    - feature scaler via joblib
-    - metrics as JSON
-- Uses GPU if available and requested.
 """
 
 import json
-import os
 import time
 from pathlib import Path
 
 import joblib
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-import gpflow
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.neural_network import MLPRegressor
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from pydeep_sim.rough_surface.tamaas_gpr_utils import (
-    configure_tensorflow_device,
-    build_gpflow_gpr,
-)
 from pydeep_sim.rough_surface.tamaas_ml_model_utils import RegressionMetrics
 
 
 def main() -> None:
-    gpflow.config.set_default_float(np.float64)
-
-    # random_state = 20260903
-    random_state = 20260331
+    random_state = 20260903
     rng = np.random.default_rng(random_state)
     drop_na = False
-    train_model = True
-    device_preference = "gpu"  # "auto", "gpu", or "cpu"
-
-    device_name = configure_tensorflow_device(device_preference)
 
     experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
 
-    base_name = f"{experiment_name}_gpr_gpflow_4"
+    base_name = f"{experiment_name}_mlp_scikit_1"
 
-    checkpoint_dir = Path(f"{base_name}_ckpt")
-    checkpoint_prefix = str(checkpoint_dir / "ckpt")
-    checkpoint_dir.mkdir(parents=True, exist_ok=True)
-
-    scaler_path = Path(f"{base_name}_scaler.joblib")
+    model_path = Path(f"{base_name}_model.joblib")
     output_path = Path(f"{base_name}_metrics.json")
 
     train_data_path = Path(f"{experiment_name}.parquet")
@@ -89,7 +69,6 @@ def main() -> None:
         "dmax",
     ]
 
-    num_features = len(features)
     feature_cols = None
 
     for df_name, df in [("test", test_data_df_raw), ("train", train_data_df_raw)]:
@@ -128,7 +107,7 @@ def main() -> None:
         ]
         if non_numeric_features:
             raise TypeError(
-                "GP regression requires numeric features. "
+                "MLP regression requires numeric features. "
                 f"Non-numeric feature columns found in {df_name} data: {non_numeric_features}"
             )
 
@@ -143,8 +122,8 @@ def main() -> None:
 
     train_data_df, test_data_df = cleaned_dfs
 
-    X_train = train_data_df[feature_cols].to_numpy(dtype=np.float64)
-    y_train = train_data_df[target].to_numpy(dtype=np.float64)
+    X_train = train_data_df[feature_cols].to_numpy()
+    y_train = train_data_df[target].to_numpy()
 
     num_train_data = len(y_train)
 
@@ -152,20 +131,15 @@ def main() -> None:
     train_size = 1.0 - test_size
     num_test_data = int(num_train_data / train_size * test_size)
 
-    X_test_all = test_data_df[feature_cols].to_numpy(dtype=np.float64)
-    y_test_all = test_data_df[target].to_numpy(dtype=np.float64)
+    X_test_all = test_data_df[feature_cols].to_numpy()
+    y_test_all = test_data_df[target].to_numpy()
 
     idx_chosen_test_data = rng.choice(
         len(y_test_all), size=num_test_data, replace=False
     )
 
-    # Save the full randomly selected test rows from the original test dataframe
-    # (all columns, not only features + target)
     selected_test_rows_path = Path(f"{base_name}_selected_test_rows")
     selected_test_df_full = test_data_df_raw.iloc[idx_chosen_test_data].copy()
-    # selected_test_df_full.to_csv(
-    #     selected_test_rows_path.with_suffix(".csv"), index=False
-    # )
     selected_test_df_full.to_parquet(
         selected_test_rows_path.with_suffix(".parquet"),
         engine="pyarrow",
@@ -178,71 +152,60 @@ def main() -> None:
     X_test = X_test_all[idx_chosen_test_data, :]
     y_test = y_test_all[idx_chosen_test_data]
 
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train).astype(np.float64)
-    X_test_scaled = scaler.transform(X_test).astype(np.float64)
+    hidden_layers = (100,) * 50
 
-    y_train_log = np.log1p(y_train)
+    mlp_pipeline = Pipeline(
+        steps=[
+            ("scaler", StandardScaler()),
+            (
+                "mlp",
+                MLPRegressor(
+                    hidden_layer_sizes=hidden_layers,
+                    activation="logistic",
+                    solver="sgd",
+                    alpha=0.001,
+                    learning_rate="adaptive",
+                    learning_rate_init=0.01,
+                    max_iter=200,
+                    shuffle=True,
+                    random_state=random_state,
+                    verbose=True,
+                    early_stopping=True,
+                    n_iter_no_change=10,
+                    validation_fraction=0.1,
+                ),
+            ),
+        ]
+    )
 
-    with tf.device(device_name):
-        model = build_gpflow_gpr(
-            X_train_scaled=X_train_scaled,
-            y_train_log=y_train_log,
-            num_features=num_features,
-        )
+    model = TransformedTargetRegressor(
+        regressor=mlp_pipeline,
+        func=np.log1p,
+        inverse_func=np.expm1,
+        check_inverse=True,
+    )
 
-        checkpoint = tf.train.Checkpoint(model=model)
+    start_time = time.time()
+    model.fit(X_train, y_train)
+    print("Training finished.")
+    optimization_time = time.time() - start_time
+    print(f"Training took {optimization_time}")
 
-        optimization_time = 0.0
-        if train_model:
-            start_time = time.time()
-            optimizer = gpflow.optimizers.Scipy()
-            opt_result = optimizer.minimize(
-                model.training_loss,
-                variables=model.trainable_variables,
-                method="L-BFGS-B",
-                options={"maxiter": 1000},
-            )
-            print("Optimization finished.")
-            print(f"Optimizer status: {opt_result.message}")
-            optimization_time = time.time() - start_time
-            print(f"Optimization took {optimization_time}")
+    joblib.dump(model, model_path)
+    print(f"Saved model to: {model_path.resolve()}")
 
-            joblib.dump(scaler, scaler_path)
-            print(f"Saved scaler to: {scaler_path.resolve()}")
-
-            saved_ckpt_path = checkpoint.save(checkpoint_prefix)
-            print(f"Saved GPflow checkpoint to: {saved_ckpt_path}")
-            optimizer_message = str(opt_result.message)
-        else:
-            latest_ckpt = tf.train.latest_checkpoint(checkpoint_dir)
-            if latest_ckpt is None:
-                raise FileNotFoundError(
-                    f"No checkpoint found in directory: {checkpoint_dir.resolve()}"
-                )
-            checkpoint.restore(latest_ckpt).expect_partial()
-            print(f"Restored GPflow checkpoint from: {latest_ckpt}")
-            optimizer_message = None
-
-        mean_f_test, var_f_test = model.predict_f(X_test_scaled)
-        mean_f_train, var_f_train = model.predict_f(X_train_scaled)
-
-    y_test_pred_log = mean_f_test.numpy().reshape(-1)
-    y_test_pred = np.expm1(y_test_pred_log)
+    y_test_pred = model.predict(X_test)
     y_test_pred = np.clip(y_test_pred, 0.0, None)
 
-    y_train_pred_log = mean_f_train.numpy().reshape(-1)
-    y_train_pred = np.expm1(y_train_pred_log)
+    y_train_pred = model.predict(X_train)
     y_train_pred = np.clip(y_train_pred, 0.0, None)
+
+    trained_mlp = model.regressor_.named_steps["mlp"]
 
     regression_metrics_test_data = RegressionMetrics(y_test, y_test_pred)
     regression_metrics_train_data = RegressionMetrics(y_train, y_train_pred)
 
     metrics = {
-        "device_preference": device_preference,
-        "device_used": device_name,
-        "gpu_visible": len(tf.config.list_physical_devices("GPU")) > 0,
-        "n_visible_gpus": len(tf.config.list_physical_devices("GPU")),
         "n_samples_total_train_df": int(len(train_data_df)),
         "n_samples_total_test_df": int(len(test_data_df)),
         "n_train": int(len(X_train)),
@@ -252,12 +215,19 @@ def main() -> None:
         "features": feature_cols,
         "test_size": test_size,
         "random_state": random_state,
+        "model_type": "MLPRegressor",
+        "hidden_layer_sizes": hidden_layers,
+        "activation": "logistic",
+        "solver": "sgd",
+        "alpha": 0.001,
+        "learning_rate": "adaptive",
+        "learning_rate_init": 0.01,
+        "max_iter": 200,
+        "n_iter_": int(trained_mlp.n_iter_),
+        "loss": float(trained_mlp.loss_),
         "test_data_metrics": regression_metrics_test_data.to_dict(),
         "train_data_metrics": regression_metrics_train_data.to_dict(),
     }
-
-    if optimizer_message is not None:
-        metrics["optimizer_message"] = optimizer_message
 
     print("#" * 20)
     print("Recommended metrics on train data:")
@@ -272,16 +242,9 @@ def main() -> None:
     output_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     print(f"\nSaved metrics to: {output_path.resolve()}")
 
-    try:
-        print("\nLearned model summary:")
-        gpflow.utilities.print_summary(model)
-    except Exception as e:
-        print("\nCould not print GPflow summary:")
-        print(repr(e))
-        print("\nLearned kernel:")
-        print(model.kernel)
-        print("\nLikelihood variance:")
-        print(model.likelihood.variance.numpy())
+    print("\nTrained MLP summary:")
+    print(f"Iterations: {trained_mlp.n_iter_}")
+    print(f"Final loss: {trained_mlp.loss_}")
 
 
 if __name__ == "__main__":

@@ -2,30 +2,30 @@ import numpy as np
 import pandas as pd
 
 
-def cv_train_validation_splits(df: pd.DataFrame, n_sets: int = 5, seed: int = 42):
+def cv_train_validation_splits(
+    df: pd.DataFrame, n_sets: int = 5, seed: int = 42
+) -> list[tuple[np.ndarray, np.ndarray]]:
     """
-    Compute train and validation splits of data.
+    Compute train/validation splits by grouping full ids together.
 
-    df contains the raw data prior to removing all non-used columns (it needs the ids column).
+    df must contain the raw training data before dropping non-feature columns,
+    because it needs the 'ids' column.
     """
-    # --- Validate ids column exists ---
     if "ids" not in df.columns:
         raise ValueError("Dataframe must contain a column named 'ids'")
 
-    # --- Count rows per id ---
     id_counts = df["ids"].value_counts().sort_index()
 
     if id_counts.empty:
         raise ValueError("The dataframe is empty")
 
-    # --- Check all ids have the same number of rows ---
     if id_counts.nunique() != 1:
         raise ValueError(
             "Not all ids have the same number of rows.\n"
             f"Found counts: {id_counts.unique()}"
         )
 
-    rows_per_id = id_counts.iloc[0]
+    rows_per_id = int(id_counts.iloc[0])
     unique_ids = id_counts.index.to_numpy()
     n_ids = len(unique_ids)
 
@@ -35,21 +35,16 @@ def cv_train_validation_splits(df: pd.DataFrame, n_sets: int = 5, seed: int = 42
     if n_ids % n_sets != 0:
         raise ValueError(f"Number of unique ids ({n_ids}) is not divisible by {n_sets}")
 
-    ids_per_set = n_ids // n_sets
-
-    # --- Randomly split unique ids into 5 equal sets ---
-    rng = np.random.default_rng(seed=seed)  # optional seed for reproducibility
-
+    rng = np.random.default_rng(seed=seed)
     shuffled_ids = rng.permutation(unique_ids)
     id_sets = np.split(shuffled_ids, n_sets)
 
-    # --- Build custom CV splits as row indices ---
-    cv_splits = []
-    for test_ids in id_sets:
-        test_mask = df["ids"].isin(test_ids).to_numpy()
-        test_idx = np.flatnonzero(test_mask)
-        train_idx = np.flatnonzero(~test_mask)
-        cv_splits.append((train_idx, test_idx))
+    cv_splits: list[tuple[np.ndarray, np.ndarray]] = []
+    for val_ids in id_sets:
+        val_mask = df["ids"].isin(val_ids).to_numpy()
+        val_idx = np.flatnonzero(val_mask)
+        train_idx = np.flatnonzero(~val_mask)
+        cv_splits.append((train_idx, val_idx))
 
     return cv_splits
 

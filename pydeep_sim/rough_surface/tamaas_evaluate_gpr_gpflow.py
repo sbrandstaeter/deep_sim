@@ -37,7 +37,7 @@ from pydeep_sim.rough_surface.tamaas_gpr_utils import (
 def main() -> None:
     gpflow.config.set_default_float(np.float64)
 
-    device_preference = "gpu"  # "auto", "gpu", or "cpu"
+    device_preference = "cpu"  # "auto", "gpu", or "cpu"
     device_name = configure_tensorflow_device(device_preference)
 
     experiment_name = "tamaas_points_nonperiodic_3_indiv_load_steps"
@@ -49,6 +49,10 @@ def main() -> None:
 
     output_csv = Path(f"{base_name}_dmax_sweep_predictions.csv")
     output_png = Path(f"{base_name}_dmax_sweep_plot.png")
+
+    overall_result = np.load(
+        "/home/a11bsebr/codespace/deep_sim/pydeep_sim/rough_surface/tamaas_physical_validation_example/0/output/overall_result.npy"
+    )
 
     target = "eff_area"
 
